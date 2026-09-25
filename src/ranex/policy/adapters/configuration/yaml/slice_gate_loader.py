@@ -20,9 +20,14 @@ from typing import Any
 
 import yaml
 
+from ranex.foundation.antislop_results import ANTISLOP_REPORTERS
 from ranex.foundation.canonical import command_digest
 from ranex.foundation.scan_results import SCAN_REPORTERS
 from ranex.foundation.suite_results import JUNIT_REPORTERS
+
+#: The SARIF argv shape both scan families bind: exactly one output format
+#: and one output file, no overrides, no `--`.
+SARIF_ARGV_REPORTERS = SCAN_REPORTERS | ANTISLOP_REPORTERS
 
 
 @dataclass(frozen=True, slots=True)
@@ -301,7 +306,7 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
 
     results_artifact: str | None = None
     reporter = entry.get("results_reporter", "pytest-junit")
-    known = JUNIT_REPORTERS | SCAN_REPORTERS
+    known = JUNIT_REPORTERS | SCAN_REPORTERS | ANTISLOP_REPORTERS
     if not isinstance(reporter, str) or reporter not in known:
         raise ValueError(f"results_reporter must be one of {sorted(known)}")
     if "results_reporter" in entry and "results_artifact" not in entry:
@@ -319,7 +324,7 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
                 "a non-empty relative path confined below the repository"
             )
         token = f"--junitxml={candidate}"
-        if reporter in SCAN_REPORTERS:
+        if reporter in SARIF_ARGV_REPORTERS:
             # ruff 0.16.2's real CLI. One canonical spelling, as for Vitest:
             # a permissive reconstruction of a scanner's argument parser is a
             # second parser to keep correct, and the complete argv is signed
@@ -376,7 +381,7 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
 
     results_manifest: str | None = None
     if "results_manifest" in entry:
-        if reporter not in SCAN_REPORTERS:
+        if reporter not in SARIF_ARGV_REPORTERS:
             raise ValueError(
                 f"gate {gate_id!r}: claim {claim_id!r} declares results_manifest under "
                 f"{reporter!r}; JUnit claims are reduced against the repository's one "
@@ -395,7 +400,7 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
                 "a non-empty relative path confined below the repository"
             )
         results_manifest = candidate
-    elif reporter in SCAN_REPORTERS:
+    elif reporter in SARIF_ARGV_REPORTERS:
         raise ValueError(
             f"gate {gate_id!r}: claim {claim_id!r} declares {reporter!r} without a "
             "results_manifest; a scan with no frozen scope decides nothing, so the "

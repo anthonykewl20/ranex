@@ -1,0 +1,116 @@
+{
+ "arm": "3-s1b-tautology",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed), test_six.py::test_add_doc (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-tautology::de2f9381d1c230685e7cbbd4a4aa952f7b0369b7817425094a376ae0aef6f400",
+     "failed"
+    ],
+    [
+     "test_six.py::test_add_doc",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:ab1089dc97f46a7ac525c13dc0b25e47e4416b4cffaa533b42ccf122d0cb6a00",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed), test_six.py::test_add_doc (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-tautology::de2f9381d1c230685e7cbbd4a4aa952f7b0369b7817425094a376ae0aef6f400",
+     "failed"
+    ],
+    [
+     "test_six.py::test_add_doc",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:ab1089dc97f46a7ac525c13dc0b25e47e4416b4cffaa533b42ccf122d0cb6a00",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed), test_six.py::test_add_doc (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-tautology::de2f9381d1c230685e7cbbd4a4aa952f7b0369b7817425094a376ae0aef6f400",
+     "failed"
+    ],
+    [
+     "test_six.py::test_add_doc",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:ab1089dc97f46a7ac525c13dc0b25e47e4416b4cffaa533b42ccf122d0cb6a00",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   "    assert f.__doc__ == \"New doc\""
+  ]
+ },
+ "expect_pass": false,
+ "identical": true,
+ "reached_pass": false,
+ "status": "as-expected"
+}

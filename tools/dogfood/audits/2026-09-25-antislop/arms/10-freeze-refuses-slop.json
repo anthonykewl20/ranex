@@ -1,0 +1,7 @@
+{
+ "arm": "10-freeze-refuses-slop",
+ "freeze_exit": 2,
+ "refusal": "ERROR  refusing to freeze antislop expectations around a tree that already carries antislop violations: test_six.py::ranex/antislop-tautology::de2f9381d1c230685e7cbbd4a4aa952f7b0369b7817425094a376ae0aef6f400",
+ "status": "as-expected",
+ "wrote_manifest": false
+}

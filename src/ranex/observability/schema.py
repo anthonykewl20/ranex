@@ -77,6 +77,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "deps.approve",
     "keygen",
     "markers",
+    "antislop",
     "task.dispatch",
     "task.judge",
     "task.merge",

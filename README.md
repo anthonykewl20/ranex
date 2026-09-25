@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — #111 closed on PR #124; #112/#114/#115 then task authority (#119) follow the milestone-8 queue.
+**Active slice:** none — P2 antislop on PR #129; #114 merged; P1 BASE on PR #130.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting

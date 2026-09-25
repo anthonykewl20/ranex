@@ -448,8 +448,10 @@ def claim_expectations(
     """One claim's frozen universe: `(manifest_digest, expected_ids, expected_skips)`.
 
     Both manifest kinds answer the same three questions, and the kernel asks
-    only those three. Resolving the reporter here keeps every Gate-construction
-    site — the composition root, `task judge`, the receiver — asking one
+    only those three — the antislop expectations manifest answers them too,
+    which is why it resolves here and not at each construction site. Resolving
+    the reporter here keeps every Gate-construction site — the composition
+    root, `task judge`, the receiver — asking one
     question instead of each learning both shapes and drifting apart.
     """
 
@@ -459,6 +461,23 @@ def claim_expectations(
             scan_manifest_digest(manifest),
             scan_expected_ids(manifest),
             scan_expected_skips(manifest),
+        )
+    if reporter == "antislop-sarif-2.1.0":
+        # Lazy for the same reason the suite import below is: the antislop
+        # reduction imports this module's region helpers, so a module-level
+        # import would be a cycle.
+        from ranex.foundation.antislop_results import (
+            antislop_expectations_digest,
+            antislop_expected_ids,
+            antislop_expected_skips,
+            load_antislop_expectations_bytes,
+        )
+
+        manifest = load_antislop_expectations_bytes(raw)
+        return (
+            antislop_expectations_digest(manifest),
+            antislop_expected_ids(manifest),
+            antislop_expected_skips(manifest),
         )
     from ranex.foundation.suite_results import load_manifest_bytes, manifest_digest
 

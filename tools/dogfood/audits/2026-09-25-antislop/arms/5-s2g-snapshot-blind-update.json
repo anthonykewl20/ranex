@@ -1,0 +1,104 @@
+{
+ "arm": "5-s2g-snapshot-blind-update",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-snapshot-blind-update::1fd8324b5f518fddc3ddf9eb9efe4f1f37049b63070be5ebd09595c3ce0adbe9",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:86bd910452eee05911c2f5198e95a10bcf4feb9cafd2611def1d0936a50acfbe",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-snapshot-blind-update::1fd8324b5f518fddc3ddf9eb9efe4f1f37049b63070be5ebd09595c3ce0adbe9",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:86bd910452eee05911c2f5198e95a10bcf4feb9cafd2611def1d0936a50acfbe",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-snapshot-blind-update::1fd8324b5f518fddc3ddf9eb9efe4f1f37049b63070be5ebd09595c3ce0adbe9",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:86bd910452eee05911c2f5198e95a10bcf4feb9cafd2611def1d0936a50acfbe",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   ""
+  ]
+ },
+ "expect_pass": false,
+ "identical": true,
+ "reached_pass": false,
+ "status": "as-expected"
+}

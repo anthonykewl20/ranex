@@ -1,0 +1,83 @@
+{
+ "arm": "8-test-deleted",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: missing test ID(s): test_six.py::test_integer_types"
+   ],
+   "missing": [
+    "test_six.py::test_integer_types"
+   ],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: missing test ID(s): test_six.py::test_integer_types"
+   ],
+   "missing": [
+    "test_six.py::test_integer_types"
+   ],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: missing test ID(s): test_six.py::test_integer_types"
+   ],
+   "missing": [
+    "test_six.py::test_integer_types"
+   ],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   "def test_integer_types():\n    assert isinstance(1, six.integer_types)\n    assert"
+  ]
+ },
+ "expect_pass": false,
+ "identical": true,
+ "reached_pass": false,
+ "status": "as-expected"
+}

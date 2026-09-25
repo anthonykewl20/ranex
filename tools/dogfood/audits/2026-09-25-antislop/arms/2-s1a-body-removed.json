@@ -1,0 +1,116 @@
+{
+ "arm": "2-s1a-body-removed",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed), test_six.py::test_add_doc (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-pass-body::38ca8fca09d65d5e4883f09dd425fcd1bb98de815cf45ee7f9897f8538bc372b",
+     "failed"
+    ],
+    [
+     "test_six.py::test_add_doc",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:d0b76fa17f47385be5ba093fa3bdb381d4efb5aab968073e3a09fd2c1a2cbedc",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed), test_six.py::test_add_doc (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-pass-body::38ca8fca09d65d5e4883f09dd425fcd1bb98de815cf45ee7f9897f8538bc372b",
+     "failed"
+    ],
+    [
+     "test_six.py::test_add_doc",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:d0b76fa17f47385be5ba093fa3bdb381d4efb5aab968073e3a09fd2c1a2cbedc",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed), test_six.py::test_add_doc (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-pass-body::38ca8fca09d65d5e4883f09dd425fcd1bb98de815cf45ee7f9897f8538bc372b",
+     "failed"
+    ],
+    [
+     "test_six.py::test_add_doc",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:d0b76fa17f47385be5ba093fa3bdb381d4efb5aab968073e3a09fd2c1a2cbedc",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   "def test_add_doc():\n    def f():\n        \"\"\"Icky doc\"\"\"\n        pass\n    six._ad"
+  ]
+ },
+ "expect_pass": false,
+ "identical": true,
+ "reached_pass": false,
+ "status": "as-expected"
+}

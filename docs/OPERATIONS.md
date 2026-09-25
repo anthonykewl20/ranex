@@ -221,6 +221,37 @@ not carry there, makes the artifact malformed — refused, and absence blocks.
 Nothing is relocated. A SARIF `invocations[]` entry that reports
 `executionSuccessful: false` is refused even with zero findings.
 
+### An antislop claim (`antislop-sarif-2.1.0`)
+
+The test-integrity gauge (ADR-063): `ranex antislop` censuses every test's
+effective-assert count and greps the structural slop shapes (constant-truth
+asserts, pass-only bodies, snapshot-update flags, narrowed generated inputs)
+into SARIF. The claim is authored like a scan claim — the kernel's own
+scanner, the same two canonical tokens, its **own** `results_manifest` —
+but the frozen universe is the approved tree's per-test counts:
+
+```sh
+uv run --frozen ranex antislop --output-format=sarif \
+  --output-file=governance/antislop/scan.sarif
+uv run --frozen ranex suite freeze \
+  --artifact governance/antislop/scan.sarif \
+  --output governance/antislop/expectations.json \
+  --results-reporter antislop-sarif-2.1.0 \
+  -- ranex antislop --output-format=sarif \
+     --output-file=governance/antislop/scan.sarif
+```
+
+The freeze takes exactly what the run observed — every test file, every
+test — and refuses both a tree that already carries violations and every
+narrowing flag (`--scan-scope` and kin are scan vocabulary; an antislop
+universe is not hand-declared). There is no `--accepted`: a slop shape or
+a count shortfall is never something review waves through. What blocks:
+a census count below the frozen count, a frozen test missing from the
+census (which is why an emptied artifact cannot pass), any structural
+finding — on a frozen test or not — and the manifest digest. Per-test
+counts live in the artifact's message text, producer-signed like any
+results file (F-012 standing limit).
+
 ## The GitHub acceptance loop (Ranex GitHub App)
 
 Ranex can answer pull requests the way GitHub natively understands: a check
