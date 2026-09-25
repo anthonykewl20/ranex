@@ -1,42 +1,45 @@
 # State
 
 **Updated:** 2026-09-25
-**Active slice:** none — #111 (instruction digest) is next; task authority
-(#119) under ADR-061 follows the milestone-8 queue.
+**Active slice:** [SLICE-093 — the BASE freeze and the promotion gate](docs/slices/SLICE-093-base-freeze-promotion-gate.md) — P1 of the captain-ordered oracle-science program (DIRECT 004+009).
 
-SLICE-092 / P0 envelope (DONE, shipped as the first captain-ordered
-promotion from the oracle-science program, DIRECT 004+008): the repair
-envelope at the read channel. `governed_execution/repair_envelope.py`
-renders the bounded advisory packet — failing IDs, assertion text,
-file:line, repro argv, L0/L1/L2 next-rung pointers — with causes composed
-verbatim at the ADR-019/020 projection, never recomputed. `ranex run`
-retains the junit one seam longer into the gitignored verdict channel;
-`gate evaluate` publishes `<subject>.envelope.json` beside the signed
-verdict, bound by `record_digest`, unsigned, never evidence (offering
-envelope bytes as evidence is refused, receipt-proven). The ADR-043
-retained-log manifest gained the `envelope` field for delegate captures.
-`ranex task stop-hook [--mode stop|pretooluse]` is the C6 attachment:
-governed cycle observer-side, verdict + envelope from the read channel,
-machine-consumable JSON, fully autonomous 3-miss budget with a
-deterministic stop. Walls untouched and re-proven live: delegation.py:93,
-main.py:798, keyring admission. Receipt: audits/2026-09-25-p0-envelope/
-(nine arms VERIFIED on pinned six@1.17.0; measured bytes 19,782 → 1,045,
-−94.7%; verdict.py/KERNEL_DIGEST unmoved).
+SLICE-093 / P1 (this branch): the durable measurement instrument from
+oracle-science §5. `governance/calibration/base-freeze-v1.json` — a new
+committed gauge class under ADR-063 — binds kernel identity (kernel_commit
+638f7d8 plus kernel_digest 2969aa74 = verdict.py bytes, identical from the
+measurement commit to HEAD), the pinned subjects (six@1.17.0 @ ebd9b3af
+with its mint-re-derived 200-ID/15-skip manifest digest 74f4321b and
+control bank b25e2f05; ranex-handbook @ 638f7d8), and the scout's measured
+reference metrics (six raw false-PASS 0.625 / honest 0.025 / KG 0.0 /
+kill 0.875 / cycle 1.5s / tau bound 0.60; handbook 0.25, 0.75),
+evidence-bound: scout appendix 49cc25f0, prereg d8b5b327, mint receipt
+8fa2efc5, journal head 3c68c470. `ranex promotion evaluate` refuses any
+improvement claim that lacks a committed freeze citation, paired marginal
+deltas on the freeze's named axes (baseline = the freeze's own number),
+reconciled arithmetic, a tau derived from the freeze (L3's rejected 0.80
+constant is a refused cause, not an option), or an evidence receipts
+digest; the cited freeze is read committed at the ref (seam C:
+uncommitted gauge edits are operational refusals). Receipt:
+audits/2026-09-25-base-freeze/ — 11/11 arms VERIFIED (derivation ×3
+byte-identical; uncited / constant-tau / invented-baseline /
+tampered-gauge all refused; the report's own C4 marginal ADMITTED;
+decision bytes identical ×3). Kernel untouched: verdict.py/KERNEL_DIGEST unmoved.
 
-SLICE-091 / #118: calibrated live HTTP observer stands as recorded, as do
-SLICE-090 / #113 (instrument self-test) and SLICE-088/089. SLICE-085
-stays blocked. Queue: #111 (instruction digest), #112 (minimization
-ladder = the C2 orchestrator over SLICE-092's shipped rung pointers),
-#114, #115, milestone 7 (#107-#109), then #102, #105, #106, #119.
+SLICE-092 / P0 envelope (DONE) stands as shipped
+(audits/2026-09-25-p0-envelope), as do SLICE-091/090/088/089. Queue: #112 (minimization ladder = the C2 orchestrator
+over SLICE-092's rung pointers), #111, #114, #115, milestone 7
+(#107-#109), then #102, #105, #106, #119. P2 (C3 anti-slop) and P3 (C4
+differential reporter) ship in parallel branches per DIRECT 009.
 
-Suite status, measured 2026-09-25 on this branch: 2104 passed / 91
-skipped, red only in the five files of the standing host-glibc /
-reproducible-build drift family (slice036 selectors, approved-batch
-contract, specification-batch qualification, gating stage_08b/slice009,
-suite-freeze goldens) — the same set as the pristine base checkout
-(audits/2026-09-23-live-observer/base-failures.log); the owner re-pin
-main already records is still needed. Suite manifest refrozen to 2217
-IDs on the committed tree, load_manifest verified.
+Suite status, measured 2026-09-25 on this branch (uv run --frozen pytest
+-q, clean tree): 2151 passed / 91 skipped, red only in the standing
+host-glibc / reproducible-build drift family (slice036 selectors,
+approved-batch contract, specification-batch qualification, gating
+stage_08b/slice009, suite-freeze goldens — 7 failed / 9 errors, the same
+set and totals as the pristine base checkout,
+audits/2026-09-23-live-observer/base-failures.log); the owner re-pin main
+already records is needed. Suite manifest refrozen to 2258 IDs on
+the committed tree, load_manifest verified.
 
 Parallel work and overlapping verification remain owner-authorized
 (2026-09-12); separate writer worktrees, pinned verification worktrees.
