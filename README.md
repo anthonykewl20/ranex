@@ -244,6 +244,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
+- [SLICE-093 — Bare-arm purity](docs/slices/done/SLICE-093-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
+
 - [SLICE-092 — Repair envelope at the read channel](docs/slices/done/SLICE-092-repair-envelope-read-channel.md): a FAIL now carries a bounded advisory packet (failing IDs, assertion text, file:line, repro argv, L0/L1/L2 rung pointers) beside the signed verdict; `task stop-hook` runs the governed cycle observer-side and gates an autonomous 3-miss loop. Envelope bytes are never evidence.
 
 - [SLICE-091 — Calibrated live HTTP observer](docs/slices/done/SLICE-091-calibrated-live-http-observer.md): `observe-http` runs frozen PostgREST/PostgreSQL journeys on exact Git candidates with known-bad calibration; observations, not verdicts.

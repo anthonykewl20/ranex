@@ -1,48 +1,50 @@
 # State
 
 **Updated:** 2026-09-25
-**Active slice:** none — #111 closed on PR #124; #112/#114/#115 then task authority (#119) follow.
+**Active slice:** none — #111 closed on PR #124 and #114 closes on PR #128;
+#112/#115 then task authority (#119) follow.
 
-SLICE-092 / P0 envelope (DONE, first captain-ordered promotion from the
-oracle-science program, DIRECT 004+008): the repair envelope at the read
-channel — `governed_execution/repair_envelope.py` renders the bounded
-advisory packet (failing IDs, assertion text, file:line, repro argv,
-L0/L1/L2 rung pointers) with causes composed verbatim at the ADR-019/020
-projection; `gate evaluate` publishes the unsigned `<subject>.envelope.json`
-beside the signed verdict (never evidence — offering it is refused,
-receipt-proven); the ADR-043 manifest gained the `envelope` field for
-delegate captures; `ranex task stop-hook` is the C6 attachment. Walls
-re-proven live. Receipt: audits/2026-09-25-p0-envelope/ (nine arms
-VERIFIED on pinned six@1.17.0; verdict.py/KERNEL_DIGEST unmoved).
+Owner pivot: idea → approved map → frozen executable probes → scoped AI build
+→ independent live evidence → deterministic verdict → exact-candidate merge.
+SLICE-093 / #114: bare-arm purity. The bare arm runs from a DECLARED
+allowlist (never dict(os.environ)); an in-child canary measures what every
+command actually received and any RANEX_* variable, kernel-naming
+PYTHONPATH/PATH entry, or constructed-vs-observed deviation fails the run
+loudly (exit 3, no ground truth). --contaminate is the caught negative
+control; prior two-arm numbers re-labelled UNVERIFIED (F-041); five
+ceremony arms VERIFIED ×3 (audits/2026-09-24-bare-purity/). verdict.py
+untouched.
 
-#111 shipped: `task delegate` records what shaped the work. Outcome and
-ADR-043 manifest carry `instruction_digest` — sha256 over the canonical
-composed instruction (the prompt with injected chapters in it) — and the
-instruction is retained as a redacted `instruction` stream under the
-unchanged ADR-043 rules; signed envelope untouched (v6 is PR-07/ADR-016).
-Evidence: 2026-09-24-issue111-instruction-digest/.
+SLICE-092 / P0 envelope (DONE, first captain-ordered promotion, DIRECT
+004+008): repair envelope at the read channel; `gate evaluate` publishes
+the unsigned `<subject>.envelope.json` beside the signed verdict (never
+evidence); `task stop-hook` is the C6 attachment.
+
+#111 shipped on PR #124: `task delegate` records what shaped the work —
+ADR-043 manifest and outcome carry `instruction_digest` (sha256 over the
+canonical composed instruction) plus a redacted `instruction` stream
+(2026-09-24-issue111-instruction-digest/).
 
 SLICE-091 / #118 (live HTTP observer), SLICE-090 / #113 (instrument
 self-test), SLICE-089 / #100 (handbook injection) and SLICE-088 / #110
-(markers) stand as recorded in their slices and audits; SLICE-085 stays
-blocked. Queue: #112 (minimization ladder = the C2 orchestrator over
-SLICE-092's shipped rung pointers), #114, #115, milestone 7 (#107-#109),
-then #102, #105, #106, #119.
+(markers) stand as recorded; SLICE-085 stays blocked. Queue: #112
+(minimization ladder = the C2 orchestrator over SLICE-092's rung
+pointers), #115, milestone 7 (#107-#109), then #102, #105, #106, #119.
 
-Suite status, measured 2026-09-25: red only in the five files of the
-standing host-glibc / reproducible-build drift family (slice036 selectors,
-approved-batch contract, specification-batch qualification, gating
-stage_08b/slice009, suite-freeze goldens) — the same set as the pristine
-base checkout (audits/2026-09-23-live-observer/base-failures.log); the
-owner re-pin main already records is still needed. Refreezes stay
-mechanical (IDs only, outcome-blind). host_result_dir's traversal probe
-is root-clamped (2026-09-24); its refusal fires from any checkout depth.
+Suite status, 2026-09-25: red only in the standing host-glibc /
+reproducible-build drift family (slice036 selectors, approved-batch,
+specification-batch, gating stage_08b/slice009, suite-freeze goldens) —
+same set as the pristine base checkout; the owner re-pin main records is
+still needed. #114: plain 2074 passed / 6F+13E, hermetic freezes 2054
+and 2075 passed / 2F+9E; the 13 bare-purity tests pass every time.
+Manifest refrozen on d813c0d88: 2251 IDs (main's 2238 + 13), 168 skips
+verbatim, load_manifest first; suite-freeze golden recaptured.
 
 Parallel work and overlapping verification remain owner-authorized
 (2026-09-12); separate writer worktrees, pinned verification worktrees;
 refreeze on a committed tree and load_manifest before committing it.
 Remaining boundaries unchanged: same-subject evidence reuse; hostile
-report producers (F-012); same-UID trusted controller; no external
-witness against an operator holding both keys. Harness mediation,
-observer scheduling, merge-group checks and production hosting stay
-UNVERIFIED or UNIMPLEMENTED as detailed in MAP.
+report producers (F-012); same-UID trusted controller; no external witness
+against an operator holding both keys. Harness mediation, observer
+scheduling, merge-group checks and production hosting stay UNVERIFIED or
+UNIMPLEMENTED as detailed in MAP.

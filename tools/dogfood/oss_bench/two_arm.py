@@ -19,6 +19,15 @@ TWO verified integration facts shape this adapter (F-003):
      (/usr/bin, /bin, /usr/sbin, /sbin). Task commands naming `python` need
      a pinned interpreter WITH pytest: PREREQUISITE, checked honestly here.
 
+Bare-arm purity (#114): the bare arm's environment is DECLARED (an explicit
+allowlist plus an asserted venv-on-PATH entry), never `dict(os.environ)`,
+and an in-child canary measures the environment every command actually
+receives — no RANEX_* variable, no PYTHONPATH naming a ranex source root,
+no vendored kernel directory on PATH — failing the whole run on
+contamination instead of reporting a cleaner diff. `--contaminate` injects
+exactly one contamination channel and exists only to be caught (negative
+control; the run must exit 3).
+
 MODES:
   --mode tasks     the real two-arm study (requires the pinned-python
                    pytest prerequisite; refuses to invent results without it)
@@ -31,13 +40,16 @@ MODES:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +72,114 @@ from ranex.foundation.signing import generate_keypair  # noqa: E402
 
 APPROVER = "oss-bench-approver"
 PRODUCER = "oss-bench-producer"
+
+# --- the bare arm is declared, measured, and provably bare (#114) ----------
+#
+# The bare environment used to be `dict(os.environ)` plus a venv prepend —
+# defensible, but unproven: an inherited PYTHONPATH, an inherited RANEX_*
+# variable, or a vendored kernel on PATH would make the bare arm quietly
+# governed and the comparison would report a difference that is not there
+# (upstream's ponytail benchmark nearly published a false ~4% exactly this
+# way). The allowlist below IS the whole environment; the canary then
+# measures what the child really received.
+
+#: benign variables passed through from the operator's ambient environment
+BARE_ENV_PASSTHROUGH: tuple[str, ...] = (
+    "HOME", "LANG", "LC_ALL", "LC_CTYPE", "TERM", "TMPDIR",
+)
+#: the system PATH the bare arm declares; the ranex venv is prepended as an
+#: explicit, asserted entry (the deliberate bare-agent interpreter choice)
+BARE_SYSTEM_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+#: negative controls (#114): each injects exactly one contamination channel
+#: and exists only to be caught by the canary
+CONTAMINATIONS: dict[str, Callable[[], dict[str, str]]] = {
+    "pythonpath": lambda: {"PYTHONPATH": str(RANEX_REPO / "src")},
+    "ranex-var": lambda: {"RANEX_SIGNING_KEY": "/tmp/bare-arm-canary.key"},
+    "vendored-path": lambda: {"PATH": str(RANEX_REPO / "src")},
+}
+
+#: runs INSIDE the bare child and reports the environment the child actually
+#: received — the receipt records the environment used, not the one intended
+BARE_CANARY = "import json, os; print(json.dumps(dict(os.environ), sort_keys=True))"
+
+
+class BareArmContaminated(RuntimeError):
+    """The bare arm saw governance machinery; the run refuses to continue."""
+
+    def __init__(self, findings: list[str]) -> None:
+        super().__init__("; ".join(findings))
+        self.findings = findings
+
+
+def bare_environment(contaminate: str | None = None) -> dict[str, str]:
+    """Construct the bare arm's environment from the declared allowlist.
+
+    Never `dict(os.environ)`: the passthrough tuple plus the declared PATH
+    are the entire environment, so a RANEX_* variable, a PYTHONPATH, or any
+    other ambient inheritance is absent by construction — and the canary
+    still measures the child to prove it (#114 arm 1).
+    """
+    env = {name: os.environ[name] for name in BARE_ENV_PASSTHROUGH
+           if name in os.environ}
+    env["PATH"] = f"{RANEX_PY.parent}:{BARE_SYSTEM_PATH}"
+    if contaminate is not None:
+        env.update(CONTAMINATIONS[contaminate]())
+    return env
+
+
+def contamination_findings(env: Mapping[str, str]) -> list[str]:
+    """The three channels that would make a bare arm quietly governed.
+
+    Names are reported without values: an inherited RANEX_* value could
+    itself be operator secret material.
+    """
+    findings = []
+    for name in sorted(env):
+        if name.startswith("RANEX_"):
+            findings.append(f"RANEX_* variable present: {name}")
+    for var in ("PYTHONPATH", "PATH"):
+        for entry in env.get(var, "").split(os.pathsep):
+            if entry and Path(entry, "ranex").is_dir():
+                findings.append(f"{var} names a ranex source root: {entry}")
+    return findings
+
+
+def probe_bare_environment(env: dict[str, str], cwd: Path,
+                           python: str | None = None) -> dict[str, str]:
+    """Measure the bare child's actual environment via an in-child canary."""
+
+    try:
+        result = subprocess.run(
+            [python or str(RANEX_PY), "-c", BARE_CANARY], cwd=str(cwd),
+            env=env, capture_output=True, text=True, check=False, timeout=60)
+    except OSError as error:
+        # A canary that cannot even launch is an unmeasurable bare arm —
+        # refuse loudly rather than fall back to the intended environment.
+        raise BareArmContaminated([
+            f"canary interpreter could not be launched "
+            f"({python or RANEX_PY}): {error}"]) from error
+    if result.returncode != 0:
+        raise BareArmContaminated([
+            f"canary could not run in the bare child (exit "
+            f"{result.returncode}): {result.stderr.strip()[:200]}"])
+    return json.loads(result.stdout)
+
+
+def assert_bare_environment(env: dict[str, str], cwd: Path,
+                            python: str | None = None) -> dict[str, str]:
+    """Probe in-child, then judge; contamination fails the run here (#114)."""
+
+    child = probe_bare_environment(env, cwd, python=python)
+    findings = contamination_findings(child)
+    findings += [
+        f"child environment deviates from the constructed one: {key}"
+        for key in sorted(set(child) | set(env))
+        if child.get(key) != env.get(key)
+    ]
+    if findings:
+        raise BareArmContaminated(findings)
+    return child
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -189,12 +309,20 @@ def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
     return repo, str(key_path)
 
 
+def _governed_environment(repo: Path, key_path: str) -> dict[str, str]:
+    """The governed arm is governed ON PURPOSE: ambient base plus the
+    vendored-kernel PYTHONPATH and the signing key (#114 arm 4 retention)."""
+
+    env = dict(os.environ)
+    env["RANEX_SIGNING_KEY"] = str(key_path)
+    env["PYTHONPATH"] = str(Path(repo) / "src")
+    return env
+
+
 def _ranex(repo: Path, key_path: str, *args: str) -> subprocess.CompletedProcess[str]:
     repo = Path(repo).resolve()
     key = Path(key_path).resolve()
-    env = dict(os.environ)
-    env["RANEX_SIGNING_KEY"] = str(key)
-    env["PYTHONPATH"] = str(repo / "src")
+    env = _governed_environment(repo, str(key))
     return subprocess.run(
         [str(RANEX_PY), "-m", "ranex.cli.main", *args],
         cwd=str(repo), env=env, capture_output=True, text=True, check=False,
@@ -259,20 +387,20 @@ def mode_plumbing(task_dir: Path, out: Path) -> dict[str, Any]:
     return report
 
 
-def mode_tasks(task_dir: Path, out: Path) -> int:
-    ok, detail = pinned_python_has_pytest()
-    if not ok:
-        print(f"PREREQUISITE-MISSING: {detail}")
-        print("The governed arm refuses to run without it; no results are "
-              "invented. The bare arm still runs for ground truth.")
-    metadata = json.loads((task_dir / "metadata.json").read_text())
-    entries = metadata["tests"]["fail_to_pass"]
+def run_bare_arm(task_dir: Path, entries: list[dict[str, Any]],
+                 env: dict[str, str] | None = None,
+                 python: str | None = None) -> dict[str, Any]:
+    """Bare ground truth: the task's own commands, probe-first (#114).
 
-    # Bare arm always runs: real ground truth from the task's own commands,
-    # using the ranex venv interpreter (ambient; exactly what a bare agent
-    # would use — no governance).
-    import tempfile
-
+    Before every command the canary runs in-child with the exact environment
+    that command will receive; contamination fails the whole run instead of
+    producing a cleaner diff. The returned ground truth records the
+    environment actually used — measured in the child, not intended by the
+    driver.
+    """
+    env = bare_environment() if env is None else env
+    probes = 0
+    child_env: dict[str, str] = {}
     with tempfile.TemporaryDirectory() as tmp:
         bare_repo = Path(tmp) / "repo"
         shutil.copytree(task_dir / "repo", bare_repo)
@@ -281,8 +409,6 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
             ["git", "-C", str(bare_repo), "apply", str(task_dir / "gold_patch.diff")],
             capture_output=True, text=True, check=False)
         bare_gold, bare_empty = [], []
-        env = dict(os.environ)
-        env["PATH"] = f"{RANEX_PY.parent}:{env.get('PATH', '')}"
         targets = [("gold", bare_gold, gold.returncode == 0),
                    ("empty", bare_empty, True)]
         for arm, sink, _ in targets:
@@ -295,15 +421,54 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
                     shutil.rmtree(bare_repo)
                     shutil.copytree(task_dir / "repo", bare_repo)
                     copy_hidden_tests(task_dir / "tests", bare_repo)
+                child_env = assert_bare_environment(env, bare_repo, python=python)
+                probes += 1
                 result = subprocess.run(shlex.split(entry["cmd"]), cwd=str(bare_repo),
                                         capture_output=True, text=True, check=False,
                                         timeout=300, env=env)
                 sink.append({"name": entry["name"], "exit": result.returncode})
-        print(f"[gold ] bare {sum(1 for r in bare_gold if r['exit'] == 0)}/{len(entries)}")
-        print(f"[empty] bare {sum(1 for r in bare_empty if r['exit'] == 0)}/{len(entries)}")
-        (out / "bare_ground_truth.json").write_text(json.dumps({
-            "schema": "ranex-oss-bench-bare-v1", "task": metadata["id"],
-            "gold": bare_gold, "empty": bare_empty}, indent=2) + "\n")
+    metadata = json.loads((task_dir / "metadata.json").read_text())
+    canonical = json.dumps(child_env, sort_keys=True, separators=(",", ":"))
+    return {
+        "schema": "ranex-oss-bench-bare-v1", "task": metadata["id"],
+        "gold": bare_gold, "empty": bare_empty,
+        "environment": {
+            "probe": "in-child canary (two_arm.BARE_CANARY) before every "
+                     "command; the receipt records the environment used",
+            "probes": probes,
+            "child_env": child_env,
+            "child_env_sha256": hashlib.sha256(canonical.encode()).hexdigest(),
+            "contamination_findings": contamination_findings(child_env),
+        },
+    }
+
+
+def mode_tasks(task_dir: Path, out: Path,
+               contaminate: str | None = None) -> int:
+    ok, detail = pinned_python_has_pytest()
+    if not ok:
+        print(f"PREREQUISITE-MISSING: {detail}")
+        print("The governed arm refuses to run without it; no results are "
+              "invented. The bare arm still runs for ground truth.")
+    metadata = json.loads((task_dir / "metadata.json").read_text())
+    entries = metadata["tests"]["fail_to_pass"]
+
+    # Bare arm always runs: real ground truth from the task's own commands,
+    # from a DECLARED minimal environment with the canary proving bareness
+    # before every command (#114). The ranex venv interpreter stays first on
+    # PATH as an explicit, asserted entry — the deliberate bare-agent choice.
+    try:
+        bare = run_bare_arm(task_dir, entries,
+                            env=bare_environment(contaminate))
+    except BareArmContaminated as caught:
+        print(f"BARE-ARM-CONTAMINATED: refusing the bare arm — "
+              f"{'; '.join(caught.findings)}", file=sys.stderr)
+        print("No ground truth is written; a contaminated bare arm fails "
+              "loudly instead of reporting a cleaner diff.", file=sys.stderr)
+        return 3
+    print(f"[gold ] bare {sum(1 for r in bare['gold'] if r['exit'] == 0)}/{len(entries)}")
+    print(f"[empty] bare {sum(1 for r in bare['empty'] if r['exit'] == 0)}/{len(entries)}")
+    (out / "bare_ground_truth.json").write_text(json.dumps(bare, indent=2) + "\n")
 
     if not ok:
         return 4
@@ -321,6 +486,21 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
         repo, key_path = build_governed_repo(task_dir, out / arm, patch,
                                              claim_commands)
         cycle = governed_cycle(repo, key_path, claim_commands)
+        # Retain the governed environment (#114 arm 4): names plus the two
+        # governance values, recorded by shape because the scratch-absolute
+        # paths differ per run — full ambient values stay out of the repo.
+        governed_env = _governed_environment(repo, key_path)
+        (out / arm / "governed_environment.json").write_text(json.dumps({
+            "note": "deliberately governed: ambient base plus the "
+                    "vendored-kernel PYTHONPATH and the signing key",
+            "variable_names": sorted(governed_env),
+            "ambient_variable_count": len(governed_env) - 2,
+            "PYTHONPATH": "src (vendored kernel; scratch-absolute per run)",
+            "RANEX_SIGNING_KEY": "keys/bench.key (scratch-absolute per run)",
+            "governed_env_sha256": hashlib.sha256(json.dumps(
+                {"variable_names": sorted(governed_env)},
+                sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        }, indent=2) + "\n")
         arms.append({"arm": arm, "gate_verdict": cycle["gate_verdict"],
                      "journal_verified": cycle["journal_verified"],
                      "runs": cycle["runs"],
@@ -343,6 +523,11 @@ def main() -> int:
     parser.add_argument("--task", required=True)
     parser.add_argument("--suite", default="v1")
     parser.add_argument("--mode", choices=("tasks", "plumbing"), default="tasks")
+    parser.add_argument("--contaminate",
+                        choices=tuple(CONTAMINATIONS), default=None,
+                        help="deliberately contaminate the bare arm through "
+                             "one channel to prove the detector catches it "
+                             "(negative control; the run must exit 3)")
     parser.add_argument("--vulcan-root", type=Path, default=DEFAULT_VULCAN)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
@@ -356,7 +541,7 @@ def main() -> int:
     if args.mode == "plumbing":
         report = mode_plumbing(task_dir, args.out)
         return 0 if report["validation"] == "PASS" else 1
-    return mode_tasks(task_dir, args.out)
+    return mode_tasks(task_dir, args.out, contaminate=args.contaminate)
 
 
 if __name__ == "__main__":

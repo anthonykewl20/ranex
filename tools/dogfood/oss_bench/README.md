@@ -34,6 +34,14 @@ test are:
   the raw `zai:` provider keeps both arms the same model.
 - Integration lessons are recorded as F-003 (vendoring pattern, evidence
   gitignore, pinned toolchain prerequisite — now satisfied).
+- BARE-ARM PURITY PROVEN (2026-09-24, #114, `audits/2026-09-24-bare-purity/`):
+  the bare arm's environment is a declared allowlist — never
+  `dict(os.environ)` — and an in-child canary measures what every bare
+  command actually receives (no `RANEX_*`, no kernel-naming `PYTHONPATH`,
+  no vendored kernel on PATH), failing the run loudly on contamination.
+  `--contaminate {pythonpath,ranex-var,vendored-path}` is the negative
+  control, caught 3/3 per channel. Every two-arm number produced before
+  this control is re-labelled UNVERIFIED in `../FINDINGS.md` (F-041).
 
 ## Pipeline (when built)
 

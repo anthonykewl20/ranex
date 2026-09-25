@@ -1,0 +1,114 @@
+{
+  "schema": "ranex-oss-bench-validation-v1",
+  "task": "py-txn-kvstore",
+  "arms": [
+    {
+      "arm": "gold",
+      "gate_verdict": "PASS",
+      "journal_verified": true,
+      "runs": [
+        {
+          "claim": "autocommit",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "rollback_value_and_absence",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "rollback_deleted_key",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "commit_keeps_changes",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "nested_commit_outer_rollback",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "nested_inner_rollback",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "rollback_reverse_order",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "commit_without_txn",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "keys_reflects_txn",
+          "exit": 0,
+          "error": ""
+        }
+      ],
+      "elapsed_s": 11.738,
+      "simulation": "gold-patch (no model) \u2014 NOT a model benchmark"
+    },
+    {
+      "arm": "empty",
+      "gate_verdict": "FAIL",
+      "journal_verified": true,
+      "runs": [
+        {
+          "claim": "autocommit",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "rollback_value_and_absence",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "rollback_deleted_key",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "commit_keeps_changes",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "nested_commit_outer_rollback",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "nested_inner_rollback",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "rollback_reverse_order",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "commit_without_txn",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "keys_reflects_txn",
+          "exit": 1,
+          "error": ""
+        }
+      ],
+      "elapsed_s": 12.196,
+      "simulation": "gold-patch (no model) \u2014 NOT a model benchmark"
+    }
+  ]
+}

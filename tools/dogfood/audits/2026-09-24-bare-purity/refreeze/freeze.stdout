@@ -1,0 +1,40 @@
+______________ test_static_worker_build_is_reproducible_and_bound ______________
+
+tmp_path = PosixPath('/tmp/ranex-subject-xnx7fyil/tmp/pytest-of-soultransit/pytest-0/test_static_worker_build_is_re0')
+
+    def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
+        static = EXPECTED_VALUES["static_worker"]
+        assert static["stdout"] == "closed-no-authority"
+        assert static["observable_output"] == "/ranex/output/result.json"
+        assert static["success_exit_code"] == 0
+        assert static["input_refusal_exit_code"] == 92
+        assert static["output_failure_exit_code"] == 95
+        manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
+        source = ROOT / static["source"]
+        assert file_digest(source) == static["source_sha256"]
+        compiler = Path(manifest["build"]["compiler"]["path"])
+        assert file_digest(compiler) == "sha256:" + manifest["build"]["compiler"]["sha256"]
+        for item in manifest["build"]["inputs"]:
+>           assert file_digest(Path(item["path"])) == "sha256:" + item["sha256"]
+E           AssertionError: assert 'sha256:a40c7...55bdee4ac9621' == 'sha256:d2a01...7456def86ff2f'
+E             
+E             - sha256:d2a01bdb5e0443c6213f96f7ed90dd13006cc6913ee1cd306de7456def86ff2f
+E             + sha256:a40c7eae7581f977b65eddb81cbc799213a695749e039d966db55bdee4ac9621
+
+tests/integration/test_approved_batch_qualification_contract.py:619: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_specification_batch_qualification.py::test_static_worker_twice_built_bytes_have_required_elf_properties
+FAILED tests/integration/test_approved_batch_qualification_contract.py::test_static_worker_build_is_reproducible_and_bound
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[final-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[intermediate-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[untracked]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dirty]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[wrong-base]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[held-object-overlap]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dynamic-elf]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[manifest-drift]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[digest-drift]
+2 failed, 2054 passed, 165 skipped, 9 errors in 364.00s (0:06:04)
+FROZEN  tests=2230  expected_skips=168  run_exit=1  output=/tmp/ranex-114-refreeze/freeze-subject/.local/ranex-114-refreeze-manifest.json
+freeze argv assembled: 355 args, 168 expected-skips
+freeze exit: 0
