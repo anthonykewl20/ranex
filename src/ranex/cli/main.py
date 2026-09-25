@@ -123,6 +123,14 @@ from ranex.governed_execution.domain.task import (
     TaskMergeIntent,
     TaskMergeOutcome,
 )
+from ranex.governed_execution.promotion_gate import (
+    PromotionDecision,
+    decision_bytes,
+    evaluate_promotion,
+    is_safe_freeze_id,
+    refused_malformed_freeze,
+    validate_base_freeze,
+)
 from ranex.governed_execution.repair_envelope import (
     envelope_from_projection,
     envelope_packet_bytes,
@@ -182,6 +190,12 @@ DEFAULT_PINS = "governance/deps.yaml"
 DEFAULT_GATE_CATALOG = "governance/gates.yaml"
 DEFAULT_SUITE_MANIFEST = "governance/suite_manifest.json"
 DEFAULT_EVIDENCE = "governance/evidence.json"
+
+# The committed calibration directory holds the BASE freeze: the durable
+# measurement instrument promotion claims are graded against (SLICE-093,
+# ADR-063). A constant path for the same reason the catalog's is: the gauge
+# a claim is judged by may not be chosen by the party being judged.
+DEFAULT_CALIBRATION_DIR = "governance/calibration"
 
 # The committed keyring's conventional path. A constant so `keygen` can tell a
 # first-time operator exactly which file to create, and say the same name the
@@ -1314,6 +1328,75 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         f"row=seq {seq} (row {ordinal} of {total})"
     )
     return EXIT_FAIL
+
+
+def _print_promotion_decision(
+    decision: PromotionDecision, args: argparse.Namespace
+) -> None:
+    """Render one decision. The canonical bytes are the contract; this text
+    is derived from the same structure and is never the only form."""
+
+    if getattr(args, "json", False):
+        sys.stdout.write(decision_bytes(decision).decode("utf-8") + "\n")
+        return
+    if decision.verdict == "ADMITTED":
+        print(
+            f"ADMITTED  claim={decision.claim_id}  freeze={decision.freeze_id}  "
+            f"axes={len(decision.axes)}  freeze_digest={decision.freeze_digest}"
+        )
+        return
+    for cause in decision.causes:
+        axis = f"  axis={cause.axis}" if cause.axis else ""
+        print(
+            f"REFUSED  claim={decision.claim_id}  cause={cause.cause}{axis}  "
+            f"{cause.detail}"
+        )
+
+
+def cmd_promotion_evaluate(args: argparse.Namespace) -> int:
+    """Judge an improvement claim against a committed BASE freeze (ADR-063).
+
+    The freeze is the gauge and the claim is the thing judged, so the two
+    are read under different disciplines. The freeze must be committed at
+    the ref being judged — the reviewed bytes, never the working tree's,
+    because an uncommitted edit to a gauge is an unreviewed rewrite of every
+    future baseline (the same seam-C pinning the gate catalog gets). The
+    claim is operator input read from disk as it stands: this command's job
+    is to judge what was claimed, and refusing to read it would refuse to
+    judge it. ADMITTED requires a cited freeze, paired marginal deltas on
+    axes that freeze names, reconciled arithmetic, a τ derived from the
+    freeze's own numbers when one appears, and an evidence receipts digest;
+    anything less is REFUSED with a named cause, and nothing is written.
+    """
+
+    try:
+        root = _command_repository(args)
+        claim_path = resolve_within_repository(root, args.claim)
+        claim: object = json.loads(claim_path.read_bytes())
+        citation = claim.get("base_freeze") if isinstance(claim, dict) else None
+        freeze: dict[str, object] | None = None
+        freeze_digest: str | None = None
+        if is_safe_freeze_id(citation):
+            named = f"{args.calibration.rstrip('/')}/{citation}.json"
+            freeze_path = resolve_within_repository(root, named)
+            source = committed_trust_root(
+                root, args.ref, named, freeze_path, "base freeze"
+            )
+            freeze_digest = "sha256:" + hashlib.sha256(source).hexdigest()
+            try:
+                freeze = validate_base_freeze(json.loads(source))
+            except ValueError as exc:
+                decision = refused_malformed_freeze(
+                    citation, freeze_digest, str(exc)
+                )
+                _print_promotion_decision(decision, args)
+                return EXIT_FAIL
+        decision = evaluate_promotion(claim, freeze, freeze_digest=freeze_digest)
+    except (ToolchainError, ValueError, OSError, json.JSONDecodeError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+    _print_promotion_decision(decision, args)
+    return EXIT_PASS if decision.verdict == "ADMITTED" else EXIT_FAIL
 
 
 def _task_committed_blob(worktree: Path, commit: str, candidate: str, description: str) -> bytes:
@@ -4865,6 +4948,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     verify.set_defaults(func=cmd_journal_verify)
+
+    promotion = sub.add_parser(
+        "promotion", help="base-freeze promotion claims"
+    ).add_subparsers(dest="action", required=True)
+    pe = promotion.add_parser(
+        "evaluate", help="judge an improvement claim against a committed base freeze"
+    )
+    pe.add_argument("--claim", required=True, help="promotion claim JSON path")
+    pe.add_argument(
+        "--calibration",
+        default=DEFAULT_CALIBRATION_DIR,
+        help="committed calibration directory holding base freezes",
+    )
+    pe.add_argument(
+        "--ref", default="HEAD", help="git ref whose committed freeze is the gauge"
+    )
+    pe.add_argument("--repository", default=".", help="repository root")
+    pe.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
+    pe.add_argument(
+        "--json",
+        action="store_true",
+        help="print the canonical decision record instead of text",
+    )
+    pe.set_defaults(func=cmd_promotion_evaluate)
 
     rn = sub.add_parser("run", help="run a command and record evidence of it")
     rn.add_argument("--claim", required=True, help="claim this evidences")
