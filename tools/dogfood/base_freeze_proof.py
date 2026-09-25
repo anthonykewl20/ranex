@@ -287,7 +287,13 @@ def derive_instrument(root: Path) -> dict[str, Any]:
                        "--", *SUITE_COMMAND)
         if again.returncode != 0:
             raise SystemExit(f"re-freeze {round_index} refused: {again.stderr[:400]}")
-        _commit(repo, f"re-freeze suite manifest (derivation {round_index})")
+        # A byte-identical re-freeze leaves nothing to commit — which is the
+        # determinism result itself — so the audit-trail commit is allowed to
+        # be empty.
+        assert _git(repo, "add", "-A").returncode == 0
+        assert _git(repo, "commit", "--allow-empty", "-qm",
+                    f"re-freeze suite manifest (derivation {round_index})"
+                    ).returncode == 0
         digests.append(manifest_digest(load_manifest(
             repo / "governance" / "suite_manifest.json"
         )))
