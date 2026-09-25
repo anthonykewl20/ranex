@@ -1,0 +1,55 @@
+[S1] S1/six/ruff: 28 findings, det=True
+[S1] S1/six/pyrefly: 81 findings, det=True
+[S1] S1/ranex/ruff: 9 findings, det=True
+[S1] S1/ranex/pyrefly: 0 findings, det=True
+[S2] S2/kgbank/ruff: 0 findings (FP if >0), det=True
+[S2] S2/kgbank/pyrefly: 0 findings (FP if >0), det=True
+[KB] l1_unused_import/ruff/six: applicable=True caught=True excess={'F401|_lab_plant_l1_unused_import.py': 2} det=True
+[KB] l1_unused_import/pyrefly/six: applicable=False caught=False excess={} det=True
+[KB] l1_unused_import/ruff/ranex: applicable=True caught=True excess={'F401|_lab_plant_l1_unused_import.py': 2} det=True
+[KB] l1_unused_import/pyrefly/ranex: applicable=False caught=False excess={} det=True
+[KB] l2_f821/ruff/six: applicable=True caught=True excess={'F821|_lab_plant_l2_f821.py': 1} det=True
+[KB] l2_f821/pyrefly/six: applicable=True caught=True excess={'unknown-name|_lab_plant_l2_f821.py': 1} det=True
+[KB] l2_f821/ruff/ranex: applicable=True caught=True excess={'F821|_lab_plant_l2_f821.py': 1} det=True
+[KB] l2_f821/pyrefly/ranex: applicable=True caught=True excess={'unknown-name|_lab_plant_l2_f821.py': 1} det=True
+[KB] l3_f541/ruff/six: applicable=True caught=True excess={'F541|_lab_plant_l3_f541.py': 1} det=True
+[KB] l3_f541/pyrefly/six: applicable=False caught=False excess={} det=True
+[KB] l3_f541/ruff/ranex: applicable=True caught=True excess={'F541|_lab_plant_l3_f541.py': 1} det=True
+[KB] l3_f541/pyrefly/ranex: applicable=False caught=False excess={} det=True
+[KB] l4_lambda_assign/ruff/six: applicable=True caught=True excess={'E731|_lab_plant_l4_lambda_assign.py': 1} det=True
+[KB] l4_lambda_assign/pyrefly/six: applicable=False caught=False excess={} det=True
+[KB] l4_lambda_assign/ruff/ranex: applicable=True caught=False excess={} det=True
+[KB] l4_lambda_assign/pyrefly/ranex: applicable=False caught=False excess={} det=True
+[KB] l5_bare_except/ruff/six: applicable=True caught=True excess={'E722|_lab_plant_l5_bare_except.py': 1} det=True
+[KB] l5_bare_except/pyrefly/six: applicable=False caught=False excess={} det=True
+[KB] l5_bare_except/ruff/ranex: applicable=True caught=False excess={} det=True
+[KB] l5_bare_except/pyrefly/ranex: applicable=False caught=False excess={} det=True
+[KB] l6_eq_none/ruff/six: applicable=True caught=True excess={'E711|_lab_plant_l6_eq_none.py': 1} det=True
+[KB] l6_eq_none/pyrefly/six: applicable=False caught=False excess={} det=True
+[KB] l6_eq_none/ruff/ranex: applicable=True caught=False excess={} det=True
+[KB] l6_eq_none/pyrefly/ranex: applicable=False caught=False excess={} det=True
+[KB] t1_wrong_arg_type/ruff/six: applicable=False caught=False excess={} det=True
+[KB] t1_wrong_arg_type/pyrefly/six: applicable=True caught=True excess={'bad-argument-type|_lab_plant_t1_wrong_arg_type.py': 1} det=True
+[KB] t1_wrong_arg_type/ruff/ranex: applicable=False caught=False excess={} det=True
+[KB] t1_wrong_arg_type/pyrefly/ranex: applicable=True caught=True excess={'bad-argument-type|_lab_plant_t1_wrong_arg_type.py': 1} det=True
+[KB] t2_undefined_name/ruff/six: applicable=True caught=True excess={'F821|_lab_plant_t2_undefined_name.py': 1} det=True
+[KB] t2_undefined_name/pyrefly/six: applicable=True caught=True excess={'unknown-name|_lab_plant_t2_undefined_name.py': 1} det=True
+[KB] t2_undefined_name/ruff/ranex: applicable=True caught=True excess={'F821|_lab_plant_t2_undefined_name.py': 1} det=True
+[KB] t2_undefined_name/pyrefly/ranex: applicable=True caught=True excess={'unknown-name|_lab_plant_t2_undefined_name.py': 1} det=True
+[KB] t3_return_type/ruff/six: applicable=False caught=False excess={} det=True
+[KB] t3_return_type/pyrefly/six: applicable=True caught=False excess={'bad-return|_lab_plant_t3_return_type.py': 1} det=True
+[KB] t3_return_type/ruff/ranex: applicable=False caught=False excess={} det=True
+[KB] t3_return_type/pyrefly/ranex: applicable=True caught=False excess={'bad-return|_lab_plant_t3_return_type.py': 1} det=True
+[KB] t4_bad_attribute/ruff/six: applicable=False caught=False excess={} det=True
+[KB] t4_bad_attribute/pyrefly/six: applicable=True caught=True excess={'missing-attribute|_lab_plant_t4_bad_attribute.py': 1} det=True
+[KB] t4_bad_attribute/ruff/ranex: applicable=False caught=False excess={} det=True
+[KB] t4_bad_attribute/pyrefly/ranex: applicable=True caught=True excess={'missing-attribute|_lab_plant_t4_bad_attribute.py': 1} det=True
+[KB] t5_wrong_arity/ruff/six: applicable=False caught=False excess={} det=True
+[KB] t5_wrong_arity/pyrefly/six: applicable=True caught=True excess={'missing-argument|_lab_plant_t5_wrong_arity.py': 1} det=True
+[KB] t5_wrong_arity/ruff/ranex: applicable=False caught=False excess={} det=True
+[KB] t5_wrong_arity/pyrefly/ranex: applicable=True caught=True excess={'missing-argument|_lab_plant_t5_wrong_arity.py': 1} det=True
+[KB] t6_incompatible_assign/ruff/six: applicable=False caught=False excess={} det=True
+[KB] t6_incompatible_assign/pyrefly/six: applicable=True caught=True excess={'bad-assignment|_lab_plant_t6_incompatible_assign.py': 1} det=True
+[KB] t6_incompatible_assign/ruff/ranex: applicable=False caught=False excess={} det=True
+[KB] t6_incompatible_assign/pyrefly/ranex: applicable=True caught=True excess={'bad-assignment|_lab_plant_t6_incompatible_assign.py': 1} det=True
+wrote /home/soultransit/.treehouse/ranex-34bbe7/7/ranex/.lab/round1-results.json
