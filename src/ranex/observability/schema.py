@@ -72,6 +72,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "run",
     "gate.evaluate",
     "journal.verify",
+    "promotion.evaluate",
     "suite.freeze",
     "deps.fetch",
     "deps.approve",

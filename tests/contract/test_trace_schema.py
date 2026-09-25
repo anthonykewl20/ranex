@@ -63,6 +63,7 @@ CLI_DISPATCH_GROUPS = (
     "run",
     "gate.evaluate",
     "journal.verify",
+    "promotion.evaluate",
     "suite.freeze",
     "deps.fetch",
     "deps.approve",
