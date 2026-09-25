@@ -65,6 +65,7 @@
  "micro_round": {
   "merge_commit": "1677b87a8",
   "composition": "three additive ADR-043 manifest fields coexist: instruction_digest (#111), handbook (ADR-062), envelope (SLICE-092)",
-  "refreeze": "FROZEN tests=2238 = main 2217 + #111 21 (strict superset), main's 168 declarations verbatim; load_manifest accepted; sealed 2062 passed, 165 skipped, run_exit=1 (documented drift residual)"
+  "refreeze": "FROZEN tests=2238 = main 2217 + #111 21 (strict superset), main's 168 declarations verbatim; load_manifest accepted; sealed 2062 passed, 165 skipped, run_exit=1 (documented drift residual)",
+  "suite": "7 failed, 2131 passed, 91 skipped, 9 errors (2238 total) \u2014 only the documented drift classes, identical IDs to all prior rounds"
  }
 }
