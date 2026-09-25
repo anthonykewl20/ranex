@@ -36,5 +36,40 @@
    "delta vs main b9b773123 manifest: +13 bare-purity IDs, 0 removed",
    "load_manifest accepted governance/suite_manifest.json after copy"
   ]
+ },
+ {
+  "argv": [
+   ".venv/bin/python",
+   "-m",
+   "ranex.cli.main",
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/suite_results.xml",
+   "--output",
+   ".local/ranex-114-refreeze-manifest.json",
+   "<168 expected-skip declarations carried verbatim from the committed manifest>",
+   "--",
+   "uv",
+   "run",
+   "pytest",
+   "-q",
+   "-o",
+   "xfail_strict=true",
+   "-p",
+   "ranex.foundation.pytest_xpass",
+   "--junitxml=governance/suite_results.xml"
+  ],
+  "cwd": "/tmp/ranex-114-refreeze/freeze-subject",
+  "subject_commit": "d813c0d88",
+  "context": "micro-round after main b7f039ba0 (#124 instruction digest); manifest conflict taken from main, never hand-merged",
+  "result": "FROZEN tests=2251 expected_skips=168 run_exit=1",
+  "red_set": "2 failed (specification-batch elf-properties, approved-batch reproducible-build) + 9 errors (slice036 selectors) \u2014 the documented pristine-base drift family; 2075 passed, the 13 bare-purity tests pass inside the materialized subject",
+  "verification": [
+   "load_manifest accepted the frozen output before transfer",
+   "delta vs main b7f039ba0 manifest: +13 bare-purity IDs, 0 removed",
+   "load_manifest accepted governance/suite_manifest.json after copy",
+   "suite-freeze golden recaptured to tests=2251 per the #124 convention"
+  ]
  }
 ]

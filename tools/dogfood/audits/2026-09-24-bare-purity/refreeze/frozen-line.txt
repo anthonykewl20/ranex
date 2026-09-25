@@ -1,1 +1,1 @@
-FROZEN  tests=2230  expected_skips=168  run_exit=1  output=/tmp/ranex-114-refreeze/freeze-subject/.local/ranex-114-refreeze-manifest.json
+FROZEN  tests=2251  expected_skips=168  run_exit=1  output=/tmp/ranex-114-refreeze/freeze-subject/.local/ranex-114-refreeze-manifest.json

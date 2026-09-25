@@ -31,14 +31,14 @@ self-test), SLICE-089 / #100 (handbook injection) and SLICE-088 / #110
 (minimization ladder = the C2 orchestrator over SLICE-092's rung
 pointers), #115, milestone 7 (#107-#109), then #102, #105, #106, #119.
 
-Suite status, measured 2026-09-25: red only in the five files of the
-standing host-glibc / reproducible-build drift family (slice036 selectors,
-approved-batch, specification-batch, gating stage_08b/slice009,
-suite-freeze goldens) — same set as the pristine base checkout; the owner
-re-pin main already records is still needed. #114 runs: plain 2074 passed
-/ 6F+13E, hermetic freeze 2054 passed / 2F+9E — all red inside that
-family; the 13 bare-purity tests pass in both. Suite manifest refreeze on
-this merged committed tree follows in this pass, load_manifest first.
+Suite status, 2026-09-25: red only in the standing host-glibc /
+reproducible-build drift family (slice036 selectors, approved-batch,
+specification-batch, gating stage_08b/slice009, suite-freeze goldens) —
+same set as the pristine base checkout; the owner re-pin main records is
+still needed. #114: plain 2074 passed / 6F+13E, hermetic freezes 2054
+and 2075 passed / 2F+9E; the 13 bare-purity tests pass every time.
+Manifest refrozen on d813c0d88: 2251 IDs (main's 2238 + 13), 168 skips
+verbatim, load_manifest first; suite-freeze golden recaptured.
 
 Parallel work and overlapping verification remain owner-authorized
 (2026-09-12); separate writer worktrees, pinned verification worktrees;
