@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import secrets
@@ -15,6 +16,7 @@ from pathlib import Path
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
+from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.signing import generate_keypair
 
 PROJECT = Path(__file__).resolve().parents[2]
@@ -163,6 +165,35 @@ printf '{{"task_id":"%s","worktree":"%s","commit":"%s"}}\\n' \\
     return path
 
 
+def _quiet_harness(path: Path) -> Path:
+    """A real shell harness that commits and emits without echoing anything."""
+
+    path.write_text(
+        """#!/usr/bin/env sh
+set -eu
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dir)
+      WORKTREE="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+printf 'quiet work\\n' > "$WORKTREE/agent.txt"
+git -C "$WORKTREE" -c user.email=harness@example.invalid -c user.name=Harness add -A
+git -C "$WORKTREE" -c user.email=harness@example.invalid -c user.name=Harness commit -q -m "quiet agent work"
+commit=$(git -C "$WORKTREE" rev-parse HEAD)
+printf '{"task_id":"%s","worktree":"%s","commit":"%s"}\\n' "$RANEX_TASK_ID" "$WORKTREE" "$commit" > "$RANEX_EMIT"
+""",
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
+    return path
+
+
 def _run_attack(
     tmp_path: Path,
     target: Path,
@@ -170,6 +201,8 @@ def _run_attack(
     planted: dict[str, str],
     *,
     redact_env: str,
+    prompt: str = "run the leaking harness",
+    task_id: str = "T-058-REDACTION",
 ) -> tuple[subprocess.CompletedProcess[str], Path]:
     outcome = tmp_path / "outcome.json"
     completed = subprocess.run(
@@ -180,7 +213,7 @@ def _run_attack(
             "task",
             "delegate",
             "--task-id",
-            "T-058-REDACTION",
+            task_id,
             "--target",
             str(target),
             "--worktree",
@@ -192,7 +225,7 @@ def _run_attack(
             "--model",
             "ranex-noop/noop",
             "--prompt",
-            "run the leaking harness",
+            prompt,
             "--timeout",
             "120",
             "--suite",
@@ -338,3 +371,55 @@ def test_delegate_refuses_invalid_forced_redaction_environment_names(tmp_path: P
     assert missing.stderr.strip() == (
         "ERROR  refusing --redact-env PLANT_MISSING_NAME: not set in the environment"
     )
+
+
+def test_delegate_redacts_prompt_borne_secret_in_instruction_stream_but_digests_what_was_handed_over(
+    tmp_path: Path,
+) -> None:
+    """A secret carried by the instruction itself (#111).
+
+    The retained instruction stream must obey the ADR-043 redaction grammar,
+    while the outcome's instruction_digest stays a digest of the unredacted
+    canonical bytes the worker actually received — the whole point of #111 is
+    that the digest names what was handed over, not what was retained.
+    """
+
+    planted = _planted_secrets()
+    target = _build_target(tmp_path)
+    harness = _quiet_harness(tmp_path / "quiet-harness.sh")
+    prompt = f"use the bearer token {planted['token']} exactly once"
+
+    completed, outcome = _run_attack(
+        tmp_path,
+        target,
+        harness,
+        planted,
+        redact_env="PLANT_ODD_NAME",
+        prompt=prompt,
+        task_id="T-111-PROMPT-SECRET",
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    sidecar = b"".join(
+        path.read_bytes()
+        for path in sorted(outcome.with_name(outcome.name + ".logs").iterdir())
+    )
+    _assert_zero_hits(_markers(planted), completed, outcome.read_bytes(), sidecar)
+
+    instruction_log = outcome.with_name(outcome.name + ".logs") / "instruction.log"
+    retained = instruction_log.read_text(encoding="utf-8")
+    assert planted["token"] not in retained
+    assert "[REDACTED:env:OPENROUTER_API_KEY]" in retained
+
+    payload = json.loads(outcome.read_bytes())
+    unredacted = canonical_json_bytes({"handbook_chapters": [], "prompt": prompt})
+    assert payload["instruction_digest"] == (
+        "sha256:" + hashlib.sha256(unredacted).hexdigest()
+    )
+    # The retained stream's own digest is a promise about the redacted bytes
+    # on disk, so it must differ from the pre-redaction instruction digest.
+    manifest = json.loads(
+        (outcome.with_name(outcome.name + ".logs") / "manifest.json").read_bytes()
+    )
+    assert manifest["instruction_digest"] == payload["instruction_digest"]
+    assert manifest["streams"]["instruction"]["sha256"] != payload["instruction_digest"]

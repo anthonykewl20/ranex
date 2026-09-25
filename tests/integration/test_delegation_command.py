@@ -40,6 +40,7 @@ from ranex.cli.main import (
     subject_digest_for,
 )
 from ranex.cli.toolchain import pinned_path_value
+from ranex.execution.retained_logs import instruction_bytes, instruction_digest
 from ranex.foundation.canonical import canonical_json_bytes, command_digest
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -2565,3 +2566,170 @@ def test_cmd_task_delegate_refuses_dispatch_record_without_worktree(tmp_path: Pa
 
     assert result == EXIT_USAGE
     assert "refusing worktree does not exist in dispatch record" in captured.err.lower()
+
+
+def test_delegate_outcome_and_log_manifest_carry_instruction_digest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-111-DIGEST"
+    )
+    monkeypatch.setattr("ranex.cli.delegation._run_suite", lambda *_a, **_k: (0, ""))
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_PASS
+    assert "DELEGATED" in captured.out
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+    expected = instruction_digest(args.prompt)
+    assert payload["instruction_digest"] == expected
+
+    log_directory = Path(args.outcome + ".logs")
+    manifest = json.loads((log_directory / "manifest.json").read_bytes())
+    assert manifest["instruction_digest"] == expected
+    retained = (log_directory / "instruction.log").read_bytes()
+    assert hashlib.sha256(retained).hexdigest() == expected.removeprefix("sha256:")
+    assert json.loads(retained) == {"handbook_chapters": [], "prompt": args.prompt}
+    assert manifest["streams"]["instruction"]["sha256"] == (
+        "sha256:" + hashlib.sha256(retained).hexdigest()
+    )
+    assert payload["logs"]["streams"]["instruction"]["file"] == "instruction.log"
+
+
+def test_delegate_instruction_digest_tracks_the_prompt_word_for_word(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed: dict[str, str] = {}
+    for task_id, prompt in (
+        ("T-111-SAME-A", "add the same button"),
+        ("T-111-SAME-B", "add the same button"),
+        ("T-111-OTHER", "add a different button"),
+    ):
+        args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+            tmp_path, monkeypatch, task_id=task_id
+        )
+        args.prompt = prompt
+        args.outcome = str(tmp_path / f"{task_id}.json")
+        monkeypatch.setattr(
+            "ranex.cli.delegation._run_suite", lambda *_a, **_k: (0, "")
+        )
+        assert cmd_task_delegate(args) == EXIT_PASS
+        observed[task_id] = json.loads(Path(args.outcome).read_text(encoding="utf-8"))[
+            "instruction_digest"
+        ]
+
+    assert observed["T-111-SAME-A"] == observed["T-111-SAME-B"]
+    assert observed["T-111-SAME-A"] != observed["T-111-OTHER"]
+    assert observed["T-111-SAME-A"] == instruction_digest("add the same button")
+
+
+def test_delegate_instruction_stream_is_redacted_while_digest_covers_unredacted_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-111-PROMPT-SECRET"
+    )
+    secret = "ranex-prompt-secret-0123456789abcdef"
+    monkeypatch.setenv("RANEX_TEST_PLANT", secret)
+    args.redact_env = ["RANEX_TEST_PLANT"]
+    args.prompt = f"use the credential {secret} and stop"
+    monkeypatch.setattr("ranex.cli.delegation._run_suite", lambda *_a, **_k: (0, ""))
+
+    assert cmd_task_delegate(args) == EXIT_PASS
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+    log_directory = Path(args.outcome + ".logs")
+
+    assert payload["instruction_digest"] == instruction_digest(args.prompt)
+    retained = (log_directory / "instruction.log").read_text(encoding="utf-8")
+    assert secret not in retained
+    assert "[REDACTED:env:RANEX_TEST_PLANT]" in retained
+    manifest = json.loads((log_directory / "manifest.json").read_bytes())
+    assert manifest["instruction_digest"] == payload["instruction_digest"]
+    # The per-stream digest stays a promise about the retained (redacted) bytes
+    # and therefore differs from the pre-redaction instruction digest.
+    assert manifest["streams"]["instruction"]["sha256"] != payload["instruction_digest"]
+    assert manifest["streams"]["instruction"]["redactions"] == {
+        "env:RANEX_TEST_PLANT": 1
+    }
+
+
+def test_delegate_instruction_stream_truncates_under_the_existing_byte_cap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-111-TRUNCATED"
+    )
+    args.prompt = "p" * 5000
+    args.log_max_bytes = 4096
+    monkeypatch.setattr("ranex.cli.delegation._run_suite", lambda *_a, **_k: (0, ""))
+
+    assert cmd_task_delegate(args) == EXIT_PASS
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+    log_directory = Path(args.outcome + ".logs")
+
+    assert payload["instruction_digest"] == instruction_digest(args.prompt)
+    retained = (log_directory / "instruction.log").read_text(encoding="utf-8")
+    assert retained.startswith("[ranex truncated: policy=tail ")
+    manifest = json.loads((log_directory / "manifest.json").read_bytes())
+    assert manifest["streams"]["instruction"]["truncated"] is True
+    assert manifest["streams"]["instruction"]["original_bytes"] == len(
+        instruction_bytes(args.prompt)
+    )
+
+
+def test_delegate_timeout_outcome_still_carries_instruction_digest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-111-TIMEOUT"
+    )
+    monkeypatch.setattr(
+        "ranex.cli.delegation._run_harness",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            _timeout_with_returncode()
+        ),
+    )
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_USAGE
+    assert "refusing to delegate: timed out" in captured.err.lower()
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+    assert payload["timed_out"] is True
+    assert payload["instruction_digest"] == instruction_digest(args.prompt)
+    log_directory = Path(args.outcome + ".logs")
+    retained = (log_directory / "instruction.log").read_bytes()
+    assert hashlib.sha256(retained).hexdigest() == payload["instruction_digest"].removeprefix(
+        "sha256:"
+    )
+
+
+def test_delegate_retention_off_still_names_the_instruction_digest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-111-LOGS-OFF"
+    )
+    args.log_retention = "off"
+    monkeypatch.setattr("ranex.cli.delegation._run_suite", lambda *_a, **_k: (0, ""))
+
+    assert cmd_task_delegate(args) == EXIT_PASS
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+
+    assert payload["instruction_digest"] == instruction_digest(args.prompt)
+    assert payload["logs"] == {
+        "version": 1,
+        "retained": False,
+        "reason": "operator-disabled",
+    }
+    assert not Path(args.outcome + ".logs").exists()
