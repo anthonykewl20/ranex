@@ -129,7 +129,11 @@ RESPONSE_LIMIT = 65_536
 # Issue #110 adds the `markers` subcommand (the deliberate-shortcut scanner as
 # an installed entry point). One subparser beside `keygen`; no confinement,
 # launcher or strict-local call site is touched. This pin is the merge of both.
-MAIN_PY_SHA256 = "20d98192497a4628f9e239f3e66d77fa554b52e685a2ebf8d6c13344233db6ca"
+# SLICE-093 adds the `promotion evaluate` subcommand (the base-freeze
+# promotion gate, ADR-063) and DEFAULT_CALIBRATION_DIR. The freeze is read
+# through the existing committed_trust_root; no confinement, launcher or
+# strict-local call site is touched.
+MAIN_PY_SHA256 = "1d5404d057387dc386b5654949d367bc969a8942a7c20eaae45cdb4cf2834798"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
