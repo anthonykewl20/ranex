@@ -1,48 +1,30 @@
 # State
 
 **Updated:** 2026-09-25
-**Active slice:** none — #111 closed on PR #124; #112/#114/#115 then task authority (#119) follow.
+**Active slice:** none — body-wire dogfood proof landed on `captain/body-wire`;
+firstmate continues P1/P2/ADP scout independently.
 
-SLICE-092 / P0 envelope (DONE, first captain-ordered promotion from the
-oracle-science program, DIRECT 004+008): the repair envelope at the read
-channel — `governed_execution/repair_envelope.py` renders the bounded
-advisory packet (failing IDs, assertion text, file:line, repro argv,
-L0/L1/L2 rung pointers) with causes composed verbatim at the ADR-019/020
-projection; `gate evaluate` publishes the unsigned `<subject>.envelope.json`
-beside the signed verdict (never evidence — offering it is refused,
-receipt-proven); the ADR-043 manifest gained the `envelope` field for
-delegate captures; `ranex task stop-hook` is the C6 attachment. Walls
-re-proven live. Receipt: audits/2026-09-25-p0-envelope/ (nine arms
-VERIFIED on pinned six@1.17.0; verdict.py/KERNEL_DIGEST unmoved).
+Body-wire live composition (shipped spine only): one dogfood driver on pinned
+six@1.17.0 wires run→Judge→journal→repair envelope→stop-hook→handbook
+neutrality→markers→probes, plus conditional observe-http as observation-only.
+Receipt: `tools/dogfood/audits/2026-09-25-body-wire/` — arms A–F and N
+VERIFIED; arm G `OBSERVED-MATCH` (never product PASS). Driver:
+`tools/dogfood/body_wire_proof.py`. Body is one organism for what is shipped;
+ADP diagnostics and HTTP→`required_claims` / gate verdict remain next organs
+(unshipped / needs ADR-061/#119) — not faked today.
 
-#111 shipped: `task delegate` records what shaped the work. Outcome and
-ADR-043 manifest carry `instruction_digest` — sha256 over the canonical
-composed instruction (the prompt with injected chapters in it) — and the
-instruction is retained as a redacted `instruction` stream under the
-unchanged ADR-043 rules; signed envelope untouched (v6 is PR-07/ADR-016).
-Evidence: 2026-09-24-issue111-instruction-digest/.
+SLICE-092 / P0 envelope (DONE): repair envelope at the read channel; stop-hook
+C6 attachment. Receipt: audits/2026-09-25-p0-envelope/.
 
-SLICE-091 / #118 (live HTTP observer), SLICE-090 / #113 (instrument
-self-test), SLICE-089 / #100 (handbook injection) and SLICE-088 / #110
-(markers) stand as recorded in their slices and audits; SLICE-085 stays
-blocked. Queue: #112 (minimization ladder = the C2 orchestrator over
-SLICE-092's shipped rung pointers), #114, #115, milestone 7 (#107-#109),
-then #102, #105, #106, #119.
+#111 shipped (instruction_digest on delegate). Queue: #112, #114, #115,
+milestone 7 (#107–#109), #102/#105/#106, #119 compose. SLICE-085 blocked.
 
-Suite status, measured 2026-09-25: red only in the five files of the
-standing host-glibc / reproducible-build drift family (slice036 selectors,
-approved-batch contract, specification-batch qualification, gating
-stage_08b/slice009, suite-freeze goldens) — the same set as the pristine
-base checkout (audits/2026-09-23-live-observer/base-failures.log); the
-owner re-pin main already records is still needed. Refreezes stay
-mechanical (IDs only, outcome-blind). host_result_dir's traversal probe
-is root-clamped (2026-09-24); its refusal fires from any checkout depth.
+Suite: host-glibc / reproducible-build drift family still red on pristine
+main (same set as audits/2026-09-23-live-observer/base-failures.log); owner
+re-pin still needed. Dogfood arms are acceptance for this wiring — do not
+claim full `pytest -q` green for those classes.
 
-Parallel work and overlapping verification remain owner-authorized
-(2026-09-12); separate writer worktrees, pinned verification worktrees;
-refreeze on a committed tree and load_manifest before committing it.
-Remaining boundaries unchanged: same-subject evidence reuse; hostile
-report producers (F-012); same-UID trusted controller; no external
-witness against an operator holding both keys. Harness mediation,
-observer scheduling, merge-group checks and production hosting stay
-UNVERIFIED or UNIMPLEMENTED as detailed in MAP.
+Parallel work remains owner-authorized (2026-09-12). Remaining boundaries:
+same-subject evidence reuse; hostile report producers (F-012); same-UID
+trusted controller; no external witness against an operator holding both
+keys.

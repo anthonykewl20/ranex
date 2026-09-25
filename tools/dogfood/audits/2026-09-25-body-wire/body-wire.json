@@ -1,0 +1,205 @@
+{
+  "controls": [
+    {
+      "control": "arm-A-core-spine",
+      "expectation": "run \u2192 gate evaluate \u2192 journal verify on pinned six; PASS \u00d73 stable; chain=verified",
+      "facts": {
+        "cycles": [
+          {
+            "evaluate_exit": 0,
+            "subject_hex": "28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677"
+          },
+          {
+            "evaluate_exit": 0,
+            "subject_hex": "28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677"
+          },
+          {
+            "evaluate_exit": 0,
+            "subject_hex": "28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677"
+          }
+        ],
+        "envelope_pass": {
+          "failures": 0,
+          "verdict": "PASS"
+        },
+        "freeze": {
+          "approved_skips": [
+            "test_six.py::test_move_items[tkinter]",
+            "test_six.py::test_move_items[tkinter_colorchooser]",
+            "test_six.py::test_move_items[tkinter_commondialog]",
+            "test_six.py::test_move_items[tkinter_constants]",
+            "test_six.py::test_move_items[tkinter_dialog]",
+            "test_six.py::test_move_items[tkinter_dnd]",
+            "test_six.py::test_move_items[tkinter_filedialog]",
+            "test_six.py::test_move_items[tkinter_font]",
+            "test_six.py::test_move_items[tkinter_messagebox]",
+            "test_six.py::test_move_items[tkinter_scrolledtext]",
+            "test_six.py::test_move_items[tkinter_simpledialog]",
+            "test_six.py::test_move_items[tkinter_tix]",
+            "test_six.py::test_move_items[tkinter_tkfiledialog]",
+            "test_six.py::test_move_items[tkinter_tksimpledialog]",
+            "test_six.py::test_move_items[tkinter_ttk]"
+          ],
+          "iterations": [
+            {
+              "evaluate_exit": 1,
+              "expected_skips": 0
+            },
+            {
+              "evaluate_exit": 0,
+              "expected_skips": 15
+            }
+          ]
+        },
+        "journal": {
+          "chain_verified": true,
+          "exit": 0,
+          "stdout_tail": "PASS  journal=/tmp/ranex-body-wire-8pp4em96/six-governed/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED"
+        }
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-D-handbook-neutrality",
+      "expectation": "ADR-062: gate evaluate on the same HEAD is identical with vs without an injected handbook (gate never reads it)",
+      "facts": {
+        "evaluate_exit_with": 0,
+        "evaluate_exit_without": 0,
+        "handbook_absent_from_evidence": true,
+        "handbook_bytes": 173,
+        "subject_hex_before": "28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677",
+        "subject_hex_with_uncommitted_handbook": "28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677",
+        "subject_unchanged": true
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-E-markers",
+      "expectation": "plant a ranex: marker; markers CLI emits SARIF; suite claim still PASS",
+      "facts": {
+        "evaluate_exit": 0,
+        "found_marker_rule": true,
+        "markers_exit": 0,
+        "sarif_results": 2
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-F-probes",
+      "expectation": "freeze-probes / check-probes integrity on the lab's committed acceptance root",
+      "facts": {
+        "check_exit": 0,
+        "freeze_exit": 0,
+        "freeze_stderr": null,
+        "manifest_digest": "sha256:2afb5a206c09d668b63abf0f5ee36b06f4e4d1a07790fcde16eb9625b0f5b190"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-C-pretooluse",
+      "expectation": "stop-hook --mode pretooluse blocks the frozen claim argv; unrelated commands approve",
+      "facts": {
+        "blocked": {
+          "decision": "block",
+          "envelope": null,
+          "read_state": "n-a",
+          "reason": "the governed gate already runs this suite and answers through the verdict read channel: stop, and let the Stop hook return verdict + repair envelope"
+        },
+        "unrelated": {
+          "decision": "approve",
+          "envelope": null,
+          "read_state": "n-a",
+          "reason": "not the governed suite argv"
+        }
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-N-envelope-not-evidence",
+      "expectation": "envelope bytes offered as signed evidence are refused",
+      "facts": {
+        "exit": 1,
+        "mentions_malformed": true
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-B-repair-loop",
+      "expectation": "FAIL envelope from real defect; stop-hook miss budget block\u00d72 then STOP; repair restores PASS",
+      "facts": {
+        "decisions": [
+          {
+            "decision": "block",
+            "envelope_verdict": "FAIL",
+            "misses": 1
+          },
+          {
+            "decision": "block",
+            "envelope_verdict": "FAIL",
+            "misses": 2
+          },
+          {
+            "decision": "approve",
+            "envelope_verdict": "FAIL",
+            "misses": 3
+          },
+          {
+            "decision": "approve",
+            "envelope_verdict": "PASS",
+            "misses": 0
+          }
+        ],
+        "envelope": {
+          "failure_id": "test_six.py::test_int2byte",
+          "verdict": "FAIL"
+        },
+        "fail_evaluate_exit": 1
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-G-live-http",
+      "expectation": "observe-http yields an OBSERVED receipt when Docker and pinned images are present; else UNVERIFIED \u2014 never product PASS",
+      "facts": {
+        "docker": {
+          "ready": true,
+          "reason": "docker + pinned images present"
+        },
+        "manifest_digest": "sha256:fdb8a55291205ea9ac8d02c0a8c0e3770b61061e0024c12291119e1c744c5807",
+        "observe_exit": 0,
+        "product_pass_claimed": false,
+        "receipt_path": "tools/dogfood/audits/2026-09-25-body-wire/http-arm/observation/receipt.json",
+        "receipt_status": "OBSERVED-MATCH"
+      },
+      "status": "OBSERVED-MATCH"
+    }
+  ],
+  "kernel_commit": "300e15d5b7bac43d52148fdc07c2a78e008ce2f8",
+  "subject": {
+    "commit": "ebd9b3af90247b8858d415a05e96e9ee61e48d07",
+    "name": "six",
+    "tag": "1.17.0"
+  },
+  "summary": {
+    "arm-A-core-spine": "VERIFIED",
+    "arm-B-repair-loop": "VERIFIED",
+    "arm-C-pretooluse": "VERIFIED",
+    "arm-D-handbook-neutrality": "VERIFIED",
+    "arm-E-markers": "VERIFIED",
+    "arm-F-probes": "VERIFIED",
+    "arm-G-live-http": "OBSERVED-MATCH",
+    "arm-N-envelope-not-evidence": "VERIFIED"
+  },
+  "truth": {
+    "http_arm_grammar": "OBSERVED-* or UNVERIFIED \u2014 never product PASS",
+    "not_wired_as_product_pass": [
+      "ADP diagnostics (unshipped)",
+      "observe-http as required_claims / gate claim (needs ADR-061/#119 compose)"
+    ],
+    "wired": [
+      "observation\u2192admission\u2192Judge\u2192journal\u2192repair envelope\u2192stop-hook\u2192handbook neutrality\u2192markers\u2192probe integrity"
+    ]
+  },
+  "version": "ranex-body-wire-v1",
+  "wall_clock_s": 31.494
+}

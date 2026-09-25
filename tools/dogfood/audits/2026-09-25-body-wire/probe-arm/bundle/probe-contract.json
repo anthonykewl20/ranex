@@ -1,0 +1,1 @@
+{"argv":["/home/soultransit/devtony/ranex-body-wire/.venv/bin/python3","acceptance/body_wire_probe.py"],"base_commit":"07573ccc8ec600d015bcf5c5d1bb1a0f7ed103d3","entries":[{"digest":"sha256:7281cecde390338d1e6f74aeb0b367c9a36ee1968c79969ac477883c45a62335","mode":"100644","path":"acceptance/body_wire_probe.py"}],"roots":["acceptance"],"version":"probe-bundle-v1"}

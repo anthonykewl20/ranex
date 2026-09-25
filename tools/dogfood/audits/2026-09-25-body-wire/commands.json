@@ -1,0 +1,120 @@
+[
+  {
+    "control": "arm-A-cycle-0",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "PASS  gate=landing  subject=sha256:28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-A-cycle-1",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "PASS  gate=landing  subject=sha256:28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-A-cycle-2",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "PASS  gate=landing  subject=sha256:28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-A-journal",
+    "argv": [
+      "journal",
+      "verify"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "PASS  journal=/tmp/ranex-body-wire-8pp4em96/six-governed/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-D-with-handbook",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "PASS  gate=landing  subject=sha256:28be9eb2f9d3b2dafb3883f2a71c2f41bb4b52aca308f4d9c475b95f07f36677",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-E-markers",
+    "argv": [
+      "markers"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-E-evaluate",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "PASS  gate=landing  subject=sha256:648c4ce68f8df5d91373435a54c3c8fa5d02e5638a13b5ecd5ad88f2a1517d7f",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-F-freeze",
+    "argv": [
+      "freeze-probes"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "{\"a_digest\":\"sha256:efa62255ed535af0275f5d50f11c1f89b6206e156b6f0ad7ad9c9ff8676819eb\",\"base_commit\":\"07573ccc8ec600d015bcf5c5d1bb1a0f7ed103d3\",\"command_digest\":\"sha256:73655fbcf9719229905c5bf308e927ad8a8c921e55c18bf53e23c2e9079e2aee\",\"files\":1,\"manifest_digest\":\"sha256:2afb5a206c09d668b63abf0f5ee36b06f4e4d1a07790fcde16eb9625b0f5b190\",\"status\":\"FROZEN\"}",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-F-check",
+    "argv": [
+      "check-probes"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 0,
+    "stdout_tail": "{\"candidate_commit\":\"07573ccc8ec600d015bcf5c5d1bb1a0f7ed103d3\",\"command_digest\":\"sha256:73655fbcf9719229905c5bf308e927ad8a8c921e55c18bf53e23c2e9079e2aee\",\"files\":1,\"manifest_digest\":\"sha256:2afb5a206c09d668b63abf0f5ee36b06f4e4d1a07790fcde16eb9625b0f5b190\",\"status\":\"PROBES-UNCHANGED\"}",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-B-fail",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 1,
+    "stdout_tail": "FAIL  gate=landing  rule=TESTS\n      tests-executed: blocking suite outcome(s): test_six.py::test_int2byte (failed)\n      subject=sha256:850a9edc22852e59d80332b068a375d915a6e40366408eccfc9ab743cb00b876",
+    "stderr_tail": ""
+  },
+  {
+    "control": "arm-N-refuse",
+    "argv": [
+      "gate",
+      "evaluate"
+    ],
+    "cwd": "/tmp/ranex-body-wire-8pp4em96/six-governed",
+    "exit": 1,
+    "stdout_tail": "FAIL  gate=landing  rule=TESTS\n      REFUSED record 0 [malformed-record] suite_results must contain exactly ['counts', 'extra_count', 'manifest_digest', 'missing', 'non_passed', 'outcome_digest']\n      1 record(s) were refused above; no verifying evidence remains for: tests-executed\n      subject=sha256:850a9edc22852e59d80332b068a375d915a6e40366408eccfc9ab743cb00b876",
+    "stderr_tail": ""
+  }
+]
