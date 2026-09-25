@@ -1,0 +1,40 @@
+[
+ {
+  "argv": [
+   ".venv/bin/python",
+   "-m",
+   "ranex.cli.main",
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/suite_results.xml",
+   "--output",
+   ".local/ranex-114-refreeze-manifest.json",
+   "<168 expected-skip declarations carried verbatim from the committed manifest>",
+   "--",
+   "uv",
+   "run",
+   "pytest",
+   "-q",
+   "-o",
+   "xfail_strict=true",
+   "-p",
+   "ranex.foundation.pytest_xpass",
+   "--junitxml=governance/suite_results.xml"
+  ],
+  "cwd": "/tmp/ranex-114-refreeze/freeze-subject",
+  "subject_commit": "eaad5fe46",
+  "prereq": [
+   "uv sync --frozen",
+   "ranex deps fetch --store /tmp/ranex-114-refreeze/wheel-store (29 packages, depset sha256:8ea09328...)",
+   "ranex deps approve --approver ranex-114-refreeze"
+  ],
+  "result": "FROZEN tests=2230 expected_skips=168 run_exit=1",
+  "red_set": "2 failed (specification-batch elf-properties, approved-batch reproducible-build) + 9 errors (slice036 selectors) \u2014 the documented pristine-base drift family; the 13 bare-purity tests pass inside the materialized subject",
+  "verification": [
+   "load_manifest accepted the frozen output before transfer",
+   "delta vs main b9b773123 manifest: +13 bare-purity IDs, 0 removed",
+   "load_manifest accepted governance/suite_manifest.json after copy"
+  ]
+ }
+]

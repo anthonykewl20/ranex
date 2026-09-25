@@ -1,0 +1,6 @@
+# first freeze (merge commit 4b36f9c4a) caught the hermetic RANEX_PY dependence:
+FAILED tests/contract/test_bare_arm_purity.py::test_run_bare_arm_records_the_probe_and_passes_clean
+FAILED tests/contract/test_bare_arm_purity.py::test_mode_tasks_contaminated_flavors_exit_loudly_without_results
+# second freeze (fix commit eaad5fe46) — those tests pass:
+2 failed, 2054 passed, 165 skipped, 9 errors in 364.00s (0:06:04)
+FROZEN  tests=2230  expected_skips=168  run_exit=1  output=/tmp/ranex-114-refreeze/freeze-subject/.local/ranex-114-refreeze-manifest.json

@@ -31,9 +31,11 @@ contract, specification-batch qualification, gating stage_08b/slice009,
 suite-freeze goldens) is red on a pristine base checkout too — the owner
 re-pin main already records is still needed. On the pre-merge #114 tree:
 2074 passed / 90 skipped / 6 failed + 13 errors, every red inside that
-documented family; the 13 new bare-purity tests pass. Suite manifest
-refreeze to 2217+13 IDs on the merged committed tree follows in this pass,
-load_manifest before commit.
+documented family. Suite manifest refrozen on the merged committed tree
+(eaad5fe46): 2230 IDs (main's 2217 + the 13 bare-purity tests, nothing
+removed), 168 expected-skips carried verbatim, hermetic run_exit=1 with
+only the documented drift family red, load_manifest accepted before
+commit (evidence: audits/2026-09-24-bare-purity/refreeze/).
 
 Parallel work and overlapping verification are owner-authorized
 (2026-09-12): use separate writer worktrees and pinned verification
