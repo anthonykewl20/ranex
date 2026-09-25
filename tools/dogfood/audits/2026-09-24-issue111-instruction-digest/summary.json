@@ -61,5 +61,10 @@
   "refreeze": "FROZEN tests=2203 = main 2182 + #111 21 (strict superset); expected-skip declarations carried verbatim from main's manifest (an intermediate freeze with the branch's older 45 reason wordings was discarded and re-run); load_manifest accepted; golden recaptured at main's honest run_exit=1 convention",
   "sealed": "2 failed, 2027 passed, 165 skipped, 9 errors \u2014 documented drift residual",
   "suite": "7 failed, 2096 passed, 91 skipped, 9 errors (2203 total) \u2014 only the documented drift classes, identical IDs to the prior rounds"
+ },
+ "micro_round": {
+  "merge_commit": "1677b87a8",
+  "composition": "three additive ADR-043 manifest fields coexist: instruction_digest (#111), handbook (ADR-062), envelope (SLICE-092)",
+  "refreeze": "FROZEN tests=2238 = main 2217 + #111 21 (strict superset), main's 168 declarations verbatim; load_manifest accepted; sealed 2062 passed, 165 skipped, run_exit=1 (documented drift residual)"
  }
 }
