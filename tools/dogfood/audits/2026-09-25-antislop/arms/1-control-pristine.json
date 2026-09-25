@@ -1,0 +1,75 @@
+{
+ "arm": "1-control-pristine",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:5391c7d1ccebba145d1fa2eb5e8a5e87d2e0e2b6cb9f22b79f4619c24920c622"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:5391c7d1ccebba145d1fa2eb5e8a5e87d2e0e2b6cb9f22b79f4619c24920c622"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:5391c7d1ccebba145d1fa2eb5e8a5e87d2e0e2b6cb9f22b79f4619c24920c622"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "PASS"
+  }
+ ],
+ "edits": {},
+ "expect_pass": true,
+ "frozen_scope": [
+  "test_six.py"
+ ],
+ "frozen_test_count": 75,
+ "identical": true,
+ "print_exceptions_frozen_count": 3,
+ "reached_pass": true,
+ "status": "as-expected"
+}

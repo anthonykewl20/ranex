@@ -244,6 +244,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
+- [SLICE-093 — The antislop claim: a test-integrity census](docs/slices/done/SLICE-093-antislop-claim.md): `ranex antislop` censuses per-test effective-assert counts and greps the slop shapes (tautology, pass-body, snapshot-blind-update, input-range-narrowing) into SARIF; the `antislop-sarif-2.1.0` claim reduces them against frozen per-test expectations, and a census that went quiet is `missing`, which blocks. ADR-063.
+
 - [SLICE-092 — Repair envelope at the read channel](docs/slices/done/SLICE-092-repair-envelope-read-channel.md): a FAIL now carries a bounded advisory packet (failing IDs, assertion text, file:line, repro argv, L0/L1/L2 rung pointers) beside the signed verdict; `task stop-hook` runs the governed cycle observer-side and gates an autonomous 3-miss loop. Envelope bytes are never evidence.
 
 - [SLICE-091 — Calibrated live HTTP observer](docs/slices/done/SLICE-091-calibrated-live-http-observer.md): `observe-http` runs frozen PostgREST/PostgreSQL journeys on exact Git candidates with known-bad calibration; observations, not verdicts.

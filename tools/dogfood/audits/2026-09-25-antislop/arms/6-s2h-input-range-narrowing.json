@@ -1,0 +1,116 @@
+{
+ "arm": "6-s2h-input-range-narrowing",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-input-range-narrowing::30e63e2283aca2c8ae51cec78765ca8730a27b3d42fd02e72116666307e7dad5",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-input-range-narrowing::4c0081276c52190adf2226c98b5d5172b4253d027374fe0fffad1091ef2f5b7c",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:614bab18114ea3aea08ac9f94030abb855a6ba8c7180574e8e3e33c7184afdff",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-input-range-narrowing::30e63e2283aca2c8ae51cec78765ca8730a27b3d42fd02e72116666307e7dad5",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-input-range-narrowing::4c0081276c52190adf2226c98b5d5172b4253d027374fe0fffad1091ef2f5b7c",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:614bab18114ea3aea08ac9f94030abb855a6ba8c7180574e8e3e33c7184afdff",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 3,
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-input-range-narrowing::30e63e2283aca2c8ae51cec78765ca8730a27b3d42fd02e72116666307e7dad5",
+     "failed"
+    ],
+    [
+     "test_six.py::ranex/antislop-input-range-narrowing::4c0081276c52190adf2226c98b5d5172b4253d027374fe0fffad1091ef2f5b7c",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:614bab18114ea3aea08ac9f94030abb855a6ba8c7180574e8e3e33c7184afdff",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   ""
+  ]
+ },
+ "expect_pass": false,
+ "identical": true,
+ "reached_pass": false,
+ "status": "as-expected"
+}

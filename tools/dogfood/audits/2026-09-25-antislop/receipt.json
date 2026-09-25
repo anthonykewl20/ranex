@@ -1,0 +1,46 @@
+{
+ "arm_statuses": {
+  "1-control-pristine": "as-expected",
+  "10-freeze-refuses-slop": "as-expected",
+  "2-s1a-body-removed": "as-expected",
+  "3-s1b-tautology": "as-expected",
+  "4-s1c-assert-commented": "as-expected",
+  "5-s2g-snapshot-blind-update": "as-expected",
+  "6-s2h-input-range-narrowing": "as-expected",
+  "7-kg-blankline-six": "as-expected",
+  "7-kg-comment-import": "as-expected",
+  "7-kg-comment-six": "as-expected",
+  "7-kg-comment-test": "as-expected",
+  "7-kg-docstring-six": "as-expected",
+  "7-kg-whitespace-test": "as-expected",
+  "8-test-deleted": "as-expected",
+  "9-manifest-tamper": "as-expected"
+ },
+ "host": {
+  "node": "desk-tony",
+  "python": "3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "issue": "DIRECT 004/009 \u2014 P2 C3 anti-slop (SLICE proposal B)",
+ "kernel_commit": "b7f039ba025fe0199ad38d8e39e259ea66c9e2cf",
+ "limitations": [
+  "Census counts ride in SARIF message text, which the #97 fingerprint deliberately does not bind: a producer forging counts has forged the artifact (F-012 standing limit), while a test quietly dropped from observation is a miss and blocks",
+  "Input-range narrowing is caught only in its named shapes (max_examples below the floor; a point integers range); narrowing that keeps those shapes and its assert count is invisible here",
+  "Snapshot-blind updating is caught as the update flag/kwarg shapes, not as any possible snapshot workflow"
+ ],
+ "overall": "VERIFIED",
+ "protocol": "#95 \u2014 real subprocesses, no mocks, 3x repeats, VERIFIED/GAP/FALSE-PASS/NON-DETERMINISTIC/UNVERIFIED",
+ "scanner": "ranex antislop (installed kernel entry point)",
+ "scanner_argv": [
+  "/home/soultransit/.treehouse/ranex-34bbe7/4/ranex/.venv/bin/ranex",
+  "antislop",
+  "--output-format=sarif",
+  "--output-file=governance/antislop/scan.sarif"
+ ],
+ "subject": {
+  "rev": "c8e394065cd541a16c040515dc0afb85cf22a7c3",
+  "url": "https://github.com/benjaminp/six"
+ },
+ "wall_s": 52.5
+}
