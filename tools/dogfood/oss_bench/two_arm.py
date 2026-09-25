@@ -149,9 +149,16 @@ def probe_bare_environment(env: dict[str, str], cwd: Path,
                            python: str | None = None) -> dict[str, str]:
     """Measure the bare child's actual environment via an in-child canary."""
 
-    result = subprocess.run(
-        [python or str(RANEX_PY), "-c", BARE_CANARY], cwd=str(cwd), env=env,
-        capture_output=True, text=True, check=False, timeout=60)
+    try:
+        result = subprocess.run(
+            [python or str(RANEX_PY), "-c", BARE_CANARY], cwd=str(cwd),
+            env=env, capture_output=True, text=True, check=False, timeout=60)
+    except OSError as error:
+        # A canary that cannot even launch is an unmeasurable bare arm —
+        # refuse loudly rather than fall back to the intended environment.
+        raise BareArmContaminated([
+            f"canary interpreter could not be launched "
+            f"({python or RANEX_PY}): {error}"]) from error
     if result.returncode != 0:
         raise BareArmContaminated([
             f"canary could not run in the bare child (exit "

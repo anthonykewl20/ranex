@@ -59,6 +59,21 @@ def _fake_task(tmp_path: Path) -> Path:
     return task
 
 
+@pytest.fixture
+def two_arm_hermetic(monkeypatch: pytest.MonkeyPatch) -> types.ModuleType:
+    """two_arm with RANEX_PY at THIS interpreter.
+
+    A hermetically materialized subject carries no .venv beside its tools/
+    tree, so the module default (repo-root venv python) does not exist there
+    and every canary/command launch would fail for the wrong reason. The
+    production driver always runs from a synced checkout; the suite pins the
+    behaviour, not the host's directory layout.
+    """
+    two_arm = _two_arm()
+    monkeypatch.setattr(two_arm, "RANEX_PY", Path(sys.executable))
+    return two_arm
+
+
 # --- the allowlist ------------------------------------------------------------
 
 
@@ -169,8 +184,8 @@ def test_assert_bare_environment_fails_loudly_on_contamination(
 
 
 def test_run_bare_arm_records_the_probe_and_passes_clean(
-        tmp_path: Path) -> None:
-    two_arm = _two_arm()
+        tmp_path: Path, two_arm_hermetic: types.ModuleType) -> None:
+    two_arm = two_arm_hermetic
     task = _fake_task(tmp_path)
     entries = [{"name": "t1", "cmd": "python -c pass"}]
     ground = two_arm.run_bare_arm(task, entries, env=two_arm.bare_environment(),
@@ -198,8 +213,9 @@ def test_run_bare_arm_refuses_to_run_contaminated(tmp_path: Path) -> None:
 
 
 def test_mode_tasks_contaminated_flavors_exit_loudly_without_results(
-        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    two_arm = _two_arm()
+        tmp_path: Path, capsys: pytest.CaptureFixture[str],
+        two_arm_hermetic: types.ModuleType) -> None:
+    two_arm = two_arm_hermetic
     task = _fake_task(tmp_path)
     out = tmp_path / "out"
     out.mkdir()
