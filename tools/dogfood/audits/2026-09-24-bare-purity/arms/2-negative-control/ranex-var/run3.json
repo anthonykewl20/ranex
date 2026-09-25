@@ -1,0 +1,6 @@
+{
+ "argv_flavor": "ranex-var",
+ "exit": 3,
+ "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 RANEX_* variable present: RANEX_SIGNING_KEY\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.",
+ "ground_truth_written": false
+}

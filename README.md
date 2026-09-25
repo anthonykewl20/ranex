@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — #111 closed on PR #124; #112/#114/#115 then task authority (#119) follow the milestone-8 queue.
+**Active slice:** none — P2 antislop on PR #129; #114 merged; P1 BASE on PR #130.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -244,7 +244,7 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
-- [SLICE-093 — The antislop claim: a test-integrity census](docs/slices/done/SLICE-093-antislop-claim.md): `ranex antislop` censuses per-test effective-assert counts and greps the slop shapes (tautology, pass-body, snapshot-blind-update, input-range-narrowing) into SARIF; the `antislop-sarif-2.1.0` claim reduces them against frozen per-test expectations, and a census that went quiet is `missing`, which blocks. ADR-063.
+- [SLICE-093 — Bare-arm purity](docs/slices/done/SLICE-093-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
 
 - [SLICE-092 — Repair envelope at the read channel](docs/slices/done/SLICE-092-repair-envelope-read-channel.md): a FAIL now carries a bounded advisory packet (failing IDs, assertion text, file:line, repro argv, L0/L1/L2 rung pointers) beside the signed verdict; `task stop-hook` runs the governed cycle observer-side and gates an autonomous 3-miss loop. Envelope bytes are never evidence.
 
