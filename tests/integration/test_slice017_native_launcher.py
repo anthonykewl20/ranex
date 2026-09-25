@@ -129,7 +129,7 @@ RESPONSE_LIMIT = 65_536
 # Issue #110 adds the `markers` subcommand (the deliberate-shortcut scanner as
 # an installed entry point). One subparser beside `keygen`; no confinement,
 # launcher or strict-local call site is touched. This pin is the merge of both.
-MAIN_PY_SHA256 = "0527f093aa5cd0b4e2ad756f01653ef7c8588dcf68855a9370e3a014ae4a6e60"
+MAIN_PY_SHA256 = "20d98192497a4628f9e239f3e66d77fa554b52e685a2ebf8d6c13344233db6ca"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

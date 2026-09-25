@@ -775,3 +775,46 @@ additions, deletions, executable-mode changes, bundle substitutions, invocation
 changes and known projection placeholders refuse. Product changes outside the
 selected roots are permitted. Do not obtain the expected digest from a mutable
 candidate-supplied manifest and treat that circular check as independent approval.
+
+## Calibrated HTTP observer (PostgREST profile)
+
+Freeze `acceptance/http.json` using the executable-bundle commands above and
+literal invocation `["ranex","specification","observe-http","--profile","acceptance/http.json"]`.
+The closed `postgrest-http-v1` profile contains `postgres_image` and `api_image`
+(local `sha256:` image IDs), candidate `schema` path, `timeout_seconds` (1–60),
+`max_body_bytes` (1–1048576), `repetitions` (1–5), `steps`, `controls`, and
+`observer_digest` (`sha256:` of the installed `ranex/cli/http_observer.py`).
+Changing the observer implementation requires a new freeze of that profile.
+
+An HTTP step has `id`, `request` (`method`, `path`, `role`, `body`), `expect`
+(list of `{path: [selector components], equals: value}`), and `capture`
+(variable names mapped to response selectors). The response has `status` and
+`json`. Captured scalar values from earlier requests can fill `{name}` in URLs
+or `{"var":"name"}` in JSON values. An HTTP step always requires assertions.
+A process step has `id` and `control`: `restart-app`, `stop-db` or `start-db`.
+A mutation control has `id`, distinct nonempty SQL `old`/`new` strings and
+`fails`, the exact HTTP step that must reject that mutated product. The old
+string must occur exactly once. A crash does not qualify a mutation control.
+
+The initial profile expects candidate SQL to create schema `api`, roles
+`authenticator`, `alice`, `bob`, `anon`, and authenticator password
+`experiment-api`. These are ephemeral test credentials. Images must already be
+installed. The Linux controller uses `/usr/bin/docker` and the local daemon
+socket; no daemon socket or host candidate code is mounted in the application.
+Readiness uses the final PostgreSQL TCP listener, not its temporary init server.
+
+```
+uv run --frozen ranex specification observe-http \
+  --external-repository /absolute/product \
+  --bundle /absolute/frozen-bundle --manifest-digest sha256:INDEPENDENT_PIN \
+  --profile acceptance/http.json --output /absolute/new-observations
+
+RANEX_LIVE_HTTP_EXPERIMENT=1 uv run --frozen pytest -q \
+  tests/integration/test_http_observer_cli.py
+```
+
+`OBSERVED-MATCH` (exit 0) requires all baseline and named calibration runs;
+`OBSERVED-MISMATCH` (exit 1) names the actual failed baseline assertion.
+Execution errors and calibration failures exit 2. Receipts and per-trial raw
+commands/responses remain under the external output directory. These are live
+observations, not approval, an admitted kernel verdict, or permission to merge.

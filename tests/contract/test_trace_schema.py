@@ -74,6 +74,7 @@ CLI_DISPATCH_GROUPS = (
     "task.delegate",
     "task.fanout",
     "task.batch.qualify",
+    "task.stop-hook",
     "specification",
     "host.launcher-build",
     "host.launcher-install",
@@ -89,7 +90,7 @@ CLI_DISPATCH_GROUPS = (
     "github.ruleset",
 )
 
-SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes")
+SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
 
 EXPECTED_STAGES = (
     {

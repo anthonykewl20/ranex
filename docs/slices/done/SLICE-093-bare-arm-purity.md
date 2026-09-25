@@ -1,4 +1,4 @@
-# SLICE-091 — Bare-arm purity: the two-arm benchmark's bare arm is provably bare
+# SLICE-093 — Bare-arm purity: the two-arm benchmark's bare arm is provably bare
 
 **Status:** done
 **Issue:** #114

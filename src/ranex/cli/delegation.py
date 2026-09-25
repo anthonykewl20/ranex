@@ -24,6 +24,7 @@ from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
     decode_stream,
     log_dir_for_outcome,
+    persist_envelope,
     persist_stream,
     validate_max_bytes,
     write_log_manifest,
@@ -31,7 +32,16 @@ from ranex.execution.retained_logs import (
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.scan_results import SCAN_REPORTERS
-from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
+from ranex.foundation.suite_results import (
+    JUNIT_REPORTERS,
+    load_manifest_bytes,
+    read_results_artifact,
+    suite_results_from_junitxml,
+)
+from ranex.governed_execution.repair_envelope import (
+    envelope_from_suite,
+    envelope_packet_bytes,
+)
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
     load_gate_text,
     reject_pytest_xfail_blindness,
@@ -192,12 +202,23 @@ def _run_suite_with_results(
     results_reporter: str = "pytest-junit",
     manifest: dict[str, object],
     streams: dict[str, str] | None = None,
-) -> tuple[int, str, dict[str, object]]:
-    """Run against the candidate, reading results before materialisation teardown."""
+    redaction_literals: Sequence[tuple[str, str]] = (),
+) -> tuple[int, str, dict[str, object], dict[str, object]]:
+    """Run against the candidate, reading results before materialisation teardown.
+
+    SLICE-092 (C1): the run's junit is retained one seam longer than the
+    materialisation — read inside it, before teardown — and rendered into
+    the repair envelope beside the closed summary. The delegate judges
+    nothing, so the packet carries suite detail only (no verdict, no
+    causes). Failure fields are redacted with the same literals as the
+    retained streams, because junit assertion text is exactly the kind of
+    free-form text a secret can leak into.
+    """
 
     command = shlex.split(suite)
     if not command:
         raise ValueError("refusing suite command: no arguments")
+    junit_bytes: bytes | None = None
     with materialise_subject(worktree, commit, git) as materialisation:
         environment = {
             "PATH": pinned_path_value(),
@@ -223,19 +244,28 @@ def _run_suite_with_results(
             capture_output=True,
             text=True,
         )
-        suite_results = parse_results_artifact(
-            materialisation.tree / results_artifact,
+        junit_bytes = read_results_artifact(materialisation.tree / results_artifact)
+        suite_results = suite_results_from_junitxml(
+            junit_bytes,
             manifest,
             reporter=results_reporter,
             require_pytest_observer=True,
         )
+    envelope = envelope_from_suite(
+        repro_argv=suite,
+        junit_bytes=junit_bytes if results_reporter in JUNIT_REPORTERS else None,
+        reporter=results_reporter,
+    )
+    for failure in envelope["failures"]:  # type: ignore[index]
+        for field in ("id", "assertion", "at"):
+            failure[field] = redact_text(failure[field], redaction_literals)[0]
     stdout = completed.stdout or ""
     stderr = completed.stderr or ""
     if streams is not None:
         streams["stdout"] = stdout
         streams["stderr"] = stderr
     combined = f"{stdout}{stderr}"
-    return completed.returncode, _tail_output(combined), suite_results
+    return completed.returncode, _tail_output(combined), suite_results, envelope
 
 
 def _retained_logs(
@@ -247,6 +277,7 @@ def _retained_logs(
     literals: list[tuple[str, str]],
     max_bytes: int,
     handbook: Mapping[str, object] | None = None,
+    envelope: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     if retention == "off":
         return {"version": 1, "retained": False, "reason": "operator-disabled"}
@@ -266,12 +297,15 @@ def _retained_logs(
             "suite.stderr",
         )
     }
+    envelope_record = (
+        None if envelope is None else persist_envelope(directory, envelope_packet_bytes(envelope))
+    )
     policy = {
         "max_bytes_per_stream": max_bytes,
         "retention": retention,
         "redaction": "value+structure-v1",
     }
-    write_log_manifest(directory, streams, policy, handbook=handbook)
+    write_log_manifest(directory, streams, policy, handbook=handbook, envelope=envelope_record)
     return {
         "version": 1,
         "dir": os.path.relpath(directory, outcome_path.parent),
@@ -640,6 +674,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             raise ValueError("refusing emitted tree matches base tree; there is no subject to judge")
 
         suite_results: dict[str, object] | None = None
+        repair_envelope: dict[str, object] | None = None
         suite_streams = {"stdout": "", "stderr": ""}
         gate_catalog = getattr(args, "gate_catalog", None)
         catalog_source = (
@@ -713,7 +748,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                     f"refusing suite: dispatch base carries no manifest at {suite_manifest}"
                 )
             manifest = load_manifest_bytes(manifest_source)
-            suite_exit, _suite_output_tail, suite_results = _run_suite_with_results(
+            suite_exit, _suite_output_tail, suite_results, repair_envelope = _run_suite_with_results(
                 worktree=recorded_worktree,
                 commit=commit,
                 suite=args.suite,
@@ -721,6 +756,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 results_reporter=getattr(selected_claim, "results_reporter", "pytest-junit"),
                 manifest=manifest,
                 streams=suite_streams,
+                redaction_literals=list(literals),
             )
         else:
             suite_exit, _suite_output_tail = _run_suite(
@@ -755,6 +791,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             literals=literals,
             max_bytes=max_bytes,
             handbook=handbook_record,
+            envelope=repair_envelope,
         )
         _write_outcome(
             outcome_path,

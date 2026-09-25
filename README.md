@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — live observer is next under ADR-061.
+**Active slice:** none — #111 (instruction digest) is next; task authority (#119) under ADR-061 follows the milestone-8 queue.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -244,7 +244,11 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
-- [SLICE-091 — Bare-arm purity](docs/slices/done/SLICE-091-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
+- [SLICE-093 — Bare-arm purity](docs/slices/done/SLICE-093-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
+
+- [SLICE-092 — Repair envelope at the read channel](docs/slices/done/SLICE-092-repair-envelope-read-channel.md): a FAIL now carries a bounded advisory packet (failing IDs, assertion text, file:line, repro argv, L0/L1/L2 rung pointers) beside the signed verdict; `task stop-hook` runs the governed cycle observer-side and gates an autonomous 3-miss loop. Envelope bytes are never evidence.
+
+- [SLICE-091 — Calibrated live HTTP observer](docs/slices/done/SLICE-091-calibrated-live-http-observer.md): `observe-http` runs frozen PostgREST/PostgreSQL journeys on exact Git candidates with known-bad calibration; observations, not verdicts.
 
 - [SLICE-090 — Instrument self-test](docs/slices/done/SLICE-090-instrument-selftest.md): every dogfood gauge proves itself on a committed good/bad reference pair before any measurement; a measurement receipt cannot exist without a passing self-test in the same run.
 

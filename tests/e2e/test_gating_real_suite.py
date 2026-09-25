@@ -88,15 +88,13 @@ def pinned_resolver() -> Path | None:
 
 
 def network_available() -> bool:
-    probe = socket.socket()
-    probe.settimeout(3)
+    # Try every resolved address. A single unreachable CDN address is not
+    # evidence that the index is offline (measured on 2026-09-12).
     try:
-        probe.connect(("pypi.org", 443))
+        with socket.create_connection(("pypi.org", 443), timeout=3):
+            return True
     except OSError:
         return False
-    finally:
-        probe.close()
-    return True
 
 
 def nested_hermetic_self_gate() -> bool:

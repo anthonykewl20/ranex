@@ -182,10 +182,12 @@ def _outcome(testcase: ET.Element) -> str:
     return "skipped"
 
 
-def _outcomes(
-    junitxml_bytes: bytes, reporter: str = "pytest-junit", *,
-    require_pytest_observer: bool = False,
-) -> dict[str, str]:
+def _parse_junit(
+    junitxml_bytes: bytes, reporter: str, *,
+    require_pytest_observer: bool,
+) -> ET.Element:
+    """Decode and parse one junitxml under the guards every reader shares."""
+
     if not isinstance(reporter, str) or reporter not in JUNIT_REPORTERS:
         raise ValueError("unsupported JUnit reporter")
     if not isinstance(junitxml_bytes, bytes):
@@ -223,7 +225,16 @@ def _outcomes(
             for suite in suites
         ):
             raise ValueError("E-PYTEST-OBSERVER-ABSENT: JUnit lacks the controller reporter")
+    return root
 
+
+def _outcomes(
+    junitxml_bytes: bytes, reporter: str = "pytest-junit", *,
+    require_pytest_observer: bool = False,
+) -> dict[str, str]:
+    root = _parse_junit(
+        junitxml_bytes, reporter, require_pytest_observer=require_pytest_observer
+    )
     outcomes: dict[str, str] = {}
     for testcase in root.iter():
         if testcase.tag.rsplit("}", 1)[-1] != "testcase":
@@ -233,6 +244,67 @@ def _outcomes(
             raise ValueError(f"duplicate test ID in junitxml: {test_id}")
         outcomes[test_id] = _outcome(testcase)
     return dict(sorted(outcomes.items()))
+
+
+#: The last `path.py:line:` frame reference in a failure's own text is the
+#: location pytest actually reported. One regex, applied to the text tail,
+#: keeps the extraction beside the parser that already owns test identity.
+_LOCATION_LINE = re.compile(r"^(\S+\.py):(\d+):", re.MULTILINE)
+
+
+def failure_locations(
+    junitxml_bytes: bytes,
+    *,
+    reporter: str = "pytest-junit",
+    require_pytest_observer: bool = False,
+) -> dict[str, object]:
+    """Extract per-test repair detail a closed suite summary cannot carry.
+
+    SLICE-092 (C1). The frozen summary ends at counts and non-passed IDs;
+    this returns, for every ``failed``/``error`` test, its ID, its
+    assertion message, and the ``file:line`` of the last frame pytest
+    reported — the detail an agent needs to act without re-reading the
+    whole artifact. One parser, one identity derivation (``_test_id``),
+    the same refusals as every other junit reader here; skipped and
+    xfailed entries are counted but carry no entry, because a skip is not
+    a thing to repair and pretending one has a location would invent one.
+    """
+
+    root = _parse_junit(
+        junitxml_bytes, reporter, require_pytest_observer=require_pytest_observer
+    )
+    failures: dict[str, dict[str, str]] = {}
+    non_passed = 0
+    for testcase in root.iter():
+        if testcase.tag.rsplit("}", 1)[-1] != "testcase":
+            continue
+        test_id = _test_id(testcase, reporter)
+        if test_id in failures:
+            raise ValueError(f"duplicate test ID in junitxml: {test_id}")
+        outcome = _outcome(testcase)
+        if outcome != "passed":
+            non_passed += 1
+        if outcome not in {"failed", "error"}:
+            continue
+        child = next(
+            (
+                node
+                for node in testcase
+                if node.tag.rsplit("}", 1)[-1] in {"failure", "error"}
+            ),
+            None,
+        )
+        assertion = "" if child is None else (child.get("message") or "")
+        at = ""
+        if child is not None and child.text:
+            located = _LOCATION_LINE.findall(child.text)
+            if located:
+                at = f"{located[-1][0]}:{located[-1][1]}"
+        failures[test_id] = {"id": test_id, "assertion": assertion, "at": at}
+    return {
+        "failures": [failures[test_id] for test_id in sorted(failures)],
+        "non_passed_count": non_passed,
+    }
 
 
 def freeze_manifest(

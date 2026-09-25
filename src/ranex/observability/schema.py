@@ -83,6 +83,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "task.delegate",
     "task.fanout",
     "task.batch.qualify",
+    "task.stop-hook",
     "specification",
     "host.launcher-build",
     "host.launcher-install",
@@ -98,7 +99,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "github.ruleset",
 )
 
-_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes")
+_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
 
 STAGES: frozenset[str] = frozenset(
     {
