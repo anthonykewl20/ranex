@@ -1,0 +1,71 @@
+{
+ "purpose": "Issue #111 completion evidence \u2014 real live data only: installed console script, real pinned subject, real keys, real journal, 3x repeats per expectation.",
+ "arms": {
+  "1_real_delegated_run": "outcome + manifest carry instruction_digest; sha256sum over the retained instruction stream reproduces it out of band",
+  "2_sensitivity": "one changed word -> different digest; same prompt byte-identical across 3 repeats",
+  "3_negative_control": "removing instruction.log makes sha256sum -c over the manifest's per-stream digests refuse (non-zero) instead of clean",
+  "4_redaction": "credential-shaped prompt literal redacted in the retained stream; digest equals sha256sum over the unredacted canonical bytes",
+  "5_fanout": "two concurrent prompts -> two different digests, each matching its own outcome"
+ },
+ "status_vocabulary": [
+  "VERIFIED",
+  "GAP",
+  "FALSE-PASS",
+  "NON-DETERMINISTIC",
+  "UNVERIFIED"
+ ],
+ "sealed_attribution": {
+  "mine_sealed": {
+   "files": [
+    "tests/unit/test_retained_logs.py",
+    "tests/integration/test_delegation_command.py",
+    "tests/e2e/test_instruction_digest_real.py",
+    "tests/security/test_delegate_log_secret_scrubbing.py",
+    "tests/e2e/test_execution_log_retention_real.py"
+   ],
+   "result": "129 passed, run_exit=0 (hermetic freeze wrapper on the committed tree)"
+  },
+  "drift_sealed_branch": "1 failed, 2 passed, 9 errors (slice036 selector errors + approved-batch reproducible-build golden) \u2014 run_exit=1",
+  "drift_sealed_pristine_main_3edad33af": "1 failed, 2 passed, 9 errors \u2014 identical IDs, identical class",
+  "classification": "documented reproducible-build/E-C17 host-drift class per PR #121 (owner-reserved re-pin); not caused by #111"
+ },
+ "freeze": {
+  "base_commit": "59bef5d9e7cc989a2a9326f9e5ea7ad68480a62f",
+  "sealed_summary": "2 failed, 1866 passed, 160 skipped, 9 errors in 623.77s; FROZEN tests=2037 expected_skips=168 run_exit=1",
+  "load_manifest": "accepted 2037 ids, 168 unchanged expected skips; +21 ids, -0, skips identical"
+ },
+ "final_suite_on_8da1ea1a8": {
+  "result": "12 failed, 1926 passed, 90 skipped, 9 errors in 2771.85s",
+  "reconciliation": "every failure is PR #121's documented host-drift class: test_host_result_dir_confinement (5, E-C17 host-fact refusals), approved_batch_qualification_contract (2, reproducible-build golden), specification_batch_qualification (2), gating_real_suite (2), suite_freeze_real frozen-transcript (1, journey run_exit under drift), slice036_run_source_selectors (9 errors). Identical IDs to main's documented set; none in files touched by #111; the touched files are 129/129 green sealed and green in this final run.",
+  "delta_vs_main": "passed 1905 -> 1926 (+21 = #111's new tests); skipped 90 unchanged; the pre-refreeze named-red (manifest stale) is resolved."
+ },
+ "post_merge": {
+  "merge_commit": "85066ef25",
+  "refreeze": "FROZEN tests=2088 expected_skips=168 (main 2067 + #111 21; strict superset of both parents); load_manifest accepted; sealed 1913 passed, 164 skipped, run_exit=1 (documented drift residual)",
+  "final_suite_on_bc0d566e9": "12 failed, 1977 passed, 90 skipped, 9 errors \u2014 identical documented drift IDs to the pre-merge run (slice036 x9, host-confinement x5, reproducible goldens x6, freeze-journey run_exit x1); zero other failures; passed = pre-merge 1926 + 51 markers tests"
+ },
+ "post_handbook_merge": {
+  "merge_commit": "d84f09b4a",
+  "composition": "ADR-062 injects handbook chapters into the brief (prompt argv); instruction_digest digests the composed instruction \u2014 exactly the bytes the harness receives; manifest and outcome carry both additive fields",
+  "refreeze": "FROZEN tests=2166 (main 2145 + #111 21; strict superset of both parents); load_manifest accepted; sealed 1991 passed, 164 skipped, run_exit=1 (documented drift residual)",
+  "final_suite_on_cc91eb1cb": "12 failed, 2055 passed, 90 skipped, 9 errors (2166 total) \u2014 identical documented drift IDs; two earlier runs were environmentally contaminated (a concurrent session's tmp cleanup left 879 cascade errors; a leftover dirty-probe file left 4 journey fixture errors), both reproduced green after cleanup and the journey module re-verified 5 passed/1 documented-drift failure"
+ },
+ "post_confinement_merge": {
+  "merge_commit": "8667d77ca",
+  "refreeze": "FROZEN tests=2166 \u2014 byte-identical to the committed manifest (#125 changed no test IDs); load_manifest accepted",
+  "confinement": "PR #125's root-clamped traversal probe: all 16 test_host_result_dir_confinement tests pass from treehouse depth (the five former drift-quoted failures are gone)",
+  "final_suite": "7 failed, 2060 passed, 90 skipped, 9 errors (2166 total) \u2014 only the documented reproducible-golden/glibc drift classes remain; the five confinement failures are fixed by PR #125 and verified green from treehouse depth"
+ },
+ "final_round": {
+  "merge_commit": "a62260576",
+  "refreeze": "FROZEN tests=2203 = main 2182 + #111 21 (strict superset); expected-skip declarations carried verbatim from main's manifest (an intermediate freeze with the branch's older 45 reason wordings was discarded and re-run); load_manifest accepted; golden recaptured at main's honest run_exit=1 convention",
+  "sealed": "2 failed, 2027 passed, 165 skipped, 9 errors \u2014 documented drift residual",
+  "suite": "7 failed, 2096 passed, 91 skipped, 9 errors (2203 total) \u2014 only the documented drift classes, identical IDs to the prior rounds"
+ },
+ "micro_round": {
+  "merge_commit": "1677b87a8",
+  "composition": "three additive ADR-043 manifest fields coexist: instruction_digest (#111), handbook (ADR-062), envelope (SLICE-092)",
+  "refreeze": "FROZEN tests=2238 = main 2217 + #111 21 (strict superset), main's 168 declarations verbatim; load_manifest accepted; sealed 2062 passed, 165 skipped, run_exit=1 (documented drift residual)",
+  "suite": "7 failed, 2131 passed, 91 skipped, 9 errors (2238 total) \u2014 only the documented drift classes, identical IDs to all prior rounds"
+ }
+}

@@ -23,6 +23,8 @@ from ranex.execution.log_redaction import collect_redaction_literals, redact_tex
 from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
     decode_stream,
+    instruction_bytes,
+    instruction_digest,
     log_dir_for_outcome,
     persist_envelope,
     persist_stream,
@@ -276,6 +278,7 @@ def _retained_logs(
     stream_text: Mapping[str, str],
     literals: list[tuple[str, str]],
     max_bytes: int,
+    instruction_digest: str | None = None,
     handbook: Mapping[str, object] | None = None,
     envelope: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
@@ -291,6 +294,7 @@ def _retained_logs(
             max_bytes=max_bytes,
         )
         for name in (
+            "instruction",
             "harness.stdout",
             "harness.stderr",
             "suite.stdout",
@@ -305,7 +309,14 @@ def _retained_logs(
         "retention": retention,
         "redaction": "value+structure-v1",
     }
-    write_log_manifest(directory, streams, policy, handbook=handbook, envelope=envelope_record)
+    write_log_manifest(
+        directory,
+        streams,
+        policy,
+        instruction_digest=instruction_digest,
+        handbook=handbook,
+        envelope=envelope_record,
+    )
     return {
         "version": 1,
         "dir": os.path.relpath(directory, outcome_path.parent),
@@ -566,6 +577,14 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             else f"{args.prompt}\n\n{brief_addendum}"
         )
 
+        # What the worker is handed is fixed here: the composed prompt — the
+        # operator's words plus any handbook chapters ADR-062 injected into
+        # the brief — is exactly the argv string the harness receives. Digest
+        # and retain the resolved instruction before anything runs, so every
+        # outcome — timeout included — names what shaped the work.
+        resolved_instruction_digest = instruction_digest(prompt)
+        instruction_stream_text = instruction_bytes(prompt).decode("utf-8")
+
         scratch = Path(tempfile.mkdtemp(prefix="ranex-delegate-"))
         emit = scratch / "emission.jsonl"
         execution_environment = execute_environment(
@@ -592,6 +611,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 # zero exit is a pass by omission. Absence blocks.
                 "commit": None,
                 "harness_exit": timed_out_exit if timed_out_exit is not None else -1,
+                "instruction_digest": resolved_instruction_digest,
                 "suite_exit": None,
                 # No suite ran, so the empty tail needs no redaction.
                 "suite_output_tail": "",
@@ -603,6 +623,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 directory=log_dir,
                 outcome_path=outcome_path,
                 stream_text={
+                    "instruction": instruction_stream_text,
                     "harness.stdout": decode_stream(exc.stdout),
                     "harness.stderr": decode_stream(exc.stderr),
                     "suite.stdout": "",
@@ -610,6 +631,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 },
                 literals=literals,
                 max_bytes=max_bytes,
+                instruction_digest=resolved_instruction_digest,
                 handbook=handbook_record,
             )
             _write_outcome(
@@ -769,6 +791,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             "task_id": args.task_id,
             "commit": commit,
             "harness_exit": completed.returncode,
+            "instruction_digest": resolved_instruction_digest,
             "suite_exit": suite_exit,
             "suite_output_tail": _tail_output(
                 redact_text(
@@ -783,6 +806,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             directory=log_dir,
             outcome_path=outcome_path,
             stream_text={
+                "instruction": instruction_stream_text,
                 "harness.stdout": decode_stream(completed.stdout),
                 "harness.stderr": decode_stream(completed.stderr),
                 "suite.stdout": suite_streams["stdout"],
@@ -790,6 +814,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             },
             literals=literals,
             max_bytes=max_bytes,
+            instruction_digest=resolved_instruction_digest,
             handbook=handbook_record,
             envelope=repair_envelope,
         )
