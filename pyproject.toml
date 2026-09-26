@@ -138,3 +138,9 @@ pytest_add_cli_args_test_selection = [
 
 [project.scripts]
 ranex = "ranex.cli.main:main"
+# ADR-065's scanner gets its own console script: a governed run resolves
+# argv[0] once and executes the resolved path, so a `-m` module form loses
+# the venv's site-packages to the symlink's target — while a console script
+# is a regular file whose shebang re-selects the venv interpreter, keeping
+# the kernel's own bytes the ones that run (#110 Correction 2's shape).
+ranex-arch = "ranex.foundation.arch_scan:main"

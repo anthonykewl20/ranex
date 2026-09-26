@@ -234,9 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — P1 (BASE freeze + promotion gate) and P2 (antislop
-census) shipped on #130/#129; next up are the DIRECT 012 stress lane and the
-ADP arch-freeze (DIRECT 011/013).
+**Active slice:** [SLICE-096 — the architecture-freeze claim](docs/slices/SLICE-096-architecture-freeze-claim.md) — ADP's first family (ADR-065, proposed; implementation-only per DIRECT 014).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
