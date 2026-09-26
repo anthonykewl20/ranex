@@ -1,6 +1,6 @@
 """The committed BASE freeze is a gauge, and gauges are held to their bytes.
 
-SLICE-093 / ADR-063. Three bindings, each one direction of the same rule
+SLICE-095 / ADR-064. Three bindings, each one direction of the same rule
 (that the instrument is what review saw, not what a treatment wishes it
 said):
 

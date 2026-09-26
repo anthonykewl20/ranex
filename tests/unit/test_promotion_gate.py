@@ -1,6 +1,6 @@
 """The base-freeze promotion gate: citation discipline, made to block.
 
-SLICE-093 / oracle-science §5. The BASE freeze is the durable measurement
+SLICE-095 / oracle-science §5. The BASE freeze is the durable measurement
 instrument; a treatment may promote only on paired MARGINAL deltas against
 the freeze's own numbers, on axes the freeze names. This module is a
 deterministic judge of that citation discipline — it is not the kernel, it

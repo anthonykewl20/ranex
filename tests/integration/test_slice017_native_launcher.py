@@ -129,16 +129,17 @@ RESPONSE_LIMIT = 65_536
 # Issue #110 adds the `markers` subcommand (the deliberate-shortcut scanner as
 # an installed entry point). One subparser beside `keygen`; no confinement,
 # launcher or strict-local call site is touched. This pin is the merge of both.
-# SLICE-093 adds both  (BASE freeze gate, ADR-063) and
-# the  subcommand (C3 census); DEFAULT_CALIBRATION_DIR + antislop
+# SLICE-095 (P1) adds `promotion` (BASE freeze gate, ADR-064) and SLICE-094
+# (P2) adds `antislop` (C3 census); DEFAULT_CALIBRATION_DIR + antislop
 # dispatch in run/gate/freeze. No confinement, launcher or strict-local
-# call site is touched. This pin is the merge of all three.
+# call site is touched. This pin is the merge of all four; the 2026-09-26
+# renumber commit moved only the slice/ADR references in these comments.
 # Issue #107 (RISK-07) adds the catalogued approver: APPROVER_SIGNING_KEY_VARIABLE,
 # require_catalogued_approver (possession proved before judgment; the
 # E-APPROVER-* refusals), the approver countersignature handed to publish_verdict,
 # and the approvers map threaded to the verdict readers. No confinement,
-# launcher or strict-local call site is touched. This pin is the merge of all four.
-MAIN_PY_SHA256 = "e5721e09a78205560a803dbf61e30e6f5b66c29e96219a0b53233c15c5bea2b8"
+# launcher or strict-local call site is touched. This pin is the merge of all five.
+MAIN_PY_SHA256 = "86150ef50d559f80542a468c61c64ea8226e55be02934ae05eb0f41013814831"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

@@ -1,4 +1,4 @@
-# ADR-063 — the BASE freeze and the promotion gate
+# ADR-064 — the BASE freeze and the promotion gate
 
 **Status:** accepted
 **Date:** 2026-09-25

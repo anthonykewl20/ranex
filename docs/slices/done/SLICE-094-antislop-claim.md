@@ -1,4 +1,4 @@
-# SLICE-093 — the antislop claim: a test-integrity census
+# SLICE-094 — the antislop claim: a test-integrity census
 
 **Status:** done
 
