@@ -146,7 +146,14 @@ def test_wheel_contains_package_and_console_entry_point(
 
         dist_info = next(iter(dist_info_dirs))
         entry_points = archive.read(f"{dist_info}/entry_points.txt").decode("utf-8")
-        assert entry_points == "[console_scripts]\nranex = ranex.cli.main:main\n"
+        assert entry_points == (
+            "[console_scripts]\n"
+            "ranex = ranex.cli.main:main\n"
+            # ADR-064: the architecture-freeze scanner rides its own console
+            # script, whose shebang keeps the venv interpreter (and so the
+            # kernel's own bytes) the thing a governed run executes.
+            "ranex-arch = ranex.foundation.arch_scan:main\n"
+        )
 
         metadata = archive.read(f"{dist_info}/METADATA").decode("utf-8")
         project = _pyproject()["project"]

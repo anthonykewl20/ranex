@@ -221,6 +221,60 @@ not carry there, makes the artifact malformed — refused, and absence blocks.
 Nothing is relocated. A SARIF `invocations[]` entry that reports
 `executionSuccessful: false` is refused even with zero findings.
 
+### An architecture-freeze claim (`sarif-2.1.0`, ADR-064)
+
+The kernel's own import-edge scanner, `ranex-arch` (installed by `uv sync
+--frozen` beside `ranex`), holds a human-approved module graph true on every
+candidate. The freeze is a committed governance file
+(`ranex-architecture-freeze-v1`: `approved_by`, `package_root`, `modules` as
+file-or-directory paths, sorted unique `allowed_edges`) in exact canonical
+JSON bytes; it is default-deny — an internal edge it does not list is a
+finding, and an empty allow-list blocks everything rather than nothing.
+
+Author it exactly like a ruff scan claim — the kernel's own scanner as
+argv[0], the same two canonical tokens, its **own** `results_manifest` —
+plus this family's one addition, the digest pin:
+
+```sh
+uv run --frozen ranex-arch digest --freeze governance/architecture-freeze.json
+# -> sha256:...   pin that value in the catalog's argv, then freeze:
+
+uv run --frozen ranex suite freeze --external-repository /path/to/repo \
+  --artifact governance/arch/scan.sarif --output governance/arch/scan-manifest.json \
+  --results-reporter sarif-2.1.0 \
+  --scan-scope pkg/__init__.py --scan-scope pkg/foundation.py \
+  --scan-scope pkg/policy.py --scan-scope pkg/cli.py \
+  --scan-scope governance/architecture-freeze.json \
+  --scan-rule arch/forbidden-import --scan-rule arch/freeze-tampered \
+  -- ranex-arch check --freeze governance/architecture-freeze.json \
+     --expected-freeze-digest sha256:<the pinned digest> \
+     --output-format=sarif --output-file=governance/arch/scan.sarif
+```
+
+The catalog entry names the same argv `suite freeze` ran. Include the freeze
+file itself in `--scan-scope`: the tamper finding fails the freeze path, and
+a deleted freeze then reads as `missing`. Three behaviours differ from ruff
+by design:
+
+- **The digest pin binds policy bytes to the catalog.** Editing the freeze
+  without editing the catalog's pin is a finding (`arch/freeze-tampered`),
+  not a silent policy change — and because the pin rides the signed argv,
+  evidence recorded under a different pin satisfies nothing. Updating the
+  freeze is one reviewed commit moving freeze bytes, pin and manifest
+  together.
+- **A `.py` file under `package_root` in no freeze module refuses the scan**
+  (exit 2, no artifact, absence blocks). There is no acceptance for it: the
+  module set changes only through a freeze update.
+- **Acceptance is per finding ID**, declared `--accepted <path>::arch/forbidden-import::<fingerprint>=REASON`
+  at freeze time. The ID binds the region to the subject's bytes, so an
+  accepted edge stays accepted only while the code under it is unchanged.
+
+The scanner is a console script, not a `-m` module form, because a governed
+run resolves argv[0] once and executes the resolved path: through the venv
+symlink a module form loses the site-packages carrying the kernel itself.
+Real-kernel receipts for every behaviour above:
+`tools/dogfood/audits/2026-09-26-arch-freeze/` (`tools/dogfood/arch_proof.py`).
+
 ### An antislop claim (`antislop-sarif-2.1.0`)
 
 The test-integrity gauge (ADR-063): `ranex antislop` censuses every test's

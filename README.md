@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** [SLICE-093 — the BASE freeze and the promotion gate](docs/slices/SLICE-093-base-freeze-promotion-gate.md) — P1 on PR #130.
+**Active slice:** [SLICE-094 — the architecture-freeze claim](docs/slices/SLICE-094-architecture-freeze-claim.md) — ADP's first family (ADR-064, proposed).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -243,6 +243,10 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-093 — The BASE freeze and the promotion gate](docs/slices/done/SLICE-093-base-freeze-promotion-gate.md): "improved" is gradable only against a frozen instrument — `governance/calibration/base-freeze-v1.json` (kernel identity, subject pins, measured reference metrics, evidence bindings) plus the deterministic `ranex promotion evaluate` gate that admits a promotion claim only with a safe freeze citation, paired marginal deltas on freeze-named axes, and derived τ values. PR #130.
+
+- [SLICE-093 — The antislop claim](docs/slices/done/SLICE-093-antislop-claim.md): a test-integrity census (`ranex antislop`, effective-assert counts plus four structural slop shapes) frozen as expectations the kernel reduces like any suite — a deleted assertion becomes a count shortfall and an emptied artifact a full miss. PR #129.
 
 - [SLICE-093 — Bare-arm purity](docs/slices/done/SLICE-093-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
 

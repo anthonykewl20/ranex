@@ -1,6 +1,6 @@
 # SLICE-093 — The BASE freeze and the promotion gate (P1)
 
-**Status:** open
+**Status:** done
 **Origin:** oracle-science report §5/§8 SLICE-D; captain DIRECT 004+009;
 ADR-063.
 

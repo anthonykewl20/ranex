@@ -1,0 +1,181 @@
+{
+ "arms": {
+  "absence-blocks": {
+   "never_ran": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [],
+    "run_exit": null,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   },
+   "pristine": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 0,
+    "findings": [],
+    "run_exit": 0,
+    "verdict": "PASS",
+    "verdict_line": "PASS  gate=landing  subject=sha256:fedfe94936cba78a6cb481737b5c7dec1f8fa116ed546c4a47bba141124b1c63"
+   },
+   "seconds": 3.5
+  },
+  "accepted-exception": {
+   "declared": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 0,
+    "findings": [
+     {
+      "file": "pkg/foundation.py",
+      "fingerprint": "674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+      "line": 4,
+      "rule": "arch/forbidden-import"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "PASS",
+    "verdict_line": "PASS  gate=landing  subject=sha256:227ac41eaaed66bf0f0e2a2763949d72c08000ac116f7462e43d4ca881b7ff90"
+   },
+   "finding_id": "pkg/foundation.py::arch/forbidden-import::674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+   "removed": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [
+     {
+      "file": "pkg/foundation.py",
+      "fingerprint": "674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+      "line": 4,
+      "rule": "arch/forbidden-import"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   },
+   "undeclared": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [
+     {
+      "file": "pkg/foundation.py",
+      "fingerprint": "674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+      "line": 4,
+      "rule": "arch/forbidden-import"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   }
+  },
+  "forbidden-edge-blocks/r1": {
+   "planted": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [
+     {
+      "file": "pkg/foundation.py",
+      "fingerprint": "674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+      "line": 4,
+      "rule": "arch/forbidden-import"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   },
+   "pristine": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 0,
+    "findings": [],
+    "run_exit": 0,
+    "verdict": "PASS",
+    "verdict_line": "PASS  gate=landing  subject=sha256:82cbc1a13b7ecd170f0082c55350cdb11c3851e807a670ccb9133bb76f026826"
+   },
+   "seconds": 4.2
+  },
+  "forbidden-edge-blocks/r2": {
+   "planted": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [
+     {
+      "file": "pkg/foundation.py",
+      "fingerprint": "674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+      "line": 4,
+      "rule": "arch/forbidden-import"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   },
+   "pristine": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 0,
+    "findings": [],
+    "run_exit": 0,
+    "verdict": "PASS",
+    "verdict_line": "PASS  gate=landing  subject=sha256:d94cf52a3b2250ffb8182b177ee6d53d615b10ba86e1ba4caaf63f88ca0e0426"
+   },
+   "seconds": 4.7
+  },
+  "forbidden-edge-blocks/r3": {
+   "planted": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [
+     {
+      "file": "pkg/foundation.py",
+      "fingerprint": "674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
+      "line": 4,
+      "rule": "arch/forbidden-import"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   },
+   "pristine": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 0,
+    "findings": [],
+    "run_exit": 0,
+    "verdict": "PASS",
+    "verdict_line": "PASS  gate=landing  subject=sha256:3bc2581c7b26ba50784e785a5af727668c47562f16f0d8c75813523fa8691379"
+   },
+   "seconds": 3.7
+  },
+  "freeze-tamper": {
+   "seconds": 2.8,
+   "tampered": {
+    "evaluate_error_tail": [],
+    "evaluate_exit": 1,
+    "findings": [
+     {
+      "file": "governance/architecture-freeze.json",
+      "fingerprint": "1f4dbb23f675fb5eeef9eca70eda96bf2dcfdd42550be1f646be1e09ceb505c9",
+      "line": 1,
+      "rule": "arch/freeze-tampered"
+     }
+    ],
+    "run_exit": 0,
+    "verdict": "FAIL",
+    "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+   }
+  }
+ },
+ "repeats": 3,
+ "scanner": "ranex-arch (the kernel's installed console script)",
+ "summary": {
+  "absence_FAILs": true,
+  "accepted_declared_PASSes": true,
+  "accepted_removed_FAILs": true,
+  "planted_all_FAIL": true,
+  "planted_byte_identical": true,
+  "planted_names_file_line_edge": true,
+  "pristine_all_PASS": true,
+  "pristine_byte_identical": true,
+  "tampered_FAILs": true,
+  "tampered_names_freeze": true
+ }
+}
