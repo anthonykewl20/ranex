@@ -100,7 +100,7 @@ REPEATS = 3
 def freeze_value() -> dict[str, Any]:
     return {
         "schema": "ranex-architecture-freeze-v1",
-        "approved_by": "ADR-064 adp-agnostic-diagnostic-plane (proposed)",
+        "approved_by": "ADR-065 adp-agnostic-diagnostic-plane (proposed)",
         "package_root": "pkg",
         "modules": {
             "root": "pkg/__init__.py",

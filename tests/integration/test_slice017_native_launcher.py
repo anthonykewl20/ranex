@@ -129,11 +129,12 @@ RESPONSE_LIMIT = 65_536
 # Issue #110 adds the `markers` subcommand (the deliberate-shortcut scanner as
 # an installed entry point). One subparser beside `keygen`; no confinement,
 # launcher or strict-local call site is touched. This pin is the merge of both.
-# SLICE-093 adds both  (BASE freeze gate, ADR-063) and
-# the  subcommand (C3 census); DEFAULT_CALIBRATION_DIR + antislop
+# SLICE-095 (P1) adds `promotion` (BASE freeze gate, ADR-064) and SLICE-094
+# (P2) adds `antislop` (C3 census); DEFAULT_CALIBRATION_DIR + antislop
 # dispatch in run/gate/freeze. No confinement, launcher or strict-local
-# call site is touched. This pin is the merge of all three.
-MAIN_PY_SHA256 = "efd794824d98faedff58eb29a731f2d824d854799caab42816e1e7c6a7313353"
+# call site is touched. This pin is the merge of all three; the 2026-09-26
+# renumber commit moved only the slice/ADR references in these comments.
+MAIN_PY_SHA256 = "1d9334c1448686f5626924d49476858afaf61e267cb57d0989729a8e07f51ff4"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

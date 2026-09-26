@@ -149,7 +149,7 @@ def test_wheel_contains_package_and_console_entry_point(
         assert entry_points == (
             "[console_scripts]\n"
             "ranex = ranex.cli.main:main\n"
-            # ADR-064: the architecture-freeze scanner rides its own console
+            # ADR-065: the architecture-freeze scanner rides its own console
             # script, whose shebang keeps the venv interpreter (and so the
             # kernel's own bytes) the thing a governed run executes.
             "ranex-arch = ranex.foundation.arch_scan:main\n"

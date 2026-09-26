@@ -15,9 +15,9 @@
     "findings": [],
     "run_exit": 0,
     "verdict": "PASS",
-    "verdict_line": "PASS  gate=landing  subject=sha256:fedfe94936cba78a6cb481737b5c7dec1f8fa116ed546c4a47bba141124b1c63"
+    "verdict_line": "PASS  gate=landing  subject=sha256:68b4c28ef508eff825f288d3362499934813ac5370ecb7483527d19ad6962055"
    },
-   "seconds": 3.5
+   "seconds": 2.9
   },
   "accepted-exception": {
    "declared": {
@@ -33,7 +33,7 @@
     ],
     "run_exit": 0,
     "verdict": "PASS",
-    "verdict_line": "PASS  gate=landing  subject=sha256:227ac41eaaed66bf0f0e2a2763949d72c08000ac116f7462e43d4ca881b7ff90"
+    "verdict_line": "PASS  gate=landing  subject=sha256:9c5f406ff661b22a78bb16f44099bedfb357bdcc27483e15c51fd1545995d680"
    },
    "finding_id": "pkg/foundation.py::arch/forbidden-import::674872efb4189f862b50b00690eaece3d6d181ca16de3287ba5bac05381b711f",
    "removed": {
@@ -89,9 +89,9 @@
     "findings": [],
     "run_exit": 0,
     "verdict": "PASS",
-    "verdict_line": "PASS  gate=landing  subject=sha256:82cbc1a13b7ecd170f0082c55350cdb11c3851e807a670ccb9133bb76f026826"
+    "verdict_line": "PASS  gate=landing  subject=sha256:2a479bf083415557951b083a9782a5f3fb4129d586ee7c7346da0f6b51e5fa38"
    },
-   "seconds": 4.2
+   "seconds": 4.1
   },
   "forbidden-edge-blocks/r2": {
    "planted": {
@@ -115,9 +115,9 @@
     "findings": [],
     "run_exit": 0,
     "verdict": "PASS",
-    "verdict_line": "PASS  gate=landing  subject=sha256:d94cf52a3b2250ffb8182b177ee6d53d615b10ba86e1ba4caaf63f88ca0e0426"
+    "verdict_line": "PASS  gate=landing  subject=sha256:9a76fb95e01cd73b5b24e8fe2d9f7ac190714d9a3f576268c1eba79978092c49"
    },
-   "seconds": 4.7
+   "seconds": 3.6
   },
   "forbidden-edge-blocks/r3": {
    "planted": {
@@ -141,19 +141,19 @@
     "findings": [],
     "run_exit": 0,
     "verdict": "PASS",
-    "verdict_line": "PASS  gate=landing  subject=sha256:3bc2581c7b26ba50784e785a5af727668c47562f16f0d8c75813523fa8691379"
+    "verdict_line": "PASS  gate=landing  subject=sha256:5264fbae8c7e505b3026b573eebba89bc8d75c43d8c5148e5d010d3b7b044635"
    },
-   "seconds": 3.7
+   "seconds": 3.3
   },
   "freeze-tamper": {
-   "seconds": 2.8,
+   "seconds": 1.8,
    "tampered": {
     "evaluate_error_tail": [],
     "evaluate_exit": 1,
     "findings": [
      {
       "file": "governance/architecture-freeze.json",
-      "fingerprint": "1f4dbb23f675fb5eeef9eca70eda96bf2dcfdd42550be1f646be1e09ceb505c9",
+      "fingerprint": "037b182024e3231367da3c3c4dae04674d073376ebd6f4fb11d9296c096f138c",
       "line": 1,
       "rule": "arch/freeze-tampered"
      }

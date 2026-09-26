@@ -1,7 +1,7 @@
 """The architecture-freeze scanner: default-deny edges, digest-bound policy.
 
 The scanner is the deterministic counterweight to an approved module graph
-(ADR-064): pure `ast`, one question per import statement — is this edge in
+(ADR-065): pure `ast`, one question per import statement — is this edge in
 the freeze? These tests pin the semantics the micro-exercise proved through
 the real kernel: unlisted edges are findings bound to the subject's bytes,
 the freeze's canonical bytes must hash to the digest the catalog pinned, a
@@ -35,7 +35,7 @@ FREEZE_REL = "governance/architecture-freeze.json"
 
 PRISTINE_FREEZE: dict[str, Any] = {
     "schema": FREEZE_SCHEMA,
-    "approved_by": "ADR-064-test",
+    "approved_by": "ADR-065-test",
     "package_root": "pkg",
     "modules": {
         "root": "pkg/__init__.py",

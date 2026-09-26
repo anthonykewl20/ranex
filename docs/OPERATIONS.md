@@ -221,7 +221,7 @@ not carry there, makes the artifact malformed — refused, and absence blocks.
 Nothing is relocated. A SARIF `invocations[]` entry that reports
 `executionSuccessful: false` is refused even with zero findings.
 
-### An architecture-freeze claim (`sarif-2.1.0`, ADR-064)
+### An architecture-freeze claim (`sarif-2.1.0`, ADR-065)
 
 The kernel's own import-edge scanner, `ranex-arch` (installed by `uv sync
 --frozen` beside `ranex`), holds a human-approved module graph true on every

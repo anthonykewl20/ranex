@@ -1,4 +1,4 @@
-# ADR-064 — the Agnostic Diagnostic Plane: authority split, and the architecture freeze as its first claim
+# ADR-065 — the Agnostic Diagnostic Plane: authority split, and the architecture freeze as its first claim
 
 **Status:** proposed
 
@@ -101,7 +101,7 @@ the common web backends**, measured and promoted per language under the
 same claim shape — Python is the bootstrap, not the product.
 
 An A-family claim for a new language is not trusted because it passes on
-one tree. The BASE freeze (ADR-063, `governance/calibration/base-freeze-v1.json`)
+one tree. The BASE freeze (ADR-064, `governance/calibration/base-freeze-v1.json`)
 is the calibration backbone: per-language diagnostic promotions cite the
 BASE freeze and show paired marginal deltas on named axes through the
 promotion gate (`ranex promotion evaluate`), with the scan manifest of the
@@ -110,7 +110,7 @@ promotions. Each language earns blocking authority only after its own
 BASE-cited calibration and the DIRECT 012 stress gate reports READY; a
 STRESS-NOT-READY language stays held and its ships land
 implementation-only. No L3 kill-rate calibration (rejected on its own
-data, ADR-063).
+data, ADR-064).
 
 ### The freeze-origin rule
 

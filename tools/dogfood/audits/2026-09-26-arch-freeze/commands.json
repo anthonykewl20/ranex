@@ -6,7 +6,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:YbHdzwA+yka/rHPgR7CkN0FzGNThkeDK1jOxAXdgPmg=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:YbHdzwA+yka/rHPgR7CkN0FzGNThkeDK1jOxAXdgPmg=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:FTHIYpeRqERaffsLscTGG75LeWIaI4q00kg3r+JnU9w=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:FTHIYpeRqERaffsLscTGG75LeWIaI4q00kg3r+JnU9w=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -16,7 +16,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:ugP7wu+KdOQhJQWV9BfchpD1sbN8BJo44SHBGv/nbiM=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:ugP7wu+KdOQhJQWV9BfchpD1sbN8BJo44SHBGv/nbiM=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:UgKYRnF+PDZsCixIEkDZjLvSlc7ZO8AlhLr92KOC9gw=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:UgKYRnF+PDZsCixIEkDZjLvSlc7ZO8AlhLr92KOC9gw=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -49,12 +49,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-v1zyxwo0/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-k1bdhli9/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -76,12 +76,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:82cbc1a13b7ecd170f0082c55350cdb11c3851e807a670ccb9133bb76f026826\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:2a479bf083415557951b083a9782a5f3fb4129d586ee7c7346da0f6b51e5fa38\n",
   "stderr_tail": ""
  },
  {
@@ -99,7 +99,7 @@
    "arch-proof-approver"
   ],
   "exit": 0,
-  "stdout_tail": "PASS  gate=landing  subject=sha256:82cbc1a13b7ecd170f0082c55350cdb11c3851e807a670ccb9133bb76f026826\n",
+  "stdout_tail": "PASS  gate=landing  subject=sha256:2a479bf083415557951b083a9782a5f3fb4129d586ee7c7346da0f6b51e5fa38\n",
   "stderr_tail": ""
  },
  {
@@ -109,7 +109,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:ZI25s1M9gMvS9b7iz3y2S1dDVWoqT1mAZLcptG5RDvA=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:ZI25s1M9gMvS9b7iz3y2S1dDVWoqT1mAZLcptG5RDvA=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:9KDzbWsu+4QwbC6kc7PkL6o3o2Tgix25iIiNl3/9/pk=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:9KDzbWsu+4QwbC6kc7PkL6o3o2Tgix25iIiNl3/9/pk=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -119,7 +119,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:dsUNbGyeKmZcX4aMIsK90xqZZsimjPoaFO9iVdWTRWA=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:dsUNbGyeKmZcX4aMIsK90xqZZsimjPoaFO9iVdWTRWA=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:TrzFmJeBV7O/JKSM/tXPxV3nPp2BTMeldv8ziGw8ENI=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:TrzFmJeBV7O/JKSM/tXPxV3nPp2BTMeldv8ziGw8ENI=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -152,12 +152,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-x3l8164z/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-wfce5x0j/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -179,12 +179,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:e01499a850d96fe98bc3177d3a2681d35d0a4ef6f790d70f546bad669b4d6e2b\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:36549268870a1c865e861a28eae9ea89c2df0613500096877dd15cd7d20e0815\n",
   "stderr_tail": ""
  },
  {
@@ -202,7 +202,7 @@
    "arch-proof-approver"
   ],
   "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:e01499a850d96fe98bc3177d3a2681d35d0a4ef6f790d70f546bad669b4d6e2b\n",
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:36549268870a1c865e861a28eae9ea89c2df0613500096877dd15cd7d20e0815\n",
   "stderr_tail": ""
  },
  {
@@ -212,7 +212,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:HqzVGb4M3HlZm5XfPOjPpje79w3luPbSCA6AnwOPq9Y=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:HqzVGb4M3HlZm5XfPOjPpje79w3luPbSCA6AnwOPq9Y=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:w25CZh8WtvtHqEkbrq/+TziMi/5UJPxa+UXtm+YaGDo=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:w25CZh8WtvtHqEkbrq/+TziMi/5UJPxa+UXtm+YaGDo=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -222,7 +222,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:VEVlCfNMrJf8QAsq5Ti0zMgRQ7/0DZQst2k/5N/0EJU=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:VEVlCfNMrJf8QAsq5Ti0zMgRQ7/0DZQst2k/5N/0EJU=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:PQXv+QtV/f84kuy2iTwpyxt0NXK6nLvl2HeQi76guw8=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:PQXv+QtV/f84kuy2iTwpyxt0NXK6nLvl2HeQi76guw8=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -255,12 +255,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-tsu0awd_/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-l6j7pvw7/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -282,12 +282,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:d94cf52a3b2250ffb8182b177ee6d53d615b10ba86e1ba4caaf63f88ca0e0426\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:9a76fb95e01cd73b5b24e8fe2d9f7ac190714d9a3f576268c1eba79978092c49\n",
   "stderr_tail": ""
  },
  {
@@ -305,7 +305,7 @@
    "arch-proof-approver"
   ],
   "exit": 0,
-  "stdout_tail": "PASS  gate=landing  subject=sha256:d94cf52a3b2250ffb8182b177ee6d53d615b10ba86e1ba4caaf63f88ca0e0426\n",
+  "stdout_tail": "PASS  gate=landing  subject=sha256:9a76fb95e01cd73b5b24e8fe2d9f7ac190714d9a3f576268c1eba79978092c49\n",
   "stderr_tail": ""
  },
  {
@@ -315,7 +315,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:Itbu+wjomVdjykfSREK8axc1OxuXM8SFpxvDfY0bZRw=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:Itbu+wjomVdjykfSREK8axc1OxuXM8SFpxvDfY0bZRw=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:Sp0Q8E/J9USoezOw1Sw18zyvBb6cK0nZVSkd3j/Cqlw=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:Sp0Q8E/J9USoezOw1Sw18zyvBb6cK0nZVSkd3j/Cqlw=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -325,7 +325,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:CfBNLnaMbAk2nH3vPzd+U9u3iyRJHFxGz+6MsMUwnPc=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:CfBNLnaMbAk2nH3vPzd+U9u3iyRJHFxGz+6MsMUwnPc=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:JAoCAzottA66WL3e18Gzs+AA8TOjOdgyFdQlocWDzBQ=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:JAoCAzottA66WL3e18Gzs+AA8TOjOdgyFdQlocWDzBQ=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -358,12 +358,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-mpgnqiaf/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-eji9s68p/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -385,218 +385,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:db148aab94c3128bfd88667ff75675f18861122d5a0d37aee2affa5ad3fa2dfd\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "gate",
-   "evaluate",
-   "HEAD",
-   "--gate-catalog",
-   "governance/gates.yaml",
-   "--producers",
-   "governance/producers.yaml",
-   "--evidence",
-   "governance/evidence.json",
-   "--approver",
-   "arch-proof-approver"
-  ],
-  "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:db148aab94c3128bfd88667ff75675f18861122d5a0d37aee2affa5ad3fa2dfd\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "keygen",
-   "--producer",
-   "arch-proof-producer"
-  ],
-  "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:b8gQwjwxenrKsZFkK6bajdaU0eIwuQie/V6vb0dBK+s=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:b8gQwjwxenrKsZFkK6bajdaU0eIwuQie/V6vb0dBK+s=\n        status: active\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "keygen",
-   "--producer",
-   "kernel-verdict-signer"
-  ],
-  "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:IADK/OvZTgIi+t7mx/Xw2osLRdCJU6cW641bRfcUnIY=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:IADK/OvZTgIi+t7mx/Xw2osLRdCJU6cW641bRfcUnIY=\n        status: active\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "suite",
-   "freeze",
-   "--artifact",
-   "governance/scan.sarif",
-   "--output",
-   "governance/scan-manifest.json",
-   "--results-reporter",
-   "sarif-2.1.0",
-   "--scan-scope",
-   "governance/architecture-freeze.json",
-   "--scan-scope",
-   "pkg/__init__.py",
-   "--scan-scope",
-   "pkg/cli.py",
-   "--scan-scope",
-   "pkg/foundation.py",
-   "--scan-scope",
-   "pkg/policy.py",
-   "--scan-rule",
-   "arch/forbidden-import",
-   "--scan-rule",
-   "arch/freeze-tampered",
-   "--",
-   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
-   "check",
-   "--freeze",
-   "governance/architecture-freeze.json",
-   "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
-   "--output-format=sarif",
-   "--output-file=governance/scan.sarif"
-  ],
-  "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-4c0zjm1m/subject/governance/scan-manifest.json\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "run",
-   "--claim",
-   "architecture",
-   "--producer",
-   "arch-proof-producer",
-   "--gate-catalog",
-   "governance/gates.yaml",
-   "--producers",
-   "governance/producers.yaml",
-   "--evidence",
-   "governance/evidence.json",
-   "--",
-   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
-   "check",
-   "--freeze",
-   "governance/architecture-freeze.json",
-   "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
-   "--output-format=sarif",
-   "--output-file=governance/scan.sarif"
-  ],
-  "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:3bc2581c7b26ba50784e785a5af727668c47562f16f0d8c75813523fa8691379\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "gate",
-   "evaluate",
-   "HEAD",
-   "--gate-catalog",
-   "governance/gates.yaml",
-   "--producers",
-   "governance/producers.yaml",
-   "--evidence",
-   "governance/evidence.json",
-   "--approver",
-   "arch-proof-approver"
-  ],
-  "exit": 0,
-  "stdout_tail": "PASS  gate=landing  subject=sha256:3bc2581c7b26ba50784e785a5af727668c47562f16f0d8c75813523fa8691379\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "keygen",
-   "--producer",
-   "arch-proof-producer"
-  ],
-  "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:enHHzWy94Uu/HefbFK6NkO7VFWZF20YkY9HLJazuQlw=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:enHHzWy94Uu/HefbFK6NkO7VFWZF20YkY9HLJazuQlw=\n        status: active\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "keygen",
-   "--producer",
-   "kernel-verdict-signer"
-  ],
-  "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:VB7l9wc0VPhqJBPW/ZHv95PGzjsh4wrYEwjBHshTaJM=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:VB7l9wc0VPhqJBPW/ZHv95PGzjsh4wrYEwjBHshTaJM=\n        status: active\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "suite",
-   "freeze",
-   "--artifact",
-   "governance/scan.sarif",
-   "--output",
-   "governance/scan-manifest.json",
-   "--results-reporter",
-   "sarif-2.1.0",
-   "--scan-scope",
-   "governance/architecture-freeze.json",
-   "--scan-scope",
-   "pkg/__init__.py",
-   "--scan-scope",
-   "pkg/cli.py",
-   "--scan-scope",
-   "pkg/foundation.py",
-   "--scan-scope",
-   "pkg/policy.py",
-   "--scan-rule",
-   "arch/forbidden-import",
-   "--scan-rule",
-   "arch/freeze-tampered",
-   "--",
-   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
-   "check",
-   "--freeze",
-   "governance/architecture-freeze.json",
-   "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
-   "--output-format=sarif",
-   "--output-file=governance/scan.sarif"
-  ],
-  "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-bd84k707/subject/governance/scan-manifest.json\n",
-  "stderr_tail": ""
- },
- {
-  "argv": [
-   "run",
-   "--claim",
-   "architecture",
-   "--producer",
-   "arch-proof-producer",
-   "--gate-catalog",
-   "governance/gates.yaml",
-   "--producers",
-   "governance/producers.yaml",
-   "--evidence",
-   "governance/evidence.json",
-   "--",
-   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
-   "check",
-   "--freeze",
-   "governance/architecture-freeze.json",
-   "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
-   "--output-format=sarif",
-   "--output-file=governance/scan.sarif"
-  ],
-  "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:24a0a7a74f85f439fc29bbcf493116abc68ac162e1ff2295184bdc9387bc6995\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:2f09bb6e1882d583e3f55d751dab7cb8a33dd051df500d59800f94c2f7e5c40f\n",
   "stderr_tail": ""
  },
  {
@@ -614,7 +408,7 @@
    "arch-proof-approver"
   ],
   "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:24a0a7a74f85f439fc29bbcf493116abc68ac162e1ff2295184bdc9387bc6995\n",
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:2f09bb6e1882d583e3f55d751dab7cb8a33dd051df500d59800f94c2f7e5c40f\n",
   "stderr_tail": ""
  },
  {
@@ -624,7 +418,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:4ORA8DbyRNw7UjQ56vlzfDRxGhekpoSeZUHSfafk/Ac=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:4ORA8DbyRNw7UjQ56vlzfDRxGhekpoSeZUHSfafk/Ac=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:c/YwuDt4q4bbX5Ms/UDHTfcmL4Oe3EnLxQscTn7gr9I=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:c/YwuDt4q4bbX5Ms/UDHTfcmL4Oe3EnLxQscTn7gr9I=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -634,7 +428,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:XlJMQvSila13bTxmAaHQvS+CkVYr2+ezhBgLdzM9sDY=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:XlJMQvSila13bTxmAaHQvS+CkVYr2+ezhBgLdzM9sDY=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:pNvaAl14IhVN9t1lWdYdA5bmKt3j6NGQFH3TaDfyk8g=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:pNvaAl14IhVN9t1lWdYdA5bmKt3j6NGQFH3TaDfyk8g=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -667,12 +461,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-gxn4nt7u/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-j4gg19k3/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -694,12 +488,115 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:d84ddae6cf0f5101c50cad048ab5b686b6e388f97f8fb8ec4f9d13216b536343\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:5264fbae8c7e505b3026b573eebba89bc8d75c43d8c5148e5d010d3b7b044635\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-proof-approver"
+  ],
+  "exit": 0,
+  "stdout_tail": "PASS  gate=landing  subject=sha256:5264fbae8c7e505b3026b573eebba89bc8d75c43d8c5148e5d010d3b7b044635\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-proof-producer"
+  ],
+  "exit": 0,
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:nQwcGTUA+KNq1PUESK4SrK5/5s3LxW0xFzZ/+J9GAQs=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:nQwcGTUA+KNq1PUESK4SrK5/5s3LxW0xFzZ/+J9GAQs=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "exit": 0,
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:Ig/aRWj0zthnMlC+5JvOP1gxzSE8mtHVehv9BYYW39A=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:Ig/aRWj0zthnMlC+5JvOP1gxzSE8mtHVehv9BYYW39A=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "exit": 0,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-fjhys5lr/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-proof-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "exit": 0,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:5596c7eda1e17121119a97c4644ead2a641b4b2a734b42760452c129387cc040\n",
   "stderr_tail": ""
  },
  {
@@ -717,7 +614,110 @@
    "arch-proof-approver"
   ],
   "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:d84ddae6cf0f5101c50cad048ab5b686b6e388f97f8fb8ec4f9d13216b536343\n",
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:5596c7eda1e17121119a97c4644ead2a641b4b2a734b42760452c129387cc040\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-proof-producer"
+  ],
+  "exit": 0,
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:OnlKVVJqyppNOHdgQmGBZ+5BkbVY8qkcFrxo9ldfoLw=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:OnlKVVJqyppNOHdgQmGBZ+5BkbVY8qkcFrxo9ldfoLw=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "exit": 0,
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:6Mcmgb0FL4BXHIDyuPk+olSAX0aJbSerrA6ag7D5D8I=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:6Mcmgb0FL4BXHIDyuPk+olSAX0aJbSerrA6ag7D5D8I=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "exit": 0,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-z9ebdpig/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-proof-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "exit": 0,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:ea9418fbc6f39c63e05f5b76829d35b37d57d0e3bc9d1bef2086444f93d4677c\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-proof-approver"
+  ],
+  "exit": 1,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:ea9418fbc6f39c63e05f5b76829d35b37d57d0e3bc9d1bef2086444f93d4677c\n",
   "stderr_tail": ""
  },
  {
@@ -752,12 +752,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=1  run_exit=0  output=/tmp/ranex-arch-gxn4nt7u/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=1  run_exit=0  output=/tmp/ranex-arch-z9ebdpig/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -779,12 +779,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:227ac41eaaed66bf0f0e2a2763949d72c08000ac116f7462e43d4ca881b7ff90\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:9c5f406ff661b22a78bb16f44099bedfb357bdcc27483e15c51fd1545995d680\n",
   "stderr_tail": ""
  },
  {
@@ -802,7 +802,7 @@
    "arch-proof-approver"
   ],
   "exit": 0,
-  "stdout_tail": "PASS  gate=landing  subject=sha256:227ac41eaaed66bf0f0e2a2763949d72c08000ac116f7462e43d4ca881b7ff90\n",
+  "stdout_tail": "PASS  gate=landing  subject=sha256:9c5f406ff661b22a78bb16f44099bedfb357bdcc27483e15c51fd1545995d680\n",
   "stderr_tail": ""
  },
  {
@@ -835,12 +835,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-gxn4nt7u/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-z9ebdpig/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -862,12 +862,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:d84ddae6cf0f5101c50cad048ab5b686b6e388f97f8fb8ec4f9d13216b536343\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:ea9418fbc6f39c63e05f5b76829d35b37d57d0e3bc9d1bef2086444f93d4677c\n",
   "stderr_tail": ""
  },
  {
@@ -885,7 +885,7 @@
    "arch-proof-approver"
   ],
   "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:d84ddae6cf0f5101c50cad048ab5b686b6e388f97f8fb8ec4f9d13216b536343\n",
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:ea9418fbc6f39c63e05f5b76829d35b37d57d0e3bc9d1bef2086444f93d4677c\n",
   "stderr_tail": ""
  },
  {
@@ -895,7 +895,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:MctzSuK8d/0Z+DWhxY6d46fMCTedyaprQpit4QnBUmE=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:MctzSuK8d/0Z+DWhxY6d46fMCTedyaprQpit4QnBUmE=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:G3wKCf7Ik1oXUcJtzpwyPPkiHRT7h1wScBtzJ4xZAZg=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:G3wKCf7Ik1oXUcJtzpwyPPkiHRT7h1wScBtzJ4xZAZg=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -905,7 +905,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:nnhPhQ++zIX8HZk+waa4f3uKE/9AyC/mat5wY8UDwXk=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:nnhPhQ++zIX8HZk+waa4f3uKE/9AyC/mat5wY8UDwXk=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:S3tmPFt7tRLE2sWyfXNbLh1Z5gvewRyY93/kM/hAlWY=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:S3tmPFt7tRLE2sWyfXNbLh1Z5gvewRyY93/kM/hAlWY=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -938,12 +938,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-22tb1eem/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-efq_x486/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -965,12 +965,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:dd42b570994f463bef286a895258a2964acd99f362be5c38d0894ac10ea75c72\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:0fe96d81c132b1383d8b5f8a4fd0ee48890298f3498fc0d30a34f29814b49a72\n",
   "stderr_tail": ""
  },
  {
@@ -988,7 +988,7 @@
    "arch-proof-approver"
   ],
   "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): governance/architecture-freeze.json (failed), missing test ID(s): pkg/__init__.py, pkg/cli.py, pkg/foundation.py, pkg/policy.py\n      subject=sha256:dd42b570994f463bef286a895258a2964acd99f362be5c38d0894ac10ea75c72\n",
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): governance/architecture-freeze.json (failed), missing test ID(s): pkg/__init__.py, pkg/cli.py, pkg/foundation.py, pkg/policy.py\n      subject=sha256:0fe96d81c132b1383d8b5f8a4fd0ee48890298f3498fc0d30a34f29814b49a72\n",
   "stderr_tail": ""
  },
  {
@@ -998,7 +998,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:DUyKYLjruwdtYJczkJVoA671pQnu5JZczpfPPHV2l0g=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:DUyKYLjruwdtYJczkJVoA671pQnu5JZczpfPPHV2l0g=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:TztHQg8j4O1zcHjVaV9oOn5gQSP8kYicpoGfdyESNDk=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:TztHQg8j4O1zcHjVaV9oOn5gQSP8kYicpoGfdyESNDk=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -1008,7 +1008,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:o5NrNoWjbgCSr0RBjC8zvJe7MrGPANARqhNkvba917Q=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:o5NrNoWjbgCSr0RBjC8zvJe7MrGPANARqhNkvba917Q=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:/Izl6GOA2bBWjbK+KGj6APtlwfHruPAur7Ue+/P+3sM=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:/Izl6GOA2bBWjbK+KGj6APtlwfHruPAur7Ue+/P+3sM=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -1041,12 +1041,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-12x6nmk3/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-kt490jyq/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -1068,12 +1068,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:fedfe94936cba78a6cb481737b5c7dec1f8fa116ed546c4a47bba141124b1c63\n",
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-proof-producer  exit=0\n          subject=sha256:68b4c28ef508eff825f288d3362499934813ac5370ecb7483527d19ad6962055\n",
   "stderr_tail": ""
  },
  {
@@ -1091,7 +1091,7 @@
    "arch-proof-approver"
   ],
   "exit": 0,
-  "stdout_tail": "PASS  gate=landing  subject=sha256:fedfe94936cba78a6cb481737b5c7dec1f8fa116ed546c4a47bba141124b1c63\n",
+  "stdout_tail": "PASS  gate=landing  subject=sha256:68b4c28ef508eff825f288d3362499934813ac5370ecb7483527d19ad6962055\n",
   "stderr_tail": ""
  },
  {
@@ -1101,7 +1101,7 @@
    "arch-proof-producer"
   ],
   "exit": 0,
-  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:5/gLtCgeXzas5pPZv0wEqVfcmOdBqzCeeyBhg6tT5kk=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:5/gLtCgeXzas5pPZv0wEqVfcmOdBqzCeeyBhg6tT5kk=\n        status: active\n",
+  "stdout_tail": "producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    arch-proof-producer: ed25519:rRm2yhlc8BKQ+QX0mjIQmQdulvuV38hybdSZ/Vv8xvw=\n  principals:\n    arch-proof-producer:\n      role: worker\n      keys:\n      - key: ed25519:rRm2yhlc8BKQ+QX0mjIQmQdulvuV38hybdSZ/Vv8xvw=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -1111,7 +1111,7 @@
    "kernel-verdict-signer"
   ],
   "exit": 0,
-  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:FhyOWBbKB2WVo8lOcQngtsy+XQkKdLG9aim5MAJ5kuU=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:FhyOWBbKB2WVo8lOcQngtsy+XQkKdLG9aim5MAJ5kuU=\n        status: active\n",
+  "stdout_tail": "ucer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:6snvdsYB+3DzvrSFK5qYBuutWYlVJtfmku23XRq5l0c=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:6snvdsYB+3DzvrSFK5qYBuutWYlVJtfmku23XRq5l0c=\n        status: active\n",
   "stderr_tail": ""
  },
  {
@@ -1144,12 +1144,12 @@
    "--freeze",
    "governance/architecture-freeze.json",
    "--expected-freeze-digest",
-   "sha256:a38109cac74c46198d8b61bf30fcbdfdeb6aaddfd3e44120c984f5d91f34fbb9",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
    "--output-format=sarif",
    "--output-file=governance/scan.sarif"
   ],
   "exit": 0,
-  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-f2ezlbfw/subject/governance/scan-manifest.json\n",
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-arch-7bfi4sev/subject/governance/scan-manifest.json\n",
   "stderr_tail": ""
  },
  {
@@ -1167,7 +1167,7 @@
    "arch-proof-approver"
   ],
   "exit": 1,
-  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      no evidence for required claim: architecture\n      subject=sha256:b733169c988c26752b96b3de1bd0b8ffab6dfff7bc1f6180cd3045691c1cf1eb\n",
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      no evidence for required claim: architecture\n      subject=sha256:e8e8a82567df67a9f8d13f6f852acd480bdb9a1dc60bf1b98fb2508eec59f063\n",
   "stderr_tail": ""
  }
 ]

@@ -1,6 +1,6 @@
 """The architecture-freeze claim surface: a scan claim like any other.
 
-ADR-064's first claim family is authored exactly like a ruff scan claim —
+ADR-065's first claim family is authored exactly like a ruff scan claim —
 the kernel's own console script as the scanner, the two canonical SARIF
 tokens, its own frozen manifest — plus the one token this family adds: the
 digest pin that binds the freeze's bytes to the catalog that names it. The
