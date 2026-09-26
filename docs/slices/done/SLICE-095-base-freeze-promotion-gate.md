@@ -1,8 +1,10 @@
-# SLICE-093 — The BASE freeze and the promotion gate (P1)
+# SLICE-095 — The BASE freeze and the promotion gate (P1)
 
-**Status:** open
+**Status:** done
 **Origin:** oracle-science report §5/§8 SLICE-D; captain DIRECT 004+009;
-ADR-063.
+ADR-064. Shipped on PR #130 (merged 2026-09-25); renumbered from SLICE-093
+after the parallel #129/#130 merges tripled that number against the
+one-number-one-document contract.
 
 ## Contract
 

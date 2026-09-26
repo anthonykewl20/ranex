@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SLICE-093 real-data proof: the BASE freeze and its promotion gate.
+"""SLICE-095 real-data proof: the BASE freeze and its promotion gate.
 
 Two phases, because the freeze binds values only a live derivation produces:
 
