@@ -53,6 +53,7 @@ def read(path: Path, keyring: dict[str, str], **context: object):
         gate_id=context.get("gate_id", "landing"),
         catalog_digest=context.get("catalog_digest", CATALOG),
         approver_id=context.get("approver_id", "owner"),
+        approvers=context.get("approvers"),
     )
 
 
@@ -67,10 +68,120 @@ def test_reader_state_mapping_is_total_without_default_arm() -> None:
     expected = {
         "absent", "malformed", "unsigned", "bad-signature", "unknown-signer",
         "wrong-payload-type", "missing-key", "context-mismatch", "unknown-cause",
-        "verified",
+        "unapproved", "verified",
     }
     assert {str(state) for state in verdict_reader.ReadState} == expected
     assert set(verdict_reader.STATE_PRESENTATION) == set(verdict_reader.ReadState)
+
+
+# --- RISK-07: the catalogued approver's own signature on the verdict ------
+#
+# The record below names approver_id "owner". `approver()` mints that
+# principal's own keypair so the arms can sign, strip and mutate the second
+# signature the way a real envelope carries it.
+
+
+def approver() -> tuple[str, str, dict[str, tuple[str, ...]]]:
+    """The catalogued approver's keypair and the reader's approver map."""
+
+    private, public = generate_keypair()
+    return private, public, {"owner": (public,)}
+
+
+def cosigned(private: str, approver_private: str) -> list[dict[str, object]]:
+    from ranex.foundation import verdict_signing
+
+    projected = record()
+    content = {key: value for key, value in projected.items() if key != "record_digest"}
+    return [
+        {"signer_id": SIGNER, "signature": verdict_signing.sign_verdict(content, private)},
+        {"signer_id": "owner", "signature": verdict_signing.sign_verdict(content, approver_private)},
+    ]
+
+
+def test_reader_verifies_every_signature_and_passes_cosigned_verdict(tmp_path: Path) -> None:
+    private, public = generate_keypair()
+    approver_private, _, approvers = approver()
+    value = envelope(private)
+    value["signatures"] = cosigned(private, approver_private)
+    path = write(tmp_path / "verdict.json", value)
+
+    assert str(read(path, {SIGNER: public}, approvers=approvers).state) == "verified"
+
+
+def test_reader_returns_unapproved_when_catalogued_approver_did_not_sign(
+    tmp_path: Path,
+) -> None:
+    private, public = generate_keypair()
+    _, _, approvers = approver()
+    # The archived shape: the verdict signer alone, the record naming an
+    # approver the caller's catalog carries.
+    path = write(tmp_path / "verdict.json", envelope(private))
+
+    assert str(read(path, {SIGNER: public}, approvers=approvers).state) == "unapproved"
+
+
+def test_single_signature_stays_readable_without_the_approver_catalog(
+    tmp_path: Path,
+) -> None:
+    # ADR-057's precedent, held: a caller that verifies archives (no approver
+    # map, because it is not deciding anything) still reads the single-signature
+    # record VERIFIED.
+    private, public = generate_keypair()
+    path = write(tmp_path / "verdict.json", envelope(private))
+
+    assert str(read(path, {SIGNER: public}).state) == "verified"
+
+
+def test_reader_refuses_altered_or_foreign_approver_signature(tmp_path: Path) -> None:
+    private, public = generate_keypair()
+    _, _, approvers = approver()
+    other_private, _ = generate_keypair()
+    value = envelope(private)
+    value["signatures"] = cosigned(private, other_private)
+    path = write(tmp_path / "verdict.json", value)
+
+    assert str(read(path, {SIGNER: public}, approvers=approvers).state) == "bad-signature"
+
+
+def test_reader_refuses_unknown_or_duplicate_co_signers(tmp_path: Path) -> None:
+    from ranex.foundation import verdict_signing
+
+    private, public = generate_keypair()
+    _, _, approvers = approver()
+    projected = record()
+    content = {key: value for key, value in projected.items() if key != "record_digest"}
+    judgment = verdict_signing.sign_verdict(content, private)
+    value = envelope(private)
+    value["signatures"] = [
+        {"signer_id": SIGNER, "signature": judgment},
+        # Neither the judgment keyring nor the approver catalog carries this id.
+        {"signer_id": "stranger", "signature": judgment},
+    ]
+    stranger = write(tmp_path / "stranger.json", value)
+    assert str(read(stranger, {SIGNER: public}, approvers=approvers).state) == "unknown-signer"
+
+    value["signatures"] = [
+        {"signer_id": SIGNER, "signature": judgment},
+        # One signer, two entries: which of the two is real would depend on
+        # read order, so the shape itself is refused.
+        {"signer_id": SIGNER, "signature": judgment},
+    ]
+    duplicate = write(tmp_path / "duplicate.json", value)
+    assert str(read(duplicate, {SIGNER: public}, approvers=approvers).state) == "malformed"
+
+
+def test_catalogued_approver_may_not_stand_in_for_the_judgment_signer(
+    tmp_path: Path,
+) -> None:
+    # Only the approver's key signed: the record's signer-of-record is unknown
+    # to the judgment keyring, so the approver cannot mint verdicts alone.
+    approver_private, _, approvers = approver()
+    _, judgment_public = generate_keypair()
+    value = envelope(approver_private, signer_id="owner")
+    path = write(tmp_path / "verdict.json", value)
+
+    assert str(read(path, {SIGNER: judgment_public}, approvers=approvers).state) == "unknown-signer"
 
 
 def test_reader_distinguishes_absence_and_missing_key(tmp_path: Path) -> None:

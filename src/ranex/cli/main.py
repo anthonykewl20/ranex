@@ -204,6 +204,7 @@ DEFAULT_PRODUCERS = "governance/producers.yaml"
 DEFAULT_VERDICT_DIR = "governance/verdicts"
 VERDICT_SIGNING_KEY_VARIABLE = "RANEX_VERDICT_SIGNING_KEY"
 VERDICT_DIR_VARIABLE = "RANEX_VERDICT_DIR"
+APPROVER_SIGNING_KEY_VARIABLE = "RANEX_APPROVER_SIGNING_KEY"
 
 
 def default_store() -> str:
@@ -843,6 +844,64 @@ def private_signing_key(
     return key_path.read_text(encoding="utf-8").strip()
 
 
+def require_catalogued_approver(
+    governed_root: Path, keyring_source: bytes, keyring_path: Path, approver_id: str
+) -> tuple[str, str]:
+    """Prove approver key possession BEFORE judgment (RISK-07).
+
+    `--approver A` names a principal, and this makes the claim one a key has
+    to back: `RANEX_APPROVER_SIGNING_KEY` must be present, its public half
+    must be one of principal A's ACTIVE keys, and A must hold the `approver`
+    role. Any other case is an operational refusal naming its cause —
+    `E-APPROVER-KEY-ABSENT`, `E-APPROVER-UNKNOWN`, `E-APPROVER-ROLE`,
+    `E-APPROVER-KEY-MISMATCH` — raised before `evaluate()` runs, so a refusal
+    writes no verdict, no journal row, and publishes nothing. The kernel is
+    untouched: `evaluate()` still receives the id string and still applies
+    its own no-self-approval comparison; this is the proof beside it.
+    """
+
+    from ranex.policy.adapters.configuration.yaml.principal_catalog import (
+        PrincipalCatalogError,
+        load_principals_text,
+    )
+
+    raw_path = os.environ.get(APPROVER_SIGNING_KEY_VARIABLE)
+    if not raw_path:
+        raise ValueError(
+            f"E-APPROVER-KEY-ABSENT: {APPROVER_SIGNING_KEY_VARIABLE} is not set; "
+            "refusing to judge without proving the approver holds their key"
+        )
+    try:
+        principals = load_principals_text(keyring_source.decode("utf-8"), keyring_path)
+    except PrincipalCatalogError as exc:
+        # A catalog that names no principals at all cannot name this one
+        # either; the operator's question is "who is the approver", and the
+        # answer is the same code as an id the catalog never carried.
+        raise ValueError(
+            f"E-APPROVER-UNKNOWN: the committed catalog at {keyring_path} "
+            f"declares no principals ({exc})"
+        ) from exc
+    principal = principals.principals.get(approver_id)
+    if principal is None:
+        raise ValueError(
+            f"E-APPROVER-UNKNOWN: approver {approver_id!r} is not a principal in "
+            f"the committed catalog at {keyring_path}"
+        )
+    if principal.role != "approver":
+        raise ValueError(
+            f"E-APPROVER-ROLE: principal {approver_id!r} holds role "
+            f"{principal.role!r}, not 'approver'; the identity producing "
+            "evidence cannot approve it"
+        )
+    private_key = private_signing_key(governed_root, variable=APPROVER_SIGNING_KEY_VARIABLE)
+    if public_key_for(private_key) not in principal.active_keys:
+        raise ValueError(
+            f"E-APPROVER-KEY-MISMATCH: the key at {raw_path} is not one of "
+            f"principal {approver_id!r}'s active keys in the committed catalog"
+        )
+    return approver_id, private_key
+
+
 def refuse_unwritable_evidence(path: Path) -> None:
     """Refuse now if the record could not be written afterwards.
 
@@ -983,6 +1042,14 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             else:
                 load_scan_manifest_bytes(scan_manifest_sources[name])
         keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
+        # RISK-07: possession before judgment. The approver's key is proven
+        # against the same committed catalog bytes that will admit evidence,
+        # BEFORE the evaluator runs — a refusal here writes no journal row,
+        # produces no verdict, and publishes nothing, so an unauthenticated
+        # approver name can no longer reach the kernel at all.
+        approver = require_catalogued_approver(
+            governed_root, keyring_source, keyring_path, args.approver
+        )
         # The root is passed so the containment decision `run` made about
         # argv[0] is taken again here, from the signed path in the record. The
         # gate and catalog digest are passed for the same reason: a record binds
@@ -1034,6 +1101,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
                 root=governed_root,
                 signer_id=trust_keyring.verdict_signer_id,
                 private_key=private_key,
+                approver=approver,
             )
             # SLICE-092 (C1): compose the repair envelope at this, the
             # ADR-019/020 projection boundary — the one place causes and
@@ -1237,6 +1305,11 @@ def _verified_verdict_journal_head(
     result = read_verdict_unbound(
         path,
         {trust_keyring.verdict_signer_id: trust_keyring.verdict_signer_public_key},
+        # RISK-07: a verdict naming a catalogued approver anchors nothing
+        # unless it carries that approver's own signature — UNAPPROVED is
+        # refused by the `is not VERIFIED` check exactly like every other
+        # non-verified state.
+        approvers=trust_keyring.approvers,
     )
     if result.state is not ReadState.VERIFIED or result.record is None:
         raise ValueError(
@@ -4395,6 +4468,7 @@ def cmd_github_check_publish(args: argparse.Namespace) -> int:
             gate_id=args.gate,
             catalog_digest=catalog_digest,
             approver_id=args.approver,
+            approvers=trust_keyring.approvers,
         )
         moment = time.time()
         decision, _ = publish_check(
@@ -4469,12 +4543,24 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
             private_key = private_signing_key(root, variable=VERDICT_SIGNING_KEY_VARIABLE)
             if public_key_for(private_key) != trust_keyring.verdict_signer_public_key:
                 raise ValueError("verdict signing key does not match the committed verdict signer")
+            # RISK-07: the receiver's minimal environment carries the
+            # approver's key exactly as it carries the verdict signer's —
+            # the evaluation it drives must prove possession before judgment.
+            require_catalogued_approver(
+                root,
+                committed_trust_root(
+                    root, "HEAD", args.producers, producers, "producer keyring"
+                ),
+                producers,
+                args.approver,
+            )
             evaluator = EvidenceEvaluator(
                 root, args.evidence, args.gate, args.gate_catalog, args.producers,
                 args.suite_manifest, args.approver,
                 resolve_within_repository(root, args.verdicts_dir),
                 Path(os.environ[VERDICT_SIGNING_KEY_VARIABLE]),
                 resolve_within_repository(root, args.state_dir),
+                approver_key=Path(os.environ[APPROVER_SIGNING_KEY_VARIABLE]),
             )
         config = ReceiverConfig(
             repo_root=root,
@@ -4483,6 +4569,7 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
             keyring={
                 trust_keyring.verdict_signer_id: trust_keyring.verdict_signer_public_key
             },
+            approvers=trust_keyring.approvers,
             gate_id=args.gate,
             catalog_digest=catalog_digest,
             approver_id=args.approver,
