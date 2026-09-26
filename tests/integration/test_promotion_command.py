@@ -1,6 +1,6 @@
 """The promotion command against a real git checkout, end to end.
 
-SLICE-093. The unit tests judge the pure function; these rows hold the
+SLICE-095. The unit tests judge the pure function; these rows hold the
 command to its read discipline: the freeze is the gauge, so it is read
 committed at the ref being judged (an uncommitted edit is an unreviewed
 rewrite of every future baseline), while the claim is read from disk as it
