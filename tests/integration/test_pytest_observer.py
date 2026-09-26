@@ -19,7 +19,7 @@ application = test_external_repository.application
 
 
 def test_explicit_xpass_blocks_signed_acceptance_and_recovers(application):
-    repo, worker, signer, _public = application
+    repo, worker, signer, _public, approver = application
     command = yaml.safe_load((repo / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
     frozen = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
                     '--artifact', 'governance/suite_results.xml', '--', *command,
@@ -37,14 +37,15 @@ def test_explicit_xpass_blocks_signed_acceptance_and_recovers(application):
     records = json.loads((repo / 'governance/evidence.json').read_bytes())
     assert records[-1]['suite_results']['counts']['xpassed'] == 1
     judged = invoke(repo, 'gate', 'evaluate', 'HEAD', '--external-repository', str(repo),
-                    '--approver', 'pilot', verdict_key=signer)
+                    '--approver', 'pilot', verdict_key=signer, approver_key=approver)
     assert judged.returncode == 1 and '(xpassed)' in judged.stdout, judged.stdout + judged.stderr
     (repo / 'test_application.py').write_text(source)
     commit(repo)
     assert invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
                   '--claim', 'tests-executed', '--', *command, key=worker).returncode == 0
     assert invoke(repo, 'gate', 'evaluate', 'HEAD', '--external-repository', str(repo),
-                  '--approver', 'pilot', verdict_key=signer).returncode == 0
+                  '--approver', 'pilot', verdict_key=signer,
+                  approver_key=approver).returncode == 0
     # An ordinary pytest configuration can disable an environment-loaded plugin.
     # A passing exit without the marker must not replace the signed evidence.
     evidence = (repo / 'governance/evidence.json').read_bytes()
@@ -138,7 +139,7 @@ def test_strict_xpass(): pass
 
 
 def test_delegation_reports_explicit_xpass_before_materialisation_cleanup(application):
-    repo, _worker, _signer, _public = application
+    repo, _worker, _signer, _public, _approver = application
     command = yaml.safe_load((repo / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
     frozen = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
                     '--artifact', 'governance/suite_results.xml', '--', *command)

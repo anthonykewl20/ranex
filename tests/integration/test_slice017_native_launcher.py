@@ -133,7 +133,12 @@ RESPONSE_LIMIT = 65_536
 # the  subcommand (C3 census); DEFAULT_CALIBRATION_DIR + antislop
 # dispatch in run/gate/freeze. No confinement, launcher or strict-local
 # call site is touched. This pin is the merge of all three.
-MAIN_PY_SHA256 = "efd794824d98faedff58eb29a731f2d824d854799caab42816e1e7c6a7313353"
+# Issue #107 (RISK-07) adds the catalogued approver: APPROVER_SIGNING_KEY_VARIABLE,
+# require_catalogued_approver (possession proved before judgment; the
+# E-APPROVER-* refusals), the approver countersignature handed to publish_verdict,
+# and the approvers map threaded to the verdict readers. No confinement,
+# launcher or strict-local call site is touched. This pin is the merge of all four.
+MAIN_PY_SHA256 = "e5721e09a78205560a803dbf61e30e6f5b66c29e96219a0b53233c15c5bea2b8"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

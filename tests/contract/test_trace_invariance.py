@@ -80,11 +80,23 @@ class _Subject:
         self.key = root.parent / "worker.key"
         self.key.write_text(private + "\n", encoding="utf-8")
         self.key.chmod(0o600)
+        # RISK-07: the approver the spine names is a catalogued second
+        # identity with its own key, held outside the subject like the
+        # worker's. Spines prove possession before every judgment.
+        approving, approver_public = generate_keypair()
+        self.approver = root.parent / "approver.key"
+        self.approver.write_text(approving + "\n", encoding="utf-8")
+        self.approver.chmod(0o600)
         (root / "file.txt").write_text("content\n", encoding="utf-8")
         (root / "check.sh").write_text(CHECK_SCRIPT, encoding="utf-8")
         (root / "gates.yaml").write_text(GATES, encoding="utf-8")
         (root / "producers.yaml").write_text(
-            f"producers:\n  worker: {public}\n", encoding="utf-8"
+            f"producers:\n  worker: {public}\n"
+            "principals:\n"
+            f"  worker:\n    role: worker\n    keys:\n      - key: {public}\n        status: active\n"
+            f"  reviewer:\n    role: approver\n    keys:\n"
+            f"      - key: {approver_public}\n        status: active\n",
+            encoding="utf-8",
         )
         (root / ".gitignore").write_text("evidence.json\n", encoding="utf-8")
         shutil.copytree(PROJECT / "src" / "ranex", root / "src" / "ranex")
@@ -97,6 +109,7 @@ class _Subject:
             "PYTHONPATH": str(self.root / "src"),
             "PYTHONDONTWRITEBYTECODE": "1",
             "RANEX_SIGNING_KEY": str(self.key),
+            "RANEX_APPROVER_SIGNING_KEY": str(self.approver),
         }
         for name in TRACE_VARIABLES:
             env.pop(name, None)

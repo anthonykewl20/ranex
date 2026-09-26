@@ -47,6 +47,7 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.foundation.canonical import command_digest
@@ -104,6 +105,8 @@ class Keys:
     root: Path
     private: dict[str, str] = field(default_factory=dict)
     public: dict[str, str] = field(default_factory=dict)
+    approver_path: str = ""
+    approver_public: str = ""
 
     def path(self, producer: str) -> Path:
         return self.root / f"{producer}.key"
@@ -123,6 +126,9 @@ def keys(tmp_path: Path) -> Keys:
         path = bundle.path(producer)
         path.write_text(private_key + "\n", encoding="utf-8")
         path.chmod(0o600)
+    # RISK-07: the approver is a second identity, never a producer's key.
+    minted_path, minted_public = _approver.mint_approver(tmp_path)
+    bundle.approver_path, bundle.approver_public = str(minted_path), minted_public
     return bundle
 
 
@@ -144,7 +150,13 @@ def repo(tmp_path: Path) -> Path:
     return repository
 
 
-def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
+def invoke(
+    repo: Path,
+    argv: list[str],
+    key_path: Path | None = None,
+    *,
+    approver_path: str | None = None,
+) -> int:
     from ranex.cli.main import main
 
     with pytest.MonkeyPatch.context() as monkeypatch:
@@ -156,6 +168,10 @@ def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(key_path))
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
         return main(argv)
 
 
@@ -175,10 +191,20 @@ def keyring_text(**producers: str) -> str:
     return f"producers:\n{lines}\n"
 
 
-def write_keyring(repo: Path, path: str = "producers.yaml", **producers: str) -> None:
+def write_keyring(
+    repo: Path,
+    path: str = "producers.yaml",
+    *,
+    approver_public: str | None = None,
+    **producers: str,
+) -> None:
     target = repo / path
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(keyring_text(**producers), encoding="utf-8")
+    # RISK-07: only the reviewed trust root carries the catalogued approver;
+    # the attacker keyrings below are refused before any identity resolves.
+    if approver_public is not None:
+        _approver.register_approver(target, "reviewer", approver_public)
 
 
 def git_output(repo: Path, *args: str) -> str:
@@ -292,6 +318,7 @@ def run_cmd(
 
 def evaluate(
     repo: Path,
+    keys: Keys,
     *,
     catalog: str = "gates.yaml",
     producers: str = "producers.yaml",
@@ -307,6 +334,7 @@ def evaluate(
             "--producers", producers,
             "--approver", approver,
         ],
+        approver_path=keys.approver_path,
     )
 
 
@@ -350,7 +378,9 @@ def test_gate_catalog_at_an_uncarried_path_is_refused(
     the journal then preserves the substitute as if it had been the policy.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     commit_all(repo)
 
     assert not check_passes(repo), (
@@ -361,7 +391,7 @@ def test_gate_catalog_at_an_uncarried_path_is_refused(
     assert run_cmd(
         repo, keys.path("worker"), "sh", "-c", "exit 0", claim="trivial"
     ) == EXIT_PASS, "the honest observation this attack reuses must be recorded"
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "the committed gate must not already be satisfied, or the flip below "
         "proves nothing"
     )
@@ -373,7 +403,7 @@ def test_gate_catalog_at_an_uncarried_path_is_refused(
     )
 
     capsys.readouterr()
-    code = evaluate(repo, catalog=UNCARRIED_CATALOG)
+    code = evaluate(repo, keys, catalog=UNCARRIED_CATALOG)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -410,7 +440,9 @@ def test_producer_keyring_at_an_uncarried_path_is_refused(
     computed against whichever file this flag names.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     commit_all(repo)
 
     forged = signed(
@@ -423,7 +455,7 @@ def test_producer_keyring_at_an_uncarried_path_is_refused(
     )
     write_evidence(repo, [forged])
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "mallory must be unregistered in the committed keyring, or this test "
         "proves nothing"
     )
@@ -435,7 +467,7 @@ def test_producer_keyring_at_an_uncarried_path_is_refused(
     )
 
     capsys.readouterr()
-    code = evaluate(repo, producers=UNCARRIED_KEYRING)
+    code = evaluate(repo, keys, producers=UNCARRIED_KEYRING)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -474,7 +506,9 @@ def test_gitignored_producer_keyring_is_refused(
     suspicion.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     (repo / ".gitignore").write_text(
         ".cache/\nevidence.json\ngovernance/\n", encoding="utf-8"
     )
@@ -505,7 +539,7 @@ def test_gitignored_producer_keyring_is_refused(
     )
 
     capsys.readouterr()
-    code = evaluate(repo, producers=HIDDEN_KEYRING)
+    code = evaluate(repo, keys, producers=HIDDEN_KEYRING)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -547,7 +581,9 @@ def test_committed_symlink_to_an_uncarried_catalog_is_refused(
     reach a PASS.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     (repo / "gates.yaml").unlink()
     (repo / "gates.yaml").symlink_to(SYMLINK_TARGET)
     commit_all(repo)
@@ -579,7 +615,7 @@ def test_committed_symlink_to_an_uncarried_catalog_is_refused(
     )
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -617,7 +653,9 @@ def test_a_path_normalising_onto_a_committed_path_is_still_the_trust_root(
     carry. A refusal that can be spelled around is not a refusal.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     (repo / "nested").mkdir()
     (repo / "nested" / "keep.txt").write_text("keep\n", encoding="utf-8")
     commit_all(repo)
@@ -633,7 +671,7 @@ def test_a_path_normalising_onto_a_committed_path_is_still_the_trust_root(
     )
 
     capsys.readouterr()
-    tampered_code = evaluate(repo, catalog="./nested/../gates.yaml")
+    tampered_code = evaluate(repo, keys, catalog="./nested/../gates.yaml")
     tampered_output = "".join(capsys.readouterr())
 
     assert tampered_code == EXIT_USAGE, (
@@ -650,7 +688,7 @@ def test_a_path_normalising_onto_a_committed_path_is_still_the_trust_root(
     (repo / UNCARRIED_CATALOG).write_text(build_gates("trivial"), encoding="utf-8")
 
     capsys.readouterr()
-    substituted_code = evaluate(repo, catalog=f"./nested/../{UNCARRIED_CATALOG}")
+    substituted_code = evaluate(repo, keys, catalog=f"./nested/../{UNCARRIED_CATALOG}")
     substituted_output = "".join(capsys.readouterr())
 
     assert substituted_code == EXIT_USAGE, (
@@ -686,7 +724,9 @@ def test_committed_catalog_and_keyring_still_reach_a_pass(
     """
 
     (repo / "answer.txt").write_text(PASSING_ANSWER, encoding="utf-8")
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     commit_all(repo)
 
     assert check_passes(repo), (
@@ -699,7 +739,7 @@ def test_committed_catalog_and_keyring_still_reach_a_pass(
     )
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -795,7 +835,9 @@ def test_a_catalog_swapped_after_the_check_does_not_decide_the_verdict(
     the obvious way there, and this test is written not to require it.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     commit_all(repo)
 
     assert not check_passes(repo), (
@@ -813,7 +855,7 @@ def test_a_catalog_swapped_after_the_check_does_not_decide_the_verdict(
         "HEAD must require the claim this tree fails, or the flip below proves "
         "nothing"
     )
-    assert evaluate(repo) == EXIT_FAIL, (
+    assert evaluate(repo, keys) == EXIT_FAIL, (
         "the committed catalog must FAIL this tree before the swap, or there is "
         "no verdict for the swap to change"
     )
@@ -823,7 +865,7 @@ def test_a_catalog_swapped_after_the_check_does_not_decide_the_verdict(
     )
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -876,7 +918,9 @@ def test_a_keyring_swapped_after_the_check_does_not_admit_a_record(
     refusal that names the record a human has to open.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     commit_all(repo)
 
     write_evidence(
@@ -893,7 +937,7 @@ def test_a_keyring_swapped_after_the_check_does_not_admit_a_record(
         ],
     )
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "mallory must be unregistered in the committed keyring, or this test "
         "proves nothing"
     )
@@ -905,7 +949,7 @@ def test_a_keyring_swapped_after_the_check_does_not_admit_a_record(
     )
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -963,7 +1007,9 @@ def test_the_swap_harness_alone_does_not_disturb_an_honest_pass(
     """
 
     (repo / "answer.txt").write_text(PASSING_ANSWER, encoding="utf-8")
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(
+        repo, worker=keys.public["worker"], approver_public=keys.approver_public
+    )
     commit_all(repo)
 
     assert check_passes(repo), (
@@ -977,7 +1023,7 @@ def test_the_swap_harness_alone_does_not_disturb_an_honest_pass(
     entered = swap_inside_the_window(monkeypatch, repo, {})
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
