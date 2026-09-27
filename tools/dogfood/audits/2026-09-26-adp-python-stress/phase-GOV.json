@@ -1,0 +1,445 @@
+{
+ "schema": "ranex-adp-python-stress-phase-GOV-v1",
+ "phase": "GOV-governed-marginal",
+ "prereg_sha256": "cb46915854572c448b7cb073db6944d2e765a3af86d21902ddcc4a4c97c06445",
+ "status_vocabulary": [
+  "VERIFIED",
+  "GAP",
+  "FALSE-PASS",
+  "NON-DETERMINISTIC",
+  "UNVERIFIED"
+ ],
+ "notes": "Every arm sequenced 3x from a fresh seed; verdict strings compared.",
+ "arms": [
+  {
+   "arm": "R6a-clean",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "R6b-planted",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 1,
+       "verdict": "subject=sha256:27a7e49f2c98e77b10e2f826984b0ccdca5da992c42b9858ffc4c456ebf51ed5"
+      },
+      {
+       "step": "evaluate",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | the bound command was observed failing: lint-clean | subject=sha256:27a7e49f2c98e77b10e2f826984b0ccdca5da992c42b9858ffc4c456ebf51ed5"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 1,
+       "verdict": "subject=sha256:27a7e49f2c98e77b10e2f826984b0ccdca5da992c42b9858ffc4c456ebf51ed5"
+      },
+      {
+       "step": "evaluate",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | the bound command was observed failing: lint-clean | subject=sha256:27a7e49f2c98e77b10e2f826984b0ccdca5da992c42b9858ffc4c456ebf51ed5"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 1,
+       "verdict": "subject=sha256:27a7e49f2c98e77b10e2f826984b0ccdca5da992c42b9858ffc4c456ebf51ed5"
+      },
+      {
+       "step": "evaluate",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | the bound command was observed failing: lint-clean | subject=sha256:27a7e49f2c98e77b10e2f826984b0ccdca5da992c42b9858ffc4c456ebf51ed5"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "R6c-tree-moved",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "evaluate-after-move",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | evidence bound to a different subject digest: lint-clean | subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "evaluate-after-move",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | evidence bound to a different subject digest: lint-clean | subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "evaluate-after-move",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | evidence bound to a different subject digest: lint-clean | subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "R6d-cross-gate",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "run-audit",
+       "rc": 0,
+       "verdict": "subject=sha256:45d9226832a1ae2e4e358f8d3d7ee48bc13b3e6534d89f540f20b40adaca8355"
+      },
+      {
+       "step": "evaluate-landing",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | REFUSED record 0 [policy-context-mismatch] record was produced for gate 'audit', not 'landing'; one catalog defines many gates and evidence for one does not satisfy another | no evid"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run-audit",
+       "rc": 0,
+       "verdict": "subject=sha256:45d9226832a1ae2e4e358f8d3d7ee48bc13b3e6534d89f540f20b40adaca8355"
+      },
+      {
+       "step": "evaluate-landing",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | REFUSED record 0 [policy-context-mismatch] record was produced for gate 'audit', not 'landing'; one catalog defines many gates and evidence for one does not satisfy another | no evid"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run-audit",
+       "rc": 0,
+       "verdict": "subject=sha256:45d9226832a1ae2e4e358f8d3d7ee48bc13b3e6534d89f540f20b40adaca8355"
+      },
+      {
+       "step": "evaluate-landing",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | REFUSED record 0 [policy-context-mismatch] record was produced for gate 'audit', not 'landing'; one catalog defines many gates and evidence for one does not satisfy another | no evid"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "R6e-no-run",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "evaluate-no-evidence",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | no evidence for required claim: lint-clean | subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "evaluate-no-evidence",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | no evidence for required claim: lint-clean | subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "evaluate-no-evidence",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | no evidence for required claim: lint-clean | subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "R6f-recovery",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "recovery-run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "recovery-evaluate",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "recovery-run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "recovery-evaluate",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "recovery-run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "recovery-evaluate",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "SP9-dirty-tree",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate-dirty",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate-dirty",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate-dirty",
+       "rc": 0,
+       "verdict": "PASS  gate=landing"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "AD8-catalog-tamper",
+   "repeats": [
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate-tampered-catalog",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | REFUSED record 0 [policy-context-mismatch] record was produced under catalog sha256:6a702f4843c9a55202e1df8fd00a95c45c8409e996408e615c5ea9bf3b436993, and this gate is defined by sha2"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate-tampered-catalog",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | REFUSED record 0 [policy-context-mismatch] record was produced under catalog sha256:6a702f4843c9a55202e1df8fd00a95c45c8409e996408e615c5ea9bf3b436993, and this gate is defined by sha2"
+      }
+     ]
+    },
+    {
+     "steps": [
+      {
+       "step": "run",
+       "rc": 0,
+       "verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813"
+      },
+      {
+       "step": "evaluate-tampered-catalog",
+       "rc": 1,
+       "verdict": "FAIL  gate=landing  rule=LINT_CLEAN | REFUSED record 0 [policy-context-mismatch] record was produced under catalog sha256:6a702f4843c9a55202e1df8fd00a95c45c8409e996408e615c5ea9bf3b436993, and this gate is defined by sha2"
+      }
+     ]
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "ENV-i-governed-cycle",
+   "repeats": [
+    {
+     "run_rc": 0,
+     "run_verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813",
+     "eval_rc": 0,
+     "eval_verdict": "PASS  gate=landing"
+    },
+    {
+     "run_rc": 0,
+     "run_verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813",
+     "eval_rc": 0,
+     "eval_verdict": "PASS  gate=landing"
+    },
+    {
+     "run_rc": 0,
+     "run_verdict": "subject=sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813",
+     "eval_rc": 0,
+     "eval_verdict": "PASS  gate=landing"
+    }
+   ],
+   "deterministic": true
+  },
+  {
+   "arm": "AD7d-evidence-record-binds",
+   "record_keys": [
+    "catalog_digest",
+    "claim_id",
+    "command",
+    "command_digest",
+    "confinement_profile_digest",
+    "confinement_result_digest",
+    "envelope_type",
+    "executable_path",
+    "exit_code",
+    "gate_id",
+    "producer_id",
+    "signature",
+    "subject_digest",
+    "suite_results"
+   ],
+   "record": {
+    "claim_id": "lint-clean",
+    "subject_digest": "sha256:8a7ce157a9feec65bc34c2ee1c483f7cc05b2232044cd17aa30013dac2151813",
+    "command": "python3 tools/scan.py src",
+    "command_digest": "sha256:a464bacf26bfeb876eb4145d9ecff625effa449d34ecc676d6b60e3fed14ff0f",
+    "executable_path": "/usr/bin/python3.12",
+    "exit_code": 0,
+    "catalog_digest": "sha256:6a702f4843c9a55202e1df8fd00a95c45c8409e996408e615c5ea9bf3b436993"
+   },
+   "signature_present": true,
+   "note": "evaluate decides on this signed record; the scanner's own output artifact is never re-read at evaluation time"
+  }
+ ],
+ "host_facts": {
+  "captured_at": "2026-09-26T16:28:30+0800",
+  "host": "desk-tony",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+  "python": "3.14.7",
+  "cpu_count": 16,
+  "uname": {
+   "system": "Linux",
+   "node": "desk-tony",
+   "release": "7.0.0-31-generic",
+   "version": "#31~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Aug 10 09:38:02 UTC 2",
+   "machine": "x86_64",
+   "processor": "x86_64"
+  },
+  "engines": {
+   "ruff": "ruff 0.16.2",
+   "pyrefly": "pyrefly 1.2.0",
+   "uv": "uv 0.11.26 (x86_64-unknown-linux-gnu)"
+  },
+  "kernel_verdict_py_sha256": "2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+  "disk_free_gb": 332.0
+ }
+}

@@ -1,0 +1,507 @@
+{
+ "arms": {
+  "A1-boundary-move": {
+   "observed": {
+    "after_move": "FAIL",
+    "note": "the freeze governs package_root only; consumers outside the root are invisible to the frozen universe",
+    "pristine": "PASS",
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "GAP (PASS: the freeze governs only package_root)"
+  },
+  "A2-re-home": {
+   "observed": {
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "scan": {
+     "artifact_sha": null,
+     "exit": 2,
+     "findings": [],
+     "stderr_tail": [
+      "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/foundation/__init__.py; admit them through a freeze update, never an acceptance"
+     ],
+     "wall_seconds": 0.052
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (exit 2, undeclared file)"
+  },
+  "A3-auto-bless": {
+   "observed": {
+    "blocked_before_bless": "FAIL",
+    "guard": "designed promote-ship path; the machine guard is ADR-017 delegated-scope disjointness (freeze + manifest sit outside every delegated scope) plus the operator-approval origin rule (ADR-065); see tests/integration/test_delegation_command.py",
+    "refreeze_exit": 0,
+    "verdict_after_bless": "PASS",
+    "vocabulary": "GAP"
+   },
+   "prediction": "PASS by design (promote-ship shape); guard is process + ADR-017 disjointness, cited"
+  },
+  "A6-dynamic-import": {
+   "observed": {
+    "dynamic_edge_invisible": true,
+    "note": "v1 semantics: an import edge is an import statement; dynamic imports are a documented static-analysis limit",
+    "repeat_vocabularies": [
+     "GAP",
+     "GAP",
+     "GAP"
+    ],
+    "static_control_caught": true,
+    "vocabulary": "GAP"
+   },
+   "prediction": "GAP (static walk cannot see it; documented v1)"
+  },
+  "A7-star-import": {
+   "observed": {
+    "function_body_import_found_at_line": 6,
+    "nested_ok": true,
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "star_edge_to_root": true,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (edge to the root module, as documented)"
+  },
+  "A9-alias-forms": {
+   "observed": {
+    "all_attributed": true,
+    "forms": {
+     "from-aliased": true,
+     "from-module-import-name": true,
+     "import-aliased": true,
+     "import-dotted": true,
+     "relative-level1": true,
+     "relative-named": true
+    },
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (every form attributes to the target module)"
+  },
+  "B1-stdlib": {
+   "observed": {
+    "misclassified_findings": 0,
+    "rate": "0/50",
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "stdlib_and_external_imports": 50,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (0/50 findings)"
+  },
+  "B3-collision": {
+   "observed": {
+    "collision_findings": [],
+    "import_json_attributed_to_local_package": false,
+    "note": "under a package_root named like a stdlib module the scanner cannot distinguish stdlib from local intent; attribution is local (1/1 under the collision precondition)",
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "GAP (local attribution under collision precondition)"
+  },
+  "D1-byte-identity": {
+   "observed": {
+    "artifact_shas": [
+     "sha256:83f806153db1f1d3f54ab6f09c10d95cc6a8694f13f007129d4691156552f3b2",
+     "..."
+    ],
+    "distinct": 1,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (5/5 identical artifact bytes)"
+  },
+  "D2-relocation": {
+   "observed": {
+    "shas": [
+     "sha256:83f806153db1f1d3f54ab6f09c10d95cc6a8694f13f007129d4691156552f3b2",
+     "sha256:83f806153db1f1d3f54ab6f09c10d95cc6a8694f13f007129d4691156552f3b2"
+    ],
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (identical bytes from two absolute paths)"
+  },
+  "E1-cycles": {
+   "observed": {
+    "allowed_both": {
+     "artifact_sha": "sha256:2502592d03a43421ffcc2e791b2dcbcdd6c4c3d3f6d004d6181682aeb692febb",
+     "exit": 0,
+     "findings": [],
+     "stderr_tail": [],
+     "wall_seconds": 0.054
+    },
+    "denied": {
+     "artifact_sha": "sha256:269baa5ed5c126225cae746de933cf1648a8f4109e45421f8dcadc5850dc2d29",
+     "exit": 0,
+     "findings": [
+      {
+       "file": "pkg/foundation.py",
+       "fingerprint": "d99680dd2e71acf29b8f9605344d82d24dcb1e89cea6679328486ad0ce38e747",
+       "line": 3,
+       "rule": "arch/forbidden-import"
+      }
+     ],
+     "stderr_tail": [],
+     "wall_seconds": 0.057
+    },
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (denied direction FAILs)"
+  },
+  "E2-broken-symlink": {
+   "observed": {
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "scan": {
+     "artifact_sha": null,
+     "exit": 2,
+     "findings": [],
+     "stderr_tail": [
+      "ranex-arch: cannot complete the scan: [Errno 2] No such file or directory: 'pkg/ghost.py'"
+     ],
+     "wall_seconds": 0.049
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (exit 2, no artifact)"
+  },
+  "E3-symlink-dir": {
+   "observed": {
+    "control_catches_same_bytes": true,
+    "control_real_dir_scan": {
+     "exit": 0,
+     "findings": [
+      {
+       "file": "pkg/shadow/impl.py",
+       "fingerprint": "aa6f27b1dc76073058755cdd901c52a33deb73212a28e8f5789b03b8ba15b840",
+       "line": 1,
+       "rule": "arch/forbidden-import"
+      }
+     ]
+    },
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "symlinked_module_scan": {
+     "artifact_sha": null,
+     "exit": 2,
+     "findings": []
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (symlink directory under package_root refuses)"
+  },
+  "E4-unicode": {
+   "observed": {
+    "outcomes": {
+     "bom": {
+      "artifact": null,
+      "exit": 2,
+      "stderr_tail": [
+       "ranex-arch: cannot complete the scan: invalid non-printable character U+FEFF (foundation.py, line 1)"
+      ]
+     },
+     "non_utf8_bytes": {
+      "artifact": null,
+      "exit": 2,
+      "stderr_tail": [
+       "ranex-arch: cannot complete the scan: 'utf-8' codec can't decode byte 0x80 in position 25: invalid start byte"
+      ]
+     },
+     "unicode_filename": {
+      "artifact": null,
+      "exit": 2,
+      "stderr_tail": [
+       "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/m\u00f3dulo.py; admit them through a freeze update, never an acceptance"
+      ]
+     },
+     "unicode_freeze_module": {
+      "artifact": null,
+      "exit": 2,
+      "stderr_tail": [
+       "freeze validation refused: architecture freeze module name 'm\u00f3dulo' must be an identifier"
+      ]
+     }
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (each shape exits 2 / refuses validation)"
+  },
+  "E5-renamed-module": {
+   "observed": {
+    "repeat_vocabularies": [
+     "VERIFIED",
+     "VERIFIED",
+     "VERIFIED"
+    ],
+    "scan": {
+     "artifact_sha": null,
+     "exit": 2,
+     "findings": [],
+     "stderr_tail": [
+      "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/base.py; admit them through a freeze update, never an acceptance"
+     ],
+     "wall_seconds": 0.054
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (exit 2, undeclared file)"
+  },
+  "E6-deep-nesting": {
+   "observed": {
+    "depth": 101,
+    "scan": {
+     "exit": 0,
+     "findings": [
+      {
+       "file": "pkg/level000/level001/level002/level003/level004/level005/level006/level007/level008/level009/level010/level011/level012/level013/level014/level015/level016/level017/level018/level019/level020/level021/level022/level023/level024/level025/level026/level027/level028/level029/level030/level031/level032/level033/level034/level035/level036/level037/level038/level039/level040/level041/level042/level043/level044/level045/level046/level047/level048/level049/level050/level051/level052/level053/level054/level055/level056/level057/level058/level059/level060/level061/level062/level063/level064/level065/level066/level067/level068/level069/level070/level071/level072/level073/level074/level075/level076/level077/level078/level079/level080/level081/level082/level083/level084/level085/level086/level087/level088/level089/level090/level091/level092/level093/level094/level095/level096/level097/level098/level099/leaf.py",
+       "fingerprint": "6f37ec6e632c9a8bf91e3e6d9d4b2b3e19bb90919d96f371568971f70c79e067",
+       "line": 1,
+       "rule": "arch/forbidden-import"
+      }
+     ],
+     "wall_seconds": 0.068
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (scan completes, plant found)"
+  },
+  "E8-empty-graph": {
+   "observed": {
+    "absent_package_root_refuses": true,
+    "gutted_gate": {
+     "evaluate_error_tail": [],
+     "evaluate_exit": 1,
+     "run_exit": 0,
+     "verdict": "FAIL",
+     "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+    },
+    "gutted_gate_pass": false,
+    "pristine_gate": "PASS",
+    "vacuous_scan_pass": true,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "GAP (vacuous PASS when declared files are absent); absent package_root refuses"
+  },
+  "E9-delete-race": {
+   "observed": {
+    "attempts": [
+     {
+      "exit": 2,
+      "findings": 0,
+      "wall_seconds": 0.0
+     },
+     {
+      "exit": 2,
+      "findings": 0,
+      "wall_seconds": 0.0
+     },
+     {
+      "exit": 2,
+      "findings": 0,
+      "wall_seconds": 0.0
+     },
+     {
+      "exit": 2,
+      "findings": 0,
+      "wall_seconds": 0.0
+     },
+     {
+      "exit": 2,
+      "findings": 0,
+      "wall_seconds": 0.0
+     }
+    ],
+    "clean_miss_seen": false,
+    "fail_closed_seen": true,
+    "note": "the race window is timing-dependent; UNVERIFIED bounds it at 5 attempts x 3000 files",
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "exit 2 fail-closed if triggered; UNVERIFIED if never triggered; never a silent clean pass"
+  },
+  "S1-scale": {
+   "observed": {
+    "profile": {
+     "10k": {
+      "build_seconds": 0.48,
+      "files": 10005,
+      "files_per_second": 27562.0,
+      "planted_finding_present": true,
+      "wall_seconds_max": 0.384,
+      "wall_seconds_median": 0.363,
+      "wall_seconds_min": 0.355
+     },
+     "1k": {
+      "build_seconds": 0.04,
+      "files": 1005,
+      "files_per_second": 12256.1,
+      "planted_finding_present": true,
+      "wall_seconds_max": 0.093,
+      "wall_seconds_median": 0.082,
+      "wall_seconds_min": 0.08
+     },
+     "5k": {
+      "build_seconds": 0.23,
+      "files": 5005,
+      "files_per_second": 24777.2,
+      "planted_finding_present": true,
+      "wall_seconds_max": 0.213,
+      "wall_seconds_median": 0.202,
+      "wall_seconds_min": 0.201
+     }
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "wall-clock quoted at 1k/5k/10k files"
+  },
+  "V1-missing-tool": {
+   "observed": {
+    "broken_run_exit": 2,
+    "broken_run_stderr_tail": [
+     "ERROR  cannot resolve '/tmp/ranex-stress-arch/.venv/bin/ranex-arch' to an executable; refusing to record an observation of a command that never ran"
+    ],
+    "evaluate_verdict": "FAIL",
+    "pristine_verdict": "PASS",
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (governed FAIL; stale evidence cannot satisfy a changed subject)"
+  },
+  "V2-path-pollution": {
+   "observed": {
+    "direct_findings_kept": 1,
+    "governed": {
+     "evaluate_error_tail": [],
+     "evaluate_exit": 1,
+     "run_exit": 0,
+     "verdict": "FAIL",
+     "verdict_line": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN"
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (unchanged or fail closed)"
+  },
+  "V3-pythonpath-shadow": {
+   "observed": {
+    "benign_shadow_verdict": "FAIL",
+    "control_no_shadow": "FAIL",
+    "exploit_run_exit": 0,
+    "exploit_shadow_verdict": "FAIL",
+    "note": "PYTHONPATH precedes site-packages in sys.path; the scanner's stdlib imports are shadowable \u2014 and so is ranex itself",
+    "shadow_picked_up": true,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "FALSE-PASS (PYTHONPATH precedes site-packages; an ast stub can hide Import nodes)"
+  },
+  "V4-env-i": {
+   "observed": {
+    "artifact_bytes_identical": true,
+    "env_i_exit": 0,
+    "normal_exit": 0,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (direct scan byte-identical; governed fails closed)"
+  },
+  "V5-wrong-pin": {
+   "observed": {
+    "scan": {
+     "artifact_sha": "sha256:ed3c2346ea33749fdb6d69a27f0ad7c08d3bf70c9d29af18cc81e8451748a92d",
+     "exit": 0,
+     "findings": [
+      {
+       "file": "governance/architecture-freeze.json",
+       "fingerprint": "dca402f29cab0eca21ee87f61a897c0e0f5400a26a147c2ad51dd26078b331ac",
+       "line": 1,
+       "rule": "arch/freeze-tampered"
+      }
+     ],
+     "stderr_tail": [],
+     "wall_seconds": 0.058
+    },
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (arch/freeze-tampered finding)"
+  },
+  "repeats-stability": {
+   "observed": {
+    "flips": {},
+    "note": "deterministic arms re-run in fresh workspaces; a nondeterminism rate p is detectable with probability 1-(1-p)**3 (0.875 at p=0.5)",
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": ""
+  },
+  "reproduction": {
+   "observed": {
+    "planted_fingerprints_match_shipped": true,
+    "proof_exit": 0,
+    "seconds": 18.2,
+    "summary_all_true": true,
+    "tamper_fingerprints_match_shipped": true,
+    "vocabulary": "VERIFIED"
+   },
+   "prediction": "VERIFIED (all shipped controls reproduce, fingerprints equal)"
+  }
+ },
+ "predictions": {
+  "A1-boundary-move": "GAP (PASS: the freeze governs only package_root)",
+  "A2-re-home": "VERIFIED (exit 2, undeclared file)",
+  "A3-auto-bless": "PASS by design (promote-ship shape); guard is process + ADR-017 disjointness, cited",
+  "A6-dynamic-import": "GAP (static walk cannot see it; documented v1)",
+  "A7-star-import": "VERIFIED (edge to the root module, as documented)",
+  "A8-nested-import": "VERIFIED (ast.walk finds it)",
+  "A9-alias-forms": "VERIFIED (every form attributes to the target module)",
+  "B1-stdlib": "VERIFIED (0/50 findings)",
+  "B3-collision": "GAP (local attribution under collision precondition)",
+  "D1-byte-identity": "VERIFIED (5/5 identical artifact bytes)",
+  "D2-relocation": "VERIFIED (identical bytes from two absolute paths)",
+  "E1-cycles": "VERIFIED (denied direction FAILs)",
+  "E2-broken-symlink": "VERIFIED (exit 2, no artifact)",
+  "E3-symlink-dir": "VERIFIED (symlink directory under package_root refuses)",
+  "E4-unicode": "VERIFIED (each shape exits 2 / refuses validation)",
+  "E5-renamed-module": "VERIFIED (exit 2, undeclared file)",
+  "E6-deep-nesting": "VERIFIED (scan completes, plant found)",
+  "E8-empty-graph": "GAP (vacuous PASS when declared files are absent); absent package_root refuses",
+  "E9-delete-race": "exit 2 fail-closed if triggered; UNVERIFIED if never triggered; never a silent clean pass",
+  "S1-scale": "wall-clock quoted at 1k/5k/10k files",
+  "V1-missing-tool": "VERIFIED (governed FAIL; stale evidence cannot satisfy a changed subject)",
+  "V2-path-pollution": "VERIFIED (unchanged or fail closed)",
+  "V3-pythonpath-shadow": "FALSE-PASS (PYTHONPATH precedes site-packages; an ast stub can hide Import nodes)",
+  "V4-env-i": "VERIFIED (direct scan byte-identical; governed fails closed)",
+  "V5-wrong-pin": "VERIFIED (arch/freeze-tampered finding)",
+  "reproduction": "VERIFIED (all shipped controls reproduce, fingerprints equal)"
+ },
+ "summary": {
+  "blocking_arms": [],
+  "host": {
+   "arch_scan_sha256": "94f239919d8e1f66401a030830d5d826c8e18871f455b0827d562b087b54c044",
+   "cpus": 16,
+   "kernel_head": "be4028da851c15303c0ece064a220b8faf1fefe0",
+   "python": "3.14.7",
+   "ranex_arch_sha256": "67af165e2240ae34da15cbbe8d444dbf9cd60af62d1acf7b69ab74d00fa42c20",
+   "uname": "Linux 7.0.0-31-generic x86_64"
+  },
+  "vocabulary_counts": {
+   "GAP": 2,
+   "VERIFIED": 24
+  }
+ }
+}

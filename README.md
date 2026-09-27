@@ -249,6 +249,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 - [SLICE-097 — Authenticated approver](docs/slices/done/SLICE-097-authenticated-approver.md): catalogued `role: approver`, key possession before judgment, second Ed25519 signature in the verdict (ADR-066 / RISK-07 / #107).
 
+- [SLICE-096 — The architecture-freeze claim](docs/slices/done/SLICE-096-architecture-freeze-claim.md): ADP's first A-family claim (ADR-065) — holds a human-approved module graph true on every candidate; ranex's own ten-subpackage freeze is pinned in `governance/gates.yaml` after DIRECT 012 stress READY.
+
 - [SLICE-095 — The BASE freeze and the promotion gate](docs/slices/done/SLICE-095-base-freeze-promotion-gate.md): the durable measurement instrument (ADR-064) — a committed, digest-bound `base-freeze-v1.json` of kernel identity, pinned subjects and measured reference metrics, plus a `promotion evaluate` gate that refuses any improvement claim not citing a freeze id with paired MARGINAL deltas on the freeze's own axes; τ may only ever be derived from the freeze, never a constant.
 
 - [SLICE-094 — the antislop claim](docs/slices/done/SLICE-094-antislop-claim.md): the C3 anti-slop structural gate (ADR-063) — an AST census of every test's effective-assert count and structural slop shapes, shipped as the `antislop-sarif-2.1.0` claim family.
