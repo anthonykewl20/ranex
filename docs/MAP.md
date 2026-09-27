@@ -1929,7 +1929,7 @@ is best.
 | `RISK-08` | **Ranex did not gate its own repository** — `gates.yaml` required a command a hermetic tree could not run; it is why the SLICE-004 defect got through, and it was §8.4's disconnected gauge. **Closed by SLICE-006 (ADR-007, accepted) and SLICE-009**: the self-gate runs the provisioned suite sealed and offline against the real commit, and judges the manifest diff, not the exit code |
 | `RISK-09` | **880 surviving mutants**, 47 in `verdict.py`, and **44 refusals no test executes**. The gauge's own calibration report, unaddressed |
 | `RISK-10` | Mutmut recorded **573 survivors and 65 unreached** in `cli/main.py`; the signal is weak because key e2e tests are excluded, not absent (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) |
-| `RISK-11` | **`evidence.json` is not append-only.** Signatures prevent forgery, but deletion turns a recorded failure into absence. Absence blocks, so this is denial rather than forgery — but it is unbounded |
+| `RISK-11` | **closed** — append-only hash-chained observation log (`ADR-068` / `SLICE-099` / #109). `evidence.json` remains the projection; `governance/observations.sqlite3` is history. A deleted FAIL is restored and named `removed-observation`, not honest absence |
 | `RISK-12` | **The journal has no operator-facing projection.** `ranex journal verify` recomputes chain integrity, but it does not explain run state or proof in plain language; the translator remains absent |
 | `RISK-13` | **`HOME` is still inherited by Ranex's own git queries**; symlink and submodule trees cannot be observed at all |
 | `RISK-14` | **Historical prototype execution is not a current end-to-end verdict path.** `task delegate` can dispatch an external harness, validate its emission, run the candidate suite, and record `suite_exit`; completed orchestration still returns success when that suite exit is nonzero and issues no verdict. `task judge`/`task merge` are separate governed operations, and nothing upstream of dispatch — intake, graph, scenarios — feeds the prototype automatically |
@@ -2199,7 +2199,7 @@ that cannot name its evidence or its absence is not in the ledger.
 | Evidence authenticity | SLICE-002; Ed25519 verified against a committed keyring (`tests/security/test_evidence_trust_root.py`, `tests/security/test_slice002_trust_root_reopened.py`) | the controller subprocess remains same-uid trusted infrastructure (`RISK-06` standing limit, ADR-023) |
 | Claim↔command binding | SLICE-003; `tests/security/test_slice003_command_binding.py`; six audits failed to break the binding itself | six false-PASS routes *around* it were one root cause, closed by SLICE-004 |
 | Hermetic observation | `cmd_run` materialises committed blobs, builds the observed environment from an allowlist, and resolves a pinned or approved provisioned toolchain; `tests/security/test_slice004_hermetic_observation.py` | the non-confined controller is same-UID infrastructure; unsupported tree/object shapes refuse rather than run |
-| Append-only hash-chained journal | `tests/integration/test_journal.py`, `tests/e2e/test_journal_verify_cli.py`; SQLite triggers forbid update and delete | rollback/truncation closed-with-witness (`RISK-19` / ADR-067); `evidence.json` is not append-only (`RISK-11`) |
+| Append-only hash-chained journal | `tests/integration/test_journal.py`, `tests/e2e/test_journal_verify_cli.py`; SQLite triggers forbid update and delete | rollback/truncation closed-with-witness (`RISK-19` / ADR-067); observation log closes `RISK-11` (`ADR-068`) |
 | Path confinement, dirty-tree refusal | `tests/security/test_repository_confinement.py`, `tests/security/test_executable_path_confinement.py` | `HOME` inherited by Ranex's own git queries (`RISK-13`) |
 | Refusal reporting | refused records are reported as refused, never as honest absence; `tests/contract/test_verdict_presentation.py` and gate CLI tests | no owner-facing translator |
 | Docs-discipline self-gauge | `tests/contract/test_docs_discipline.py` | the BOM checker is structural, not semantic (§5.5) |
@@ -2431,7 +2431,7 @@ Its supervisor owns wall-clock and spend bounds, cancellation, and
  a diary until the translator exists
 
  holes: RISK-12 · PR-07 · evidence.json keeps only the latest record per
- claim+producer, so it is not durable history (§8.3, RISK-11)
+ claim+producer; history lives in the observation log (§8.3, RISK-11 closed / ADR-068)
 ```
 
 ### 16.5 The whole board

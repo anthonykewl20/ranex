@@ -26,21 +26,21 @@ _GENESIS = "sha256:" + "0" * 64
 _WRITE_LOCK_TIMEOUT_SECONDS = 60
 
 _SCHEMA = """
-CREATE TABLE IF NOT EXISTS evaluations (
+CREATE TABLE IF NOT EXISTS {table} (
     seq        INTEGER PRIMARY KEY AUTOINCREMENT,
     record     TEXT NOT NULL,
     prev_link  TEXT NOT NULL,
     link       TEXT NOT NULL
 );
-CREATE TRIGGER IF NOT EXISTS evaluations_no_update
-BEFORE UPDATE ON evaluations
+CREATE TRIGGER IF NOT EXISTS {table}_no_update
+BEFORE UPDATE ON {table}
 BEGIN
-    SELECT RAISE(ABORT, 'evaluations is append-only');
+    SELECT RAISE(ABORT, '{table} is append-only');
 END;
-CREATE TRIGGER IF NOT EXISTS evaluations_no_delete
-BEFORE DELETE ON evaluations
+CREATE TRIGGER IF NOT EXISTS {table}_no_delete
+BEFORE DELETE ON {table}
 BEGIN
-    SELECT RAISE(ABORT, 'evaluations is append-only');
+    SELECT RAISE(ABORT, '{table} is append-only');
 END;
 """
 
@@ -56,6 +56,10 @@ class JournalAppend:
 
 class Journal:
     """Durable, ordered, tamper-evident record of every evaluation."""
+
+    # The one table this chain lives in. A class attribute, never caller input,
+    # so the f-strings below interpolate a constant and not a name to inject.
+    _table = "evaluations"
 
     def __init__(self, path: Path) -> None:
         self._path = Path(path)
@@ -75,16 +79,19 @@ class Journal:
             # makes schema initialization contend with every honest append.
             # Inspect all three objects so a missing append-only trigger is
             # still restored, just as the original IF NOT EXISTS setup did.
+            table = self._table
             objects = conn.execute(
                 "SELECT count(*) FROM sqlite_master WHERE "
-                "(type = 'table' AND name = 'evaluations') OR "
-                "(type = 'trigger' AND name IN "
-                "('evaluations_no_update', 'evaluations_no_delete'))"
+                "(type = 'table' AND name = ?) OR "
+                "(type = 'trigger' AND name IN (?, ?))",
+                (table, f"{table}_no_update", f"{table}_no_delete"),
             ).fetchone()[0]
             if objects != 3:
                 # Declare write intent before reading/changing schema. Other
                 # initializers may finish first; IF NOT EXISTS then does nothing.
-                conn.executescript("BEGIN IMMEDIATE;\n" + _SCHEMA + "\nCOMMIT;")
+                conn.executescript(
+                    "BEGIN IMMEDIATE;\n" + _SCHEMA.format(table=table) + "\nCOMMIT;"
+                )
         except BaseException:
             conn.close()
             raise
@@ -116,15 +123,19 @@ class Journal:
     def append(self, evaluation: Any) -> str:
         """Append one evaluation and return its chain link."""
 
-        record = evaluation.as_record()
+        return self.append_record(evaluation.as_record())
+
+    def append_record(self, record: dict[str, Any]) -> str:
+        """Append one already-built record and return its chain link."""
+
         payload = canonical_json(record)
         with closing(self._connect()) as conn, conn:
             conn.execute("BEGIN IMMEDIATE")
-            row = conn.execute("SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1").fetchone()
+            row = conn.execute(f"SELECT link FROM {self._table} ORDER BY seq DESC LIMIT 1").fetchone()
             prev_link = row["link"] if row is not None else _GENESIS
             link = "sha256:" + canonical_sha256({"prev_link": prev_link, "record": record})
             conn.execute(
-                "INSERT INTO evaluations (record, prev_link, link) VALUES (?, ?, ?)",
+                f"INSERT INTO {self._table} (record, prev_link, link) VALUES (?, ?, ?)",
                 (payload, prev_link, link),
             )
         return link
@@ -143,7 +154,7 @@ class Journal:
         with closing(self._connect()) as conn, conn:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute(
-                "SELECT seq, link FROM evaluations ORDER BY seq DESC LIMIT 1"
+                f"SELECT seq, link FROM {self._table} ORDER BY seq DESC LIMIT 1"
             ).fetchone()
             actual_head = row["link"] if row is not None else None
             if actual_head != expected_head:
@@ -154,7 +165,7 @@ class Journal:
             prev_link = actual_head if actual_head is not None else _GENESIS
             link = "sha256:" + canonical_sha256({"prev_link": prev_link, "record": record})
             cursor = conn.execute(
-                "INSERT INTO evaluations (record, prev_link, link) VALUES (?, ?, ?)",
+                f"INSERT INTO {self._table} (record, prev_link, link) VALUES (?, ?, ?)",
                 (payload, prev_link, link),
             )
             if cursor.lastrowid is None:  # pragma: no cover - SQLite contract
@@ -164,7 +175,7 @@ class Journal:
 
     def entries(self) -> list[dict[str, Any]]:
         with closing(self._connect()) as conn, conn:
-            rows = conn.execute("SELECT record FROM evaluations ORDER BY seq ASC").fetchall()
+            rows = conn.execute(f"SELECT record FROM {self._table} ORDER BY seq ASC").fetchall()
         return [json.loads(row["record"]) for row in rows]
 
     def head(self) -> str | None:
@@ -172,7 +183,7 @@ class Journal:
 
         with closing(self._connect_for_verification()) as conn, conn:
             row = conn.execute(
-                "SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1"
+                f"SELECT link FROM {self._table} ORDER BY seq DESC LIMIT 1"
             ).fetchone()
         return None if row is None else str(row["link"])
 
@@ -185,7 +196,7 @@ class Journal:
 
         with closing(self._connect_for_verification()) as conn, conn:
             rows = conn.execute(
-                "SELECT record, prev_link, link FROM evaluations ORDER BY seq ASC"
+                f"SELECT record, prev_link, link FROM {self._table} ORDER BY seq ASC"
             ).fetchall()
         prev_link = _GENESIS
         for row in rows:

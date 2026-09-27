@@ -176,7 +176,7 @@ def _read(
             record[field] != expected for field, expected in context
         ):
             return ReadResult(ReadState.CONTEXT_MISMATCH)
-        known = {"contradicted", "failed", "mismatched", "stale", "absent", "refused", "unattributable"}
+        known = {"contradicted", "failed", "mismatched", "stale", "absent", "refused", "unattributable", "removed-observation"}
         causes = record["causes"]
         if not isinstance(causes, list):
             return ReadResult(ReadState.MALFORMED)

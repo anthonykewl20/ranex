@@ -42,16 +42,56 @@ def project_verdict(
     *,
     required_claims: Sequence[str],
     journal_head: str | None,
+    removed_observations: Sequence[Any] = (),
 ) -> dict[str, Any]:
     missing = set(evaluation.missing_claims)
     refused = {
         item.claim_id for item in admission.rejections
         if item.claim_id is not None and item.claim_id in missing
     }
-    causes: list[dict[str, str | None]] = [
-        {"claim_id": item.claim_id, "cause": item.cause, **({"detail": item.detail} if item.detail is not None else {})}
-        for item in evaluation.causes if item.claim_id not in refused
-    ]
+    removed_by_claim = {
+        item.claim_id: item
+        for item in removed_observations
+        if getattr(item, "claim_id", None) is not None
+    }
+    causes: list[dict[str, str | None]] = []
+    for item in evaluation.causes:
+        if item.claim_id in refused:
+            continue
+        if item.claim_id in removed_by_claim:
+            # RISK-11: a restored FAIL is not honest absence and not a fresh
+            # failure — name the deletion so the diagnosis cannot be read as
+            # work never done.
+            removed = removed_by_claim[item.claim_id]
+            causes.append(
+                {
+                    "claim_id": item.claim_id,
+                    "cause": "removed-observation",
+                    "detail": removed.describe(),
+                }
+            )
+            continue
+        causes.append(
+            {
+                "claim_id": item.claim_id,
+                "cause": item.cause,
+                **({"detail": item.detail} if item.detail is not None else {}),
+            }
+        )
+    # A removed observation whose claim did not already appear in the kernel
+    # causes (e.g. restored PASS that still fails for another reason, or a
+    # claim satisfied after restore) still must be named when the gate fails.
+    named = {c["claim_id"] for c in causes}
+    if str(evaluation.verdict) == "FAIL":
+        for claim_id, removed in sorted(removed_by_claim.items()):
+            if claim_id not in named and claim_id in set(required_claims):
+                causes.append(
+                    {
+                        "claim_id": claim_id,
+                        "cause": "removed-observation",
+                        "detail": removed.describe(),
+                    }
+                )
     causes.extend({"claim_id": claim_id, "cause": "refused"} for claim_id in sorted(refused))
     causes.extend(
         {"claim_id": None, "cause": "unattributable"}

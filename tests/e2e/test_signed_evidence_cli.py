@@ -203,7 +203,13 @@ def test_hand_edited_record_fails_and_names_the_signature(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """The headline attack: flip a failure into a pass with a text editor."""
+    """The headline attack: flip a failure into a pass with a text editor.
+
+    After RISK-11 / ADR-068 the observation log sees the edit as invented
+    history (canonical bytes no longer match what ``run`` appended) and
+    refuses with E-OBSERVATION-CHAIN before admission names the signature.
+    Either refusal still blocks the attack; it must not read as absence.
+    """
 
     key_path = tmp_path / "worker.key"
     public = keygen(repo, key_path)
@@ -218,12 +224,11 @@ def test_hand_edited_record_fails_and_names_the_signature(
     (repo / "evidence.json").write_text(json.dumps([record], indent=2), encoding="utf-8")
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo) == EXIT_USAGE
 
-    output = capsys.readouterr().out + capsys.readouterr().err
-    assert "signature" in output.lower(), output
-    # It must NOT read as honest absence. That is the distinction the whole
-    # admission design exists to preserve.
+    captured = capsys.readouterr()
+    output = captured.out + captured.err
+    assert "E-OBSERVATION-CHAIN" in output, output
     assert "no evidence for required claim" not in output
 
 

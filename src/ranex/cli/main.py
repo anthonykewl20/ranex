@@ -103,6 +103,12 @@ from ranex.foundation.suite_results import (
     read_results_artifact,
 )
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
+from ranex.governed_execution.adapters.persistence.sqlite.observations import (
+    OBSERVATION_CHAIN_ERROR,
+    ObservationLog,
+    observations_path_for,
+    reconcile,
+)
 from ranex.governed_execution.api import (
     Claim,
     Evidence,
@@ -370,6 +376,35 @@ def admitted_evidence(
     return admit_records(path, load_keyring(keyring_path), repository_root)
 
 
+
+def load_reconciled_records(
+    path: Path,
+) -> tuple[list[Any], tuple[Any, ...]]:
+    """Load evidence.json, reconcile against the observation log when present.
+
+    When the log exists, a record the chain never held is refused
+    (E-OBSERVATION-CHAIN), and a chain-latest record the file lacks is restored
+    for judgment. When the log is absent the projection is returned unchanged —
+    hand-written fixtures and pre-ADR-068 trees keep today's path; the
+    protection activates once ``run`` has written the log.
+    """
+
+    records = list(load_records(path))
+    log = ObservationLog(observations_path_for(path))
+    if not log.path.is_file():
+        return records, ()
+    reconciliation = reconcile(log, records)
+    for record in records:
+        if not reconciliation.in_chain(record):
+            raise ValueError(
+                f"{OBSERVATION_CHAIN_ERROR}: evidence record "
+                f"claim={record.get('claim_id')!r} "
+                f"producer={record.get('producer_id')!r} is absent from "
+                "the observation log; refuse rather than judge invented history"
+            )
+    return list(reconciliation.records), reconciliation.removed
+
+
 def admit_records(
     path: Path,
     keyring: Mapping[str, str],
@@ -391,7 +426,7 @@ def admit_records(
     narrower question than a gate is.
     """
 
-    records = load_records(path)
+    records, _removed = load_reconciled_records(path)
     admission = admit(records, keyring)
     if repository_root is not None:
         admission = refuse_executables_inside(admission, len(records), repository_root)
@@ -932,7 +967,9 @@ def record_evidence(path: Path, record: dict[str, object]) -> None:
 
     Replacing rather than appending keeps one producer's latest observation of a
     claim authoritative. Records from other claims or other producers are left
-    untouched — this file is shared.
+    untouched — this file is shared. The same signed record is also appended to
+    the hash-chained observation log (RISK-11 / ADR-068) so a later delete from
+    this projection cannot vanish without a trace.
     """
 
     kept: list[dict[str, object]] = []
@@ -953,6 +990,7 @@ def record_evidence(path: Path, record: dict[str, object]) -> None:
     kept.append(record)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(kept, indent=2) + "\n", encoding="utf-8")
+    ObservationLog(observations_path_for(path)).append_record(dict(record))
 
 
 def _command_repository(args: argparse.Namespace) -> Path:
@@ -1080,10 +1118,13 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             subject_digest=subject,
             approver_id=args.approver,
         )
+        _records, removed_observations = load_reconciled_records(evidence_path)
+        del _records
         projected = project_verdict(
             result, admission,
             required_claims=tuple(claim.claim_id for claim in definition.required_claims),
             journal_head=journal_head,
+            removed_observations=removed_observations,
         )
         verdict_key_path = os.environ.get(VERDICT_SIGNING_KEY_VARIABLE)
         verdict_dir_value = os.environ.get(VERDICT_DIR_VARIABLE)
@@ -1235,6 +1276,14 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
     elif absent:
         absence_sentence = f"no evidence for required claim: {', '.join(absent)}"
         print(f"      {absence_sentence}")
+    # RISK-11: name restored deletions before the kernel's own diagnosis so an
+    # operator cannot read a vanished FAIL as work never done.
+    for cause in projected["causes"]:
+        if cause.get("cause") != "removed-observation":
+            continue
+        detail = cause.get("detail")
+        suffix = f"  {detail}" if isinstance(detail, str) and detail else ""
+        print(f"      removed-observation: {cause['claim_id']}{suffix}")
     if result.reason and (observed or not missing):
         # The kernel's own diagnosis, kept whenever it says something the
         # partition cannot: which of the four ways a record failed to satisfy
@@ -1290,8 +1339,17 @@ def _journal_first_broken_row(journal_path: Path) -> tuple[int, int, int] | None
 
     connection = sqlite3.connect(f"{journal_path.as_uri()}?mode=ro", uri=True)
     try:
+        # Evaluation journals and observation logs share the chain shape; pick
+        # whichever table this file actually holds (never caller input).
+        table_row = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' "
+            "AND name IN ('evaluations', 'observations') LIMIT 1"
+        ).fetchone()
+        if table_row is None:
+            return None
+        table = table_row[0]
         rows = connection.execute(
-            "SELECT seq, record, prev_link, link FROM evaluations ORDER BY seq ASC"
+            f"SELECT seq, record, prev_link, link FROM {table} ORDER BY seq ASC"
         ).fetchall()
     finally:
         connection.close()
@@ -1366,9 +1424,23 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         # The chain exists to expose out-of-band edits. Leaving it callable only
         # from tests made that evidence unavailable to operators, so this path
         # is confined exactly as evaluation's journal path is before it is read.
-        if not args.journal:
-            raise ValueError("--journal must name a journal; an empty path is refused")
-        journal_path = resolve_within_repository(root, args.journal)
+        observations_mode = bool(getattr(args, "observations", False))
+        if observations_mode:
+            # RISK-11 / ADR-068: walk the observation log the same way as the
+            # evaluation journal. Default path pairs with evidence.json.
+            journal_arg = args.journal
+            if journal_arg == DEFAULT_JOURNAL:
+                evidence = getattr(args, "evidence", None) or "governance/evidence.json"
+                journal_arg = str(observations_path_for(Path(evidence)))
+            if not journal_arg:
+                raise ValueError(
+                    "--journal must name an observation log; an empty path is refused"
+                )
+            journal_path = resolve_within_repository(root, journal_arg)
+        else:
+            if not args.journal:
+                raise ValueError("--journal must name a journal; an empty path is refused")
+            journal_path = resolve_within_repository(root, args.journal)
         # A missing record is not an empty chain: reporting PASS after deletion
         # inverted absence-blocks into a clean bill of health. Check before the
         # verifier opens SQLite so this command refuses without creating it.
@@ -1413,7 +1485,10 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
             )
         if expected_head is not None and re.fullmatch(r"sha256:[0-9a-f]{64}", expected_head) is None:
             raise ValueError("--expected-head must be a canonical sha256 digest")
-        verified = Journal(journal_path).verify(expected_head=expected_head)
+        chain = (
+            ObservationLog(journal_path) if observations_mode else Journal(journal_path)
+        )
+        verified = chain.verify(expected_head=expected_head)
         # The naming walk reads the same database verify just read, so it
         # belongs inside the same refusal surface: a SQLite failure here is
         # an operational refusal (exit 2), never a mangled verdict print.
@@ -1433,8 +1508,9 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
             f"matched({anchor_source})" if expected_head is not None else "UNVERIFIED"
         )
         witness_note = "  witness=verified" if witnessed else ""
+        kind = "observations" if observations_mode else "journal"
         print(
-            f"PASS  journal={journal_path}  chain=verified  "
+            f"PASS  {kind}={journal_path}  chain=verified  "
             f"external-anchor={anchor}{witness_note}"
         )
         return EXIT_PASS
@@ -4006,6 +4082,9 @@ def cmd_run(args: argparse.Namespace) -> int:
             ignoring=(
                 named_within_repository(root, args.evidence),
                 named_within_repository(root, DEFAULT_JOURNAL),
+                named_within_repository(
+                    root, str(observations_path_for(Path(args.evidence)))
+                ),
             ),
         )
         if dirty:
@@ -5093,6 +5172,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--witnessed",
         action="store_true",
         help="require the verdict's Rekor witness (ADR-067); needs --against-verdict",
+    )
+    verify.add_argument(
+        "--observations",
+        action="store_true",
+        help="verify the observation log (RISK-11 / ADR-068) instead of the evaluation journal",
+    )
+    verify.add_argument(
+        "--evidence",
+        default="governance/evidence.json",
+        help="evidence file whose paired observation log --observations verifies",
     )
     verify.add_argument(
         "--log-public-key",

@@ -159,7 +159,10 @@ def test_separate_src_application_freeze_observe_sign_reject_and_recover(applica
     records[0]["signature"] = "ed25519:" + "A" * 88
     evidence.write_text(json.dumps(records))
     tampered = evaluate()
-    assert tampered.returncode == 1, tampered.stdout + tampered.stderr
+    # RISK-11: a signature rewrite changes the observation identity; the chain
+    # refuses invented history (exit 2) rather than judging a forged PASS.
+    assert tampered.returncode == 2, tampered.stdout + tampered.stderr
+    assert "E-OBSERVATION-CHAIN" in tampered.stderr
     evidence.write_bytes(original)
     (repo / "src/application.py").write_text("VALUE = 41\n")
     commit(repo)
