@@ -199,6 +199,48 @@ def test_relative_and_from_module_imports_resolve_to_edges(tmp_path: Path) -> No
     assert findings(scan(tmp_path, raw)) == []
 
 
+def test_import_dotted_and_aliased_forms_attribute_like_from_imports(
+    tmp_path: Path,
+) -> None:
+    """`import pkg.policy` / `import pkg.policy as _p` are edges, not invisible."""
+
+    for index, statement in enumerate(
+        ("import pkg.policy\n", "import pkg.policy as _p\n")
+    ):
+        # Isolate each form in its own subdirectory — subject() is additive
+        # on tmp_path and a shared root would leave prior statements around.
+        root = tmp_path / f"form_{index}"
+        root.mkdir()
+        raw = subject(
+            root,
+            **{
+                "pkg/foundation.py": (
+                    f"def base():\n    return 1\n\n{statement}"
+                )
+            },
+        )
+        assert findings(scan(root, raw)) == [
+            (RULE_FORBIDDEN, "pkg/foundation.py", 4)
+        ]
+
+
+def test_a_symlink_directory_under_package_root_refuses_the_scan(
+    tmp_path: Path,
+) -> None:
+    """A walk that skips symlink dirs cannot block — refuse instead."""
+
+    raw = subject(tmp_path)
+    hidden = tmp_path / "hidden"
+    (hidden / "shadow").mkdir(parents=True)
+    (hidden / "shadow" / "__init__.py").write_text("", encoding="utf-8")
+    (hidden / "shadow" / "impl.py").write_text(
+        "from pkg import policy\n", encoding="utf-8"
+    )
+    (tmp_path / "pkg" / "shadow").symlink_to(hidden / "shadow", target_is_directory=True)
+    with pytest.raises(ValueError, match="refusing symlink directory"):
+        scan(tmp_path, raw)
+
+
 def test_an_import_of_the_package_root_is_an_edge_from_the_root_module(
     tmp_path: Path,
 ) -> None:

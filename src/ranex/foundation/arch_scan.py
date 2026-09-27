@@ -309,18 +309,27 @@ def _edges(
     targets: list[tuple[int, str]] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            line, names, module, level = node.lineno, (
-                alias.name for alias in node.names
-            ), None, 0
-        elif isinstance(node, ast.ImportFrom):
-            line, names, module, level = (
-                node.lineno,
-                (alias.name for alias in node.names),
-                node.module,
-                node.level,
-            )
-        else:
+            # `import pkg.policy` / `import pkg.policy as _p`: the alias name
+            # IS the dotted module path. There is no separate module field.
+            for alias in node.names:
+                parts = _absolute_parts(freeze, alias.name)
+                if parts is None:
+                    continue
+                resolved = _resolve_file(root, parts)
+                if resolved is None:
+                    continue
+                target = _module_of(freeze, resolved)
+                if target is not None:
+                    targets.append((node.lineno, target))
             continue
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        line, names, module, level = (
+            node.lineno,
+            (alias.name for alias in node.names),
+            node.module,
+            node.level,
+        )
         if level:
             base_parts = _relative_parts(freeze, relative, level, module)
         else:
@@ -401,7 +410,14 @@ def _walk(
         for name in names:
             relative = f"{directory}/{name}"
             entry_path = root / relative
-            if entry_path.is_dir() and not entry_path.is_symlink():
+            if entry_path.is_symlink() and entry_path.is_dir():
+                # A directory symlink under package_root is invisible to a
+                # walk that skips it and silent-passes — refuse instead so
+                # a forbidden edge cannot hide behind a re-homed directory.
+                raise ValueError(
+                    f"refusing symlink directory under package_root: {relative}"
+                )
+            if entry_path.is_dir():
                 if name not in SKIPPED_DIRECTORIES:
                     directories.append(relative)
                 continue
