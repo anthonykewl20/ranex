@@ -1,0 +1,14 @@
+{
+  "completed_at": "2026-09-27T08:30:09Z",
+  "host": "desk-tony",
+  "issue": 102,
+  "repeats": 3,
+  "statuses": {
+    "arm1-packet-determinism": "VERIFIED",
+    "arm2-worker-round-trip": "VERIFIED",
+    "arm3-credential-removal": "VERIFIED",
+    "arm4-packet-substitution": "VERIFIED",
+    "arm5-unresolvable-anchor": "VERIFIED",
+    "arm6-path-determinism": "VERIFIED"
+  }
+}

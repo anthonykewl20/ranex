@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "delegated_review_results_from_sarif"
+  ],
+  "cwd": "/tmp/ranex-102-proof-bc8ms2me/subject",
+  "digests": {
+    "packet": "sha256:94153cba67ccf16b50a52dfb9d723424e4c3c33a204cb05dfadcba53b604564b"
+  },
+  "exit_code": 0,
+  "expectation": "arm5-unresolvable-anchor",
+  "notes": "resolve_anchor=(2, 2)",
+  "status": "VERIFIED"
+}

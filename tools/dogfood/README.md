@@ -382,6 +382,16 @@ repeats are byte-identical, which is the anti-flake rule made checkable.
 Wall-clock and captured output are retained in `selftest-commands.json`,
 where variation is permitted and never changes a status.
 
+## Delegated review proof — issue #102's packet / admission arms
+
+`tools/dogfood/delegated_review_proof.py` runs the #102 real-data arms
+(packet determinism, substitution refusal, unresolvable-anchor absence,
+path determinism under prose rewrite, advisory credential-removal posture)
+with ×3 repeats:
+
+    uv run --frozen python tools/dogfood/delegated_review_proof.py \
+        --out tools/dogfood/audits/2026-09-27-delegated-review --repeats 3
+
 ## Handbook injection proof — issue #100's five arms as control pairs
 
 `tools/dogfood/handbook_proof.py` runs the kernel-handbook injection's five

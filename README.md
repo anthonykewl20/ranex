@@ -247,6 +247,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
+- [SLICE-100 — Delegated review as the bound command](docs/slices/done/SLICE-100-delegated-review-packet-sarif.md): packet in, SARIF out under the #97 reporter (ADR-069 / #102) — anchor re-derive, prose-free fingerprints, findings advisory-only; no worker key.
+
 - [SLICE-097 — Authenticated approver](docs/slices/done/SLICE-097-authenticated-approver.md): catalogued `role: approver`, key possession before judgment, second Ed25519 signature in the verdict (ADR-066 / RISK-07 / #107).
 
 - [SLICE-096 — The architecture-freeze claim](docs/slices/done/SLICE-096-architecture-freeze-claim.md): ADP's first A-family claim (ADR-065) — holds a human-approved module graph true on every candidate; ranex's own ten-subpackage freeze is pinned in `governance/gates.yaml` after DIRECT 012 stress READY.
