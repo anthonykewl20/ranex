@@ -1,0 +1,18 @@
+{
+  "completed_at": "2026-09-27T08:34:32Z",
+  "fastapi_pin": "cd83fc10ca20393e9ee50e3005e170c6929e047e",
+  "host": "desk-tony",
+  "issue": 112,
+  "repeats": 3,
+  "statuses": {
+    "arm-guardrail-path-escape": "GAP",
+    "arm-irreducible-crud": "GAP",
+    "arm-overbuild-absent": "GAP",
+    "arm-overbuild-governed": "GAP",
+    "arm1-resolution-determinism": "VERIFIED",
+    "arm2-handbook-absent": "VERIFIED",
+    "arm3-ladder-amendments": "VERIFIED",
+    "arm4-guardrail-text": "VERIFIED",
+    "arm5-prior-art-blob": "VERIFIED"
+  }
+}

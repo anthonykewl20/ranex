@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "resolve_handbook",
+    "system=ladder",
+    "pin=cd83fc10ca20393e9ee50e3005e170c6929e047e"
+  ],
+  "cwd": "/tmp/ranex-112-proof-754u7r1l/fastapi-template",
+  "digests": {
+    "path_count": "230",
+    "with_ladder": "sha256:720d0c32279d017d34707b195021acc4836fe16308aaf69c6b6c19c372783318"
+  },
+  "exit_code": 0,
+  "expectation": "arm1-resolution-determinism",
+  "notes": "repeats=3 unique=1 clone_ok=True",
+  "status": "VERIFIED"
+}

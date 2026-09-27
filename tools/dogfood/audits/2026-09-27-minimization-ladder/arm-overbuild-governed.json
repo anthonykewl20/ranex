@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "task delegate"
+  ],
+  "cwd": "/tmp/ranex-112-proof-754u7r1l/fastapi-template",
+  "digests": {},
+  "exit_code": 0,
+  "expectation": "arm-overbuild-governed",
+  "notes": "seeded-subject ship: live model worker not configured",
+  "status": "GAP"
+}

@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "resolve_handbook",
+    "system=empty"
+  ],
+  "cwd": "/tmp/ranex-112-proof-754u7r1l/fastapi-template",
+  "digests": {
+    "with_ladder": "sha256:720d0c32279d017d34707b195021acc4836fe16308aaf69c6b6c19c372783318",
+    "without_ladder": "sha256:d8fd2d7924dc1440bc1185b90df8c5014b23f8275e41e0cc0a6e2054131e145e"
+  },
+  "exit_code": 0,
+  "expectation": "arm2-handbook-absent",
+  "notes": "resolution digest differs when handbook absent",
+  "status": "VERIFIED"
+}
