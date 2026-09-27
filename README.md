@@ -248,6 +248,7 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 ## Completed slices
 
 - [SLICE-098 — External verdict witness](docs/slices/done/SLICE-098-external-verdict-witness.md): DSSE-wrapped verdicts anchored in Rekor; `gate evaluate --witness` and `journal verify --witnessed` (ADR-067 / #108).
+- [SLICE-099 — Append-only observation log](docs/slices/done/SLICE-099-append-only-observation-log.md): hash-chained `observations.sqlite3` so a deleted FAIL is named `removed-observation` (ADR-068 / #109).
 - [SLICE-101 — Minimization ladder as handbook system layer](docs/slices/done/SLICE-101-minimization-ladder-handbook.md): adapted ponytail ladder in `governance/handbook.json` (ADR-070 / #112); prior-art MIT-vendored; seeded-subject proof on fastapi template.
 - [SLICE-100 — Delegated review as the bound command](docs/slices/done/SLICE-100-delegated-review-packet-sarif.md): packet in, SARIF out under the #97 reporter (ADR-069 / #102) — anchor re-derive, prose-free fingerprints, findings advisory-only; no worker key.
 

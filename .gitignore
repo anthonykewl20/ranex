@@ -17,6 +17,7 @@ legacy/
 
 # Runtime journal — regenerated per machine, not a shared artifact.
 governance/journal.sqlite3
+governance/observations.sqlite3
 
 __pycache__/
 *.pyc
