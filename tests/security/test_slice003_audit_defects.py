@@ -32,11 +32,10 @@ import json
 import os
 import shutil
 import subprocess
-
-import _approver
 import sys
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.foundation.canonical import command_digest

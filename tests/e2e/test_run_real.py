@@ -74,9 +74,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-import pytest
-
 import _approver
+import pytest
 
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:

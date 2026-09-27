@@ -18,9 +18,8 @@ import re
 import subprocess
 from pathlib import Path
 
-import pytest
-
 import _approver
+import pytest
 
 from ranex.cli.main import main
 from ranex.foundation.canonical import canonical_sha256, command_digest

@@ -44,9 +44,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 import _approver
+import pytest
 from _host_evidence import record_host_qualification as record_live_host_qualification
 
 from ranex.foundation.canonical import command_digest
