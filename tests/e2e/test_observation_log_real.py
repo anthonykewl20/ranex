@@ -22,9 +22,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import _approver
 import pytest
 
-import _approver
 from ranex.foundation.signing import generate_keypair
 
 KERNEL = Path(__file__).resolve().parents[2]
