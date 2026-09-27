@@ -1,0 +1,2198 @@
+[
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:a98ade20891cc00df4e2e49e2862504e68f76cf3ef722193ab48b2121db0de35",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-cycles-b9kupzci/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-cycles-b9kupzci/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-sym-ykbw36j4/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: [Errno 2] No such file or directory: 'pkg/ghost.py'\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:2c9fc1c3e39225637d04a446c4e21a7ebcca2c349affa45113d6341f315dba09",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-symdir-6yao3fm2/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:2c9fc1c3e39225637d04a446c4e21a7ebcca2c349affa45113d6341f315dba09",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-symdir-6yao3fm2/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: refusing symlink directory under package_root: pkg/shadow\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-uni-_wiuxq9r/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/m\u00f3dulo.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-uni-_wiuxq9r/b/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: 'utf-8' codec can't decode byte 0x80 in position 25: invalid start byte\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-uni-_wiuxq9r/c/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: invalid non-printable character U+FEFF (foundation.py, line 1)\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-ren-vrmc0amk/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/base.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:1eb8ebad8406821b16a03fcb089eb9b7e3adf4a4aac0cca1582c42ffe716970a",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-deep-f4c4kuv6/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-empty-ufklsxc2/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-empty-ufklsxc2/b/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: [Errno 2] No such file or directory: 'pkg'\n"
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-stress-producer"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "all existing identities and the verdict signer:\n  producers:\n    arch-stress-producer: ed25519:O6vIcc4DX6JSTwT1legQFJ9kyqfs1ZBJwuY8JsG0lak=\n  principals:\n    arch-stress-producer:\n      role: worker\n      keys:\n      - key: ed25519:O6vIcc4DX6JSTwT1legQFJ9kyqfs1ZBJwuY8JsG0lak=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "l existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:sx8Tr+7HyGgG63yfi42hmLfLkSQgHgk5reyJxyGoiUY=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:sx8Tr+7HyGgG63yfi42hmLfLkSQgHgk5reyJxyGoiUY=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-emptyg-2z_595ga/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:7b141d4a42959da3ab7b037906bd668d1ef9cd1ee86e05cfa69735e848717546\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "PASS  gate=landing  subject=sha256:7b141d4a42959da3ab7b037906bd668d1ef9cd1ee86e05cfa69735e848717546\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:f5203b1d30a29e0489e16e441b08e62d93fa647c2d2dfaace6601c26c70f9b81\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-emptyg-2z_595ga/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: missing test ID(s): pkg/cli.py, pkg/foundation.py, pkg/policy.py\n      subject=sha256:f5203b1d30a29e0489e16e441b08e62d93fa647c2d2dfaace6601c26c70f9b81\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-stress-producer"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "all existing identities and the verdict signer:\n  producers:\n    arch-stress-producer: ed25519:WHSYqbsm+Oj1Kon1bxqmnOZBqDzwF9g1yiRoM5Tr60g=\n  principals:\n    arch-stress-producer:\n      role: worker\n      keys:\n      - key: ed25519:WHSYqbsm+Oj1Kon1bxqmnOZBqDzwF9g1yiRoM5Tr60g=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "l existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:oaAVl7qU1rWfJLUENz3Pv9fpcP2lUaP/Qsx/8AhYuok=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:oaAVl7qU1rWfJLUENz3Pv9fpcP2lUaP/Qsx/8AhYuok=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-tool-bdohx8po/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:561a5865bd9199bf75352f9b38d5ef28e33149f11050a6d97a628d61bbde4b81\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "PASS  gate=landing  subject=sha256:561a5865bd9199bf75352f9b38d5ef28e33149f11050a6d97a628d61bbde4b81\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ERROR  cannot resolve '/tmp/ranex-stress-arch/.venv/bin/ranex-arch' to an executable; refusing to record an observation of a command that never ran\n"
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-tool-bdohx8po/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      evidence bound to a different subject digest: architecture\n      subject=sha256:159a733713079f339e9673e2616f835a9a6b7648b0e50321bdfa430158fa0ee6\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-pin-0e6mvj2k/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-det-ivu6n28a/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-det-ivu6n28a/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-det-ivu6n28a/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-det-ivu6n28a/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-det-ivu6n28a/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-relo-0ey1p0dh/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-relo-0ey1p0dh/a-much-longer-name-for-the-same-bytes/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-stress-producer"
+  ],
+  "cwd": "/tmp/ranex-stress-path-osw8c_ud/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "all existing identities and the verdict signer:\n  producers:\n    arch-stress-producer: ed25519:LNh8v7pUq/6oq34dyad9qMxKGJ8Fqhf+OpwwOnmjRD4=\n  principals:\n    arch-stress-producer:\n      role: worker\n      keys:\n      - key: ed25519:LNh8v7pUq/6oq34dyad9qMxKGJ8Fqhf+OpwwOnmjRD4=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "cwd": "/tmp/ranex-stress-path-osw8c_ud/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "l existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:b44p1NyagRS1F9V63h2+cQNazTMWP8dZopbIAnmLq80=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:b44p1NyagRS1F9V63h2+cQNazTMWP8dZopbIAnmLq80=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-path-osw8c_ud/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-path-osw8c_ud/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-path-osw8c_ud/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-path-osw8c_ud/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:ddd2d2d651a9c1d0088c8dcca870bcbb5c01ec94d4d33ca243c6945dcfd4e33e\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-path-osw8c_ud/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:ddd2d2d651a9c1d0088c8dcca870bcbb5c01ec94d4d33ca243c6945dcfd4e33e\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-stress-producer"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "all existing identities and the verdict signer:\n  producers:\n    arch-stress-producer: ed25519:vzj8cMg1feVbc1ineIW7mjzBKds6p5GUt9hbtTT5Hpk=\n  principals:\n    arch-stress-producer:\n      role: worker\n      keys:\n      - key: ed25519:vzj8cMg1feVbc1ineIW7mjzBKds6p5GUt9hbtTT5Hpk=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "l existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:1b7H9oZtAq45VlrqfN/WNf01A4rvS/qHHe/0n3jEtww=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:1b7H9oZtAq45VlrqfN/WNf01A4rvS/qHHe/0n3jEtww=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-pyp-9gtigu2j/gov/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:56dfaaad2db23212a957266315e56daa7760fa4cb2b403fea5f546d4020e911b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:56dfaaad2db23212a957266315e56daa7760fa4cb2b403fea5f546d4020e911b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:56dfaaad2db23212a957266315e56daa7760fa4cb2b403fea5f546d4020e911b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:56dfaaad2db23212a957266315e56daa7760fa4cb2b403fea5f546d4020e911b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:56dfaaad2db23212a957266315e56daa7760fa4cb2b403fea5f546d4020e911b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-pyp-9gtigu2j/gov/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:56dfaaad2db23212a957266315e56daa7760fa4cb2b403fea5f546d4020e911b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "env",
+   "-i",
+   "ranex-arch",
+   "check",
+   "..."
+  ],
+  "cwd": "/tmp/ranex-stress-envi-_obdeohf/direct/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-stress-producer"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "all existing identities and the verdict signer:\n  producers:\n    arch-stress-producer: ed25519:UON/Q01RPC0ng8jkKkXUj0LNLMEE0toZWNxU5TVJx+U=\n  principals:\n    arch-stress-producer:\n      role: worker\n      keys:\n      - key: ed25519:UON/Q01RPC0ng8jkKkXUj0LNLMEE0toZWNxU5TVJx+U=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "l existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:ad1hLCgeKkxkoVPQq/nD8oWekiyvl+8nc2I1H3W9d68=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:ad1hLCgeKkxkoVPQq/nD8oWekiyvl+8nc2I1H3W9d68=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-bound-dc_kqxej/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:2b3b05ad25cc777a4771cd1108fe55b0de9bd97323501a28e2440c11b5bbc57b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "PASS  gate=landing  subject=sha256:2b3b05ad25cc777a4771cd1108fe55b0de9bd97323501a28e2440c11b5bbc57b\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:ddc22706976597205ecc88c1e8f101f23511444dbaf0a7bb950ffe67b5e9dafc\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-bound-dc_kqxej/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/cli.py (failed), pkg/policy.py (failed), missing test ID(s): pkg/foundation.py\n      subject=sha256:ddc22706976597205ecc88c1e8f101f23511444dbaf0a7bb950ffe67b5e9dafc\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-home-uno1kqtl/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/foundation/__init__.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "arch-stress-producer"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "all existing identities and the verdict signer:\n  producers:\n    arch-stress-producer: ed25519:to/jsTy3GclwCp6KLgkRc9RSMl49bH2htEAKHEX6y3Q=\n  principals:\n    arch-stress-producer:\n      role: worker\n      keys:\n      - key: ed25519:to/jsTy3GclwCp6KLgkRc9RSMl49bH2htEAKHEX6y3Q=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "keygen",
+   "--producer",
+   "kernel-verdict-signer"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "l existing identities and the verdict signer:\n  producers:\n    kernel-verdict-signer: ed25519:ZXIM10gC0vJEuANeeomOxhl6VWe4+fzRTv0GmqryDww=\n  principals:\n    kernel-verdict-signer:\n      role: worker\n      keys:\n      - key: ed25519:ZXIM10gC0vJEuANeeomOxhl6VWe4+fzRTv0GmqryDww=\n        status: active\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-bless-86nxka77/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:09408d8c3aeab65bbb3505b2a5290a7672ec4af93ac1babd276c63adeaf65afe\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 1,
+  "wall_seconds": null,
+  "stdout_tail": "FAIL  gate=landing  rule=ARCHITECTURE_FROZEN\n      architecture: blocking suite outcome(s): pkg/foundation.py (failed)\n      subject=sha256:09408d8c3aeab65bbb3505b2a5290a7672ec4af93ac1babd276c63adeaf65afe\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "suite",
+   "freeze",
+   "--artifact",
+   "governance/scan.sarif",
+   "--output",
+   "governance/scan-manifest.json",
+   "--results-reporter",
+   "sarif-2.1.0",
+   "--scan-scope",
+   "pkg/__init__.py",
+   "--scan-scope",
+   "pkg/cli.py",
+   "--scan-scope",
+   "pkg/foundation.py",
+   "--scan-scope",
+   "pkg/policy.py",
+   "--scan-scope",
+   "governance/architecture-freeze.json",
+   "--scan-rule",
+   "arch/forbidden-import",
+   "--scan-rule",
+   "arch/freeze-tampered",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:a98ade20891cc00df4e2e49e2862504e68f76cf3ef722193ab48b2121db0de35",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "FROZEN  scope=5  rules=2  accepted=0  run_exit=0  output=/tmp/ranex-stress-bless-86nxka77/subject/governance/scan-manifest.json\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "run",
+   "--claim",
+   "architecture",
+   "--producer",
+   "arch-stress-producer",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--",
+   "/tmp/ranex-stress-arch/.venv/bin/ranex-arch",
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:a98ade20891cc00df4e2e49e2862504e68f76cf3ef722193ab48b2121db0de35",
+   "--output-format=sarif",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "RECORDED  claim=architecture  producer=arch-stress-producer  exit=0\n          subject=sha256:1d0d785fdf58557d10b3102ae11ed95cf159d9676430709641476389e31ce138\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--producers",
+   "governance/producers.yaml",
+   "--evidence",
+   "governance/evidence.json",
+   "--approver",
+   "arch-stress-approver"
+  ],
+  "cwd": "/tmp/ranex-stress-bless-86nxka77/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "PASS  gate=landing  subject=sha256:1d0d785fdf58557d10b3102ae11ed95cf159d9676430709641476389e31ce138\n",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-dyn-dte3frmr/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-dyn-dte3frmr/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-star-pcocvfzc/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-star-pcocvfzc/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-v_idoluz/import-dotted/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-v_idoluz/import-aliased/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-v_idoluz/from-aliased/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-v_idoluz/from-module-import-name/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-v_idoluz/relative-level1/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-v_idoluz/relative-named/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-class-d6htq3vx/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-7txjmk4e/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-7txjmk4e/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-7txjmk4e/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-b9ln9oz1/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-b9ln9oz1/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-b9ln9oz1/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-d2ixz3zi/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-d2ixz3zi/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:6c7dbd2f86d47a7d592b530f9f95e9eff3ab097416aed182332e33a95d4fbdba",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-scale-d2ixz3zi/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:a98ade20891cc00df4e2e49e2862504e68f76cf3ef722193ab48b2121db0de35",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-cycles-n1c40et_/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-cycles-n1c40et_/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:a98ade20891cc00df4e2e49e2862504e68f76cf3ef722193ab48b2121db0de35",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-cycles-8o1coq4w/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-cycles-8o1coq4w/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-sym-1indvgxt/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: [Errno 2] No such file or directory: 'pkg/ghost.py'\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-sym-paelwb49/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: [Errno 2] No such file or directory: 'pkg/ghost.py'\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:2c9fc1c3e39225637d04a446c4e21a7ebcca2c349affa45113d6341f315dba09",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-symdir-8uhfof_0/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:2c9fc1c3e39225637d04a446c4e21a7ebcca2c349affa45113d6341f315dba09",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-symdir-8uhfof_0/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: refusing symlink directory under package_root: pkg/shadow\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:2c9fc1c3e39225637d04a446c4e21a7ebcca2c349affa45113d6341f315dba09",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-symdir-cbimanq1/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:2c9fc1c3e39225637d04a446c4e21a7ebcca2c349affa45113d6341f315dba09",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-symdir-cbimanq1/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: refusing symlink directory under package_root: pkg/shadow\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-ren-nv6woxlq/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/base.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-ren-6eo7da4p/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/base.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-home-y00sg6rp/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/foundation/__init__.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-home-_y4w2jkf/a/subject",
+  "exit": 2,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": "ranex-arch: cannot complete the scan: files under package_root in no freeze module: pkg/foundation/__init__.py; admit them through a freeze update, never an acceptance\n"
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-dyn-vn0kyxct/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-dyn-vn0kyxct/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-dyn-ytnrmtip/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-dyn-ytnrmtip/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-star-adhtm5hg/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-star-adhtm5hg/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-star-90o4pwe5/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-star-90o4pwe5/b/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-xwclfb8i/import-dotted/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-xwclfb8i/import-aliased/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-xwclfb8i/from-aliased/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-xwclfb8i/from-module-import-name/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-xwclfb8i/relative-level1/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-xwclfb8i/relative-named/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-7rc55ffb/import-dotted/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-7rc55ffb/import-aliased/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-7rc55ffb/from-aliased/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-7rc55ffb/from-module-import-name/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-7rc55ffb/relative-level1/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-forms-7rc55ffb/relative-named/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-class-u8qg799w/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ },
+ {
+  "argv": [
+   "check",
+   "--freeze",
+   "governance/architecture-freeze.json",
+   "--expected-freeze-digest",
+   "sha256:50a4b0be99b07b0c74189f6411cdd25e18ce0ed93eb6ada1945a667b8ff61855",
+   "--output-file=governance/scan.sarif"
+  ],
+  "cwd": "/tmp/ranex-stress-class-dghjfihh/a/subject",
+  "exit": 0,
+  "wall_seconds": null,
+  "stdout_tail": "",
+  "stderr_tail": ""
+ }
+]
