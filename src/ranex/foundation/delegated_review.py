@@ -35,8 +35,8 @@ from typing import Any
 
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 from ranex.foundation.scan_results import (
-    SCAN_REPORTERS,
     SARIF_LEVELS,
+    SCAN_REPORTERS,
     _subject_relative,
     scan_results_from_sarif,
     validate_scan_manifest,
@@ -528,7 +528,6 @@ def main(argv: list[str] | None = None) -> int:
     """``python -m ranex.foundation.delegated_review`` — bound-command worker."""
 
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser(prog="ranex.foundation.delegated_review")
     parser.add_argument("--root", type=Path, default=Path("."))
