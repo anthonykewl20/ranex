@@ -214,6 +214,11 @@ def test_absent_report_leaves_host_qualification_missing_and_blocks() -> None:
     evaluator = build_gate_evaluator(
         (root / "governance/gates.yaml").read_bytes(),
         suite_manifest=(root / "governance/suite_manifest.json").read_bytes(),
+        scan_manifests={
+            "governance/arch/scan-manifest.json": (
+                root / "governance/arch/scan-manifest.json"
+            ).read_bytes(),
+        },
     )
     result = evaluator.evaluate("landing", (), subject_digest=SUBJECT, approver_id="reviewer")
     assert result.verdict is Verdict.FAIL

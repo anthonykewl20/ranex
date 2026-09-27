@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "delegated_review_results_from_sarif"
+  ],
+  "cwd": "/tmp/ranex-102-proof-bc8ms2me/subject",
+  "digests": {
+    "expected": "sha256:94153cba67ccf16b50a52dfb9d723424e4c3c33a204cb05dfadcba53b604564b",
+    "forged": "sha256:185011f9c8e06f25a80f29dc24b1c94fcc1dab6b1dc0782d3b90d35fb53f7fd4"
+  },
+  "exit_code": 0,
+  "expectation": "arm4-packet-substitution",
+  "notes": "matching digest admits in arm6",
+  "status": "VERIFIED"
+}

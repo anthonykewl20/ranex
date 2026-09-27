@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/tmp/ranex-102/.venv/bin/python3",
+    "-m",
+    "ranex.foundation.delegated_review",
+    "--output-format=sarif",
+    "--output-file=governance/review.sarif",
+    "--path=pkg/mod.py",
+    "--excerpt=beta",
+    "--forge-lines=99:99"
+  ],
+  "cwd": "/tmp/ranex-102-proof-bc8ms2me/subject",
+  "digests": {
+    "packet": "sha256:94153cba67ccf16b50a52dfb9d723424e4c3c33a204cb05dfadcba53b604564b"
+  },
+  "exit_code": 0,
+  "expectation": "arm2-worker-round-trip",
+  "notes": "deterministic worker; claim outside default required_claims. Live OpenRouter model arm: GAP (no key on host).",
+  "status": "VERIFIED"
+}

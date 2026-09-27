@@ -1310,13 +1310,61 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
         },
     )
     manifest = canonical_json_bytes(manifest_value)
+    arch_manifest_raw = (
+        REAL_REPO / "governance/arch/scan-manifest.json"
+    ).read_bytes()
+    from ranex.foundation.arch_scan import (
+        arch_sarif_bytes,
+        freeze_digest_of_bytes,
+    )
+    from ranex.foundation.scan_results import (
+        load_scan_manifest_bytes,
+        scan_results_from_sarif,
+    )
+
+    freeze_raw = (REAL_REPO / "governance/architecture-freeze.json").read_bytes()
+    arch_digest = freeze_digest_of_bytes(freeze_raw)
+    arch_argv = (
+        "ranex-arch",
+        "check",
+        "--freeze",
+        "governance/architecture-freeze.json",
+        "--expected-freeze-digest",
+        arch_digest,
+        "--output-format=sarif",
+        "--output-file=governance/arch/scan.sarif",
+    )
+    arch_sarif = arch_sarif_bytes(
+        REAL_REPO,
+        freeze_raw,
+        freeze_relative="governance/architecture-freeze.json",
+        expected_digest=arch_digest,
+    )
+    arch_summary = scan_results_from_sarif(
+        arch_sarif,
+        load_scan_manifest_bytes(arch_manifest_raw),
+        subject_root=REAL_REPO,
+    )
+    arch_evidence = Evidence(
+        claim_id="architecture",
+        subject_digest=subject,
+        producer_id="worker",
+        command=" ".join(arch_argv),
+        command_digest=command_digest(arch_argv),
+        executable_path="/usr/bin/ranex-arch",
+        exit_code=0,
+        suite_results=arch_summary,
+    )
     evaluator = build_gate_evaluator(
         (REAL_REPO / "governance/gates.yaml").read_bytes(),
         suite_manifest=manifest,
+        scan_manifests={
+            "governance/arch/scan-manifest.json": arch_manifest_raw,
+        },
     )
     passed = evaluator.evaluate(
         "landing",
-        (tests_evidence, *admitted.evidence),
+        (tests_evidence, arch_evidence, *admitted.evidence),
         subject_digest=subject,
         approver_id="reviewer",
     )
@@ -1331,7 +1379,7 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
         admission._read_live_durable_host_state = original_reader
     failed = evaluator.evaluate(
         "landing",
-        (tests_evidence, *stale.evidence),
+        (tests_evidence, arch_evidence, *stale.evidence),
         subject_digest=subject,
         approver_id="reviewer",
     )

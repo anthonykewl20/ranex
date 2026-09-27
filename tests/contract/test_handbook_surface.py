@@ -32,11 +32,14 @@ _ENGINE = "src/ranex/policy/handbook.py"
 _ENGINE_IMPORTERS = {_ENGINE, "src/ranex/cli/delegation.py"}
 
 #: The only source files that may mention a handbook at all: the engine,
-#: the injection point, and the additive manifest field.
+#: the injection point, the additive manifest field, and the #102 review
+#: packet (which binds ``handbook_digest`` by value — it never imports the
+#: engine, so chapters stay guidance).
 _MENTION_ALLOWED = {
     "src/ranex/policy/handbook.py",
     "src/ranex/cli/delegation.py",
     "src/ranex/execution/retained_logs.py",
+    "src/ranex/foundation/delegated_review.py",
 }
 
 #: Authority surfaces a handbook may never touch, by name.

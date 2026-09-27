@@ -349,11 +349,55 @@ def _findings(
     return findings, witnessed
 
 
+def _sarif_packet_digest(document: Mapping[str, Any]) -> str | None:
+    """A delegated-review SARIF names its packet; scanners leave this absent."""
+
+    runs = document.get("runs")
+    if isinstance(runs, list) and runs and isinstance(runs[0], dict):
+        props = runs[0].get("properties")
+        if isinstance(props, Mapping):
+            digest = props.get("packet_digest")
+            if isinstance(digest, str) and digest.startswith("sha256:"):
+                return digest
+    props = document.get("properties")
+    if isinstance(props, Mapping):
+        digest = props.get("packet_digest")
+        if isinstance(digest, str) and digest.startswith("sha256:"):
+            return digest
+    return None
+
+
+def _materialised_packet_digest(subject_root: Path) -> str | None:
+    """Re-derive the expected packet digest from the subject's committed packet.
+
+    ``governance/review-packet.json`` is the bound packet a delegated-review
+    claim freezes beside the subject. Absence means the claim did not bind one
+    (ordinary scanner SARIF); presence means substitution is detectable.
+    """
+
+    packet_path = subject_root / "governance" / "review-packet.json"
+    if not packet_path.is_file():
+        return None
+    # Lazy: delegated_review imports this module's region helpers.
+    from ranex.foundation.delegated_review import packet_digest, validate_packet
+
+    try:
+        payload = json.loads(packet_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(
+            f"refusing delegated-review packet at {packet_path}: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise ValueError("governance/review-packet.json must be a JSON object")
+    return packet_digest(validate_packet(payload))
+
+
 def scan_results_from_sarif(
     sarif_bytes: bytes,
     manifest: Mapping[str, object],
     *,
     subject_root: Path,
+    expected_packet_digest: str | None = None,
 ) -> dict[str, object]:
     """Summarise one SARIF artifact against a previously frozen scan manifest.
 
@@ -367,6 +411,12 @@ def scan_results_from_sarif(
     recorded beside it — signed, retained, and named by the publisher — but it
     is not what the kernel counts, because an ID nobody could have frozen
     cannot be what a frozen universe is compared against.
+
+    When the SARIF carries ``properties.packet_digest`` (#102 delegated
+    review), captain rulings apply: the digest must match the materialised
+    packet (or ``expected_packet_digest``), anchors are re-derived from the
+    verbatim excerpt, and prose never enters the fingerprint. An ordinary
+    scanner SARIF leaves that property absent and keeps the #97 path.
     """
 
     validated = validate_scan_manifest(dict(manifest))
@@ -380,6 +430,23 @@ def scan_results_from_sarif(
         raise ValueError(f"cannot parse SARIF artifact: {exc}") from exc
     if not isinstance(document, dict):
         raise ValueError("SARIF artifact must be a JSON object")
+
+    claimed_packet = _sarif_packet_digest(document)
+    if claimed_packet is not None:
+        expected = expected_packet_digest or _materialised_packet_digest(subject_root)
+        if expected is None:
+            raise ValueError(
+                "delegated-review SARIF carries properties.packet_digest but the "
+                "subject has no governance/review-packet.json to re-derive against"
+            )
+        from ranex.foundation.delegated_review import delegated_review_results_from_sarif
+
+        return delegated_review_results_from_sarif(
+            sarif_bytes,
+            validated,
+            subject_root=subject_root,
+            expected_packet_digest=expected,
+        )
 
     findings, witnessed = _findings(document, subject_root)
     scope = list(validated["scope"])
