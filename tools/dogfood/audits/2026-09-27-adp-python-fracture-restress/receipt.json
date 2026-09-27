@@ -1,0 +1,98 @@
+{
+  "fractures": [
+    {
+      "fracture": "F-AD1",
+      "hardened": {
+        "rc": 1,
+        "rules": [
+          "F401"
+        ],
+        "wall": 0.042
+      },
+      "remediation": "--ignore-noqa + --isolated + explicit --select",
+      "unhardened_suppressed": true,
+      "verdict": "READY"
+    },
+    {
+      "discovery_false_pass": true,
+      "fracture": "F-AD5",
+      "isolated": {
+        "rc": 1,
+        "rules": [
+          "E731"
+        ],
+        "wall": 0.043
+      },
+      "remediation": "--isolated + explicit --select (never discovery)",
+      "verdict": "READY"
+    },
+    {
+      "basic_rc": 0,
+      "configured_rc": 1,
+      "fracture": "F-AD4",
+      "note": "production claim must list pyrefly.toml in scan-scope / subject digest; this restress proves the pin surface detects the measured tamper",
+      "pin_detects_tamper": true,
+      "remediation": "pyrefly.toml inside frozen claim digest (pin detects preset=basic)",
+      "toml_digest_after_basic": "sha256:85b0e88ecf46cd94c9e35d62d3ddd722679f906da96a9b55026af02174d3f191",
+      "toml_digest_before": "sha256:85421ad11ea236065e657af319385e45d219f2555a281dd0dec2e11a70623c4e",
+      "type_checks_silenced_under_basic": true,
+      "verdict": "READY"
+    },
+    {
+      "fracture": "F-ND1",
+      "remediation": "JSON\u2192SARIF / claim digests only prose-blind fields; never digest raw pyrefly stdout",
+      "shapes": [
+        {
+          "label": "ci-uv-run-with",
+          "prose_blind_distinct": 1,
+          "prose_blind_stable": true,
+          "raw_distinct": 5
+        },
+        {
+          "label": "uvx-scout",
+          "prose_blind_distinct": 1,
+          "prose_blind_stable": true,
+          "raw_distinct": 1
+        }
+      ],
+      "verdict": "READY"
+    },
+    {
+      "fracture": "F-AD3",
+      "hold": "pyrefly 1.2.0 has no --ignore-noqa; a freeze-bound ignore-marker witness is not yet a first-class claim surface on main. Marker count is measurable (prototype) but not kernel-enforced.",
+      "kernel_bound_witness_shipped": false,
+      "prototype_ignore_marker_count": 1,
+      "remediation_floor": "committed grep-witness over ignore markers, count frozen in the claim manifest \u2014 OR engine --ignore-noqa equivalent",
+      "suppressed_still": true,
+      "verdict": "NOT-READY",
+      "with_ignore_rc": 0,
+      "without_ignore_rc": 1
+    },
+    {
+      "counts": {
+        "errors": 0,
+        "failed": 0,
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "fracture": "F-AD7",
+      "hold": "scan_results still accepts a zero-result SARIF whose artifacts cover the scope; files-checked / exit-channel binding for empty results is not on main. G-3 residency alone does not close the reduction-layer forgery.",
+      "kernel_scope_witness_shipped": false,
+      "missing": [],
+      "remediation_floor": "v0.5 files-checked scope witness + G-3 scanner residency",
+      "verdict": "NOT-READY",
+      "zero_finding_forgery_still_reduces_clean": true
+    }
+  ],
+  "host": {
+    "kernel_head": "be4028da851c15303c0ece064a220b8faf1fefe0",
+    "prereg_sha256": "cb46915854572c448b7cb073db6944d2e765a3af86d21902ddcc4a4c97c06445",
+    "prior_stress": "tools/dogfood/audits/2026-09-26-adp-python-stress/",
+    "python": "3.14.7",
+    "uname": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39"
+  },
+  "overall": "NOT-READY",
+  "schema": "ranex-adp-python-fracture-restress-v1"
+}

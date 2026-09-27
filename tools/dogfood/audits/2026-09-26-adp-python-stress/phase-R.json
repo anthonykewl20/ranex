@@ -1,0 +1,961 @@
+{
+ "schema": "ranex-adp-python-stress-phase-R-v1",
+ "phase": "R-reproduction",
+ "prereg_sha256": "cb46915854572c448b7cb073db6944d2e765a3af86d21902ddcc4a4c97c06445",
+ "status_vocabulary": [
+  "VERIFIED",
+  "GAP",
+  "FALSE-PASS",
+  "NON-DETERMINISTIC",
+  "UNVERIFIED"
+ ],
+ "notes": "Baselines frozen Round-0 before scored arms; allowances in logs.",
+ "arms": [
+  {
+   "arm": "R1-R2/ruff",
+   "total_findings": 0,
+   "findings": [],
+   "determinism": {
+    "stdout_identical": true,
+    "stderr_identical": true,
+    "rc_identical": true,
+    "output_files_identical": true,
+    "output_file_digests": {
+     "/home/soultransit/.treehouse/ranex-34bbe7/8/ranex/.lab/bank/ruff.sarif": "14e38876a4c4ce8eb32b9b3fba2007d776135301749ee9ede02091e6a998685a"
+    }
+   },
+   "all_identical": true,
+   "wall_clock_s": [
+    0.032,
+    0.025,
+    0.027
+   ],
+   "rc": 0
+  },
+  {
+   "arm": "R1-R2/pyrefly",
+   "total_findings": 0,
+   "findings": [],
+   "determinism": {
+    "stdout_identical": true,
+    "stderr_identical": true,
+    "rc_identical": true
+   },
+   "all_identical": true,
+   "prose_blind_identical": true,
+   "wall_clock_s": [
+    0.161,
+    0.174,
+    0.169
+   ],
+   "rc": 0
+  },
+  {
+   "arm": "summary",
+   "kg": {
+    "bank_files": 60,
+    "files_with_ruff_findings": 0,
+    "files_with_pyrefly_findings": 0,
+    "ub_ruff": 0.0487,
+    "ub_pyrefly": 0.0487,
+    "note": "one-sided CP95 UB over files; a file counts FP-free when it carries no finding"
+   },
+   "kb": {
+    "applicable_arms": 25,
+    "caught": 25,
+    "misses": [],
+    "cp95_two_sided": [
+     0.8628,
+     1.0
+    ],
+    "all_deterministic": false,
+    "n_a_arms": [
+     "six/pyrefly/l1",
+     "six/pyrefly/l3",
+     "six/pyrefly/l4",
+     "six/pyrefly/l5",
+     "six/pyrefly/l6",
+     "six/ruff/t1",
+     "six/ruff/t3",
+     "six/ruff/t4",
+     "six/ruff/t5",
+     "six/ruff/t6",
+     "ranex/pyrefly/l1",
+     "ranex/pyrefly/l3",
+     "ranex/ruff/l4",
+     "ranex/pyrefly/l4",
+     "ranex/ruff/l5",
+     "ranex/pyrefly/l5",
+     "ranex/ruff/l6",
+     "ranex/pyrefly/l6",
+     "ranex/ruff/t1",
+     "ranex/ruff/t3",
+     "ranex/ruff/t4",
+     "ranex/ruff/t5",
+     "ranex/ruff/t6"
+    ]
+   },
+   "env_i": {
+    "normal": {
+     "ruff_rc": 1,
+     "ruff_sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "pyrefly_rc": 1,
+     "pyrefly_sha": "15b2ae77d30b165fd1cbfa2a12d6da142dbac4f77c873bd6e644094f5517da63"
+    },
+    "arms": [
+     {
+      "label": "env-i-clean",
+      "ruff": {
+       "rc": 1,
+       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pyrefly": {
+       "rc": 1,
+       "stdout_sha256": "fcf189efb2c779af7df5576512a240e113f39fd7b2812a70f15578ab345a47cd",
+       "prose_blind_sha256": "0ff57f607404ffb23e4a847598e5194799e6bfea802696a6b3ef6c9442abbb14"
+      }
+     },
+     {
+      "label": "env-i-fake-credentials",
+      "ruff": {
+       "rc": 1,
+       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pyrefly": {
+       "rc": 1,
+       "stdout_sha256": "1a2cafdb9f9e3c9c07f43d75fde7a6c6f6aa418a5288a382609671162f4f993b",
+       "prose_blind_sha256": "0ff57f607404ffb23e4a847598e5194799e6bfea802696a6b3ef6c9442abbb14"
+      }
+     }
+    ],
+    "invariant_raw_bytes": false,
+    "invariant_prose_blind": true
+   },
+   "kb_rows": [
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "l1",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F401",
+     "excess": [
+      "plant_l1.py:F401"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.033,
+      0.032,
+      0.03
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "l1",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": false,
+     "wall_clock_s": [
+      0.338,
+      0.293,
+      0.223
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "l2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F821",
+     "excess": [
+      "plant_l2.py:F821"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.035,
+      0.036,
+      0.032
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "l2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "unknown-name",
+     "severity": "error",
+     "excess": [
+      "plant_l2.py:unknown-name(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.241,
+      0.322,
+      0.217
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "l3",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F811",
+     "excess": [
+      "plant_l3.py:F811"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.045,
+      0.032,
+      0.04
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "l3",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": false,
+     "wall_clock_s": [
+      0.211,
+      0.219,
+      0.236
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "l4",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "E711",
+     "excess": [
+      "plant_l4.py:E711"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.034,
+      0.034,
+      0.04
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "l4",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": false,
+     "wall_clock_s": [
+      0.229,
+      0.304,
+      0.432
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "l5",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "E722",
+     "excess": [
+      "plant_l5.py:F821",
+      "plant_l5.py:E722"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.049,
+      0.042,
+      0.047
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "l5",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [
+      "plant_l5.py:unknown-name(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.257,
+      0.315,
+      0.343
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "l6",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "E731",
+     "excess": [
+      "plant_l6.py:E731"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.037,
+      0.044,
+      0.039
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "l6",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": false,
+     "wall_clock_s": [
+      0.303,
+      0.239,
+      0.219
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "t1",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.035,
+      0.033,
+      0.039
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "t1",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "bad-argument-type",
+     "severity": "error",
+     "excess": [
+      "plant_t1.py:bad-argument-type(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.24,
+      0.223,
+      0.219
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "t2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F821",
+     "excess": [
+      "plant_t2.py:F821"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.05,
+      0.07,
+      0.058
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "t2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "unknown-name",
+     "severity": "error",
+     "excess": [
+      "plant_t2.py:unknown-name(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.48,
+      0.389,
+      0.256
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "t3",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.043,
+      0.052,
+      0.037
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "t3",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "bad-return",
+     "severity": "error",
+     "excess": [
+      "plant_t3.py:bad-return(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.443,
+      0.284,
+      0.245
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "t4",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.04,
+      0.036,
+      0.036
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "t4",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "missing-attribute",
+     "severity": "error",
+     "excess": [
+      "plant_t4.py:missing-attribute(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.269,
+      0.356,
+      0.29
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "t5",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.034,
+      0.05,
+      0.045
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "t5",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "missing-argument",
+     "severity": "error",
+     "excess": [
+      "plant_t5.py:missing-argument(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.223,
+      0.213,
+      0.224
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "ruff",
+     "plant": "t6",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.035,
+      0.029,
+      0.029
+     ]
+    },
+    {
+     "subject": "six",
+     "engine": "pyrefly",
+     "plant": "t6",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "bad-assignment",
+     "severity": "error",
+     "excess": [
+      "plant_t6.py:bad-assignment(error)"
+     ],
+     "det": false,
+     "wall_clock_s": [
+      0.246,
+      0.27,
+      0.249
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "l1",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F401",
+     "excess": [
+      "plant_l1.py:F401"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.033,
+      0.034,
+      0.035
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "l1",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.524,
+      0.496,
+      0.497
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "l2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F821",
+     "excess": [
+      "plant_l2.py:F821"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.03,
+      0.035,
+      0.031
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "l2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "unknown-name",
+     "severity": "error",
+     "excess": [
+      "plant_l2.py:unknown-name(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.389,
+      0.359,
+      0.534
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "l3",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F811",
+     "excess": [
+      "plant_l3.py:F811"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.036,
+      0.037,
+      0.033
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "l3",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.375,
+      0.548,
+      0.537
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "l4",
+     "applicable": false,
+     "caught": false,
+     "target_rule": "E711",
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.03,
+      0.036,
+      0.032
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "l4",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.422,
+      0.419,
+      0.464
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "l5",
+     "applicable": false,
+     "caught": false,
+     "target_rule": "E722",
+     "excess": [
+      "plant_l5.py:F821"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.029,
+      0.032,
+      0.032
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "l5",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [
+      "plant_l5.py:unknown-name(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.441,
+      0.412,
+      0.637
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "l6",
+     "applicable": false,
+     "caught": false,
+     "target_rule": "E731",
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.03,
+      0.031,
+      0.028
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "l6",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "severity": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.533,
+      0.409,
+      0.704
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "t1",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.037,
+      0.043,
+      0.048
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "t1",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "bad-argument-type",
+     "severity": "error",
+     "excess": [
+      "plant_t1.py:bad-argument-type(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.62,
+      0.781,
+      0.533
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "t2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "F821",
+     "excess": [
+      "plant_t2.py:F821"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.031,
+      0.029,
+      0.032
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "t2",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "unknown-name",
+     "severity": "error",
+     "excess": [
+      "plant_t2.py:unknown-name(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.441,
+      0.487,
+      0.548
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "t3",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.032,
+      0.035,
+      0.034
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "t3",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "bad-return",
+     "severity": "error",
+     "excess": [
+      "plant_t3.py:bad-return(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.672,
+      0.777,
+      0.481
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "t4",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.035,
+      0.036,
+      0.036
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "t4",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "missing-attribute",
+     "severity": "error",
+     "excess": [
+      "plant_t4.py:missing-attribute(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.404,
+      0.567,
+      0.54
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "t5",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.035,
+      0.028,
+      0.032
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "t5",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "missing-argument",
+     "severity": "error",
+     "excess": [
+      "plant_t5.py:missing-argument(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.422,
+      0.474,
+      0.413
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "ruff",
+     "plant": "t6",
+     "applicable": false,
+     "caught": false,
+     "target_rule": null,
+     "excess": [],
+     "det": true,
+     "wall_clock_s": [
+      0.028,
+      0.032,
+      0.031
+     ]
+    },
+    {
+     "subject": "ranex",
+     "engine": "pyrefly",
+     "plant": "t6",
+     "applicable": true,
+     "caught": true,
+     "target_rule": "bad-assignment",
+     "severity": "error",
+     "excess": [
+      "plant_t6.py:bad-assignment(error)"
+     ],
+     "det": true,
+     "wall_clock_s": [
+      0.565,
+      0.53,
+      0.376
+     ]
+    }
+   ]
+  }
+ ],
+ "host_facts": {
+  "captured_at": "2026-09-26T02:40:38+0800",
+  "host": "desk-tony",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+  "python": "3.14.7",
+  "cpu_count": 16,
+  "uname": {
+   "system": "Linux",
+   "node": "desk-tony",
+   "release": "7.0.0-31-generic",
+   "version": "#31~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Aug 10 09:38:02 UTC 2",
+   "machine": "x86_64",
+   "processor": "x86_64"
+  },
+  "engines": {
+   "ruff": "ruff 0.16.2",
+   "pyrefly": "pyrefly 1.2.0",
+   "uv": "uv 0.11.26 (x86_64-unknown-linux-gnu)"
+  },
+  "kernel_verdict_py_sha256": "2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+  "disk_free_gb": 341.1
+ }
+}

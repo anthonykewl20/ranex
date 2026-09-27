@@ -1,0 +1,210 @@
+{
+ "schema": "ranex-adp-python-stress-phase-KR-v1",
+ "phase": "KR-kernel-reduction",
+ "prereg_sha256": "cb46915854572c448b7cb073db6944d2e765a3af86d21902ddcc4a4c97c06445",
+ "status_vocabulary": [
+  "VERIFIED",
+  "GAP",
+  "FALSE-PASS",
+  "NON-DETERMINISTIC",
+  "UNVERIFIED"
+ ],
+ "notes": "Direct scan_results_from_sarif arms; subject regenerated per arm.",
+ "arms": [
+  {
+   "arm": "KR1-region-past-eof",
+   "refused": true,
+   "error": "ValueError: SARIF region 99-99 lies outside 'edge.py' (5 lines); no relocation is attempted"
+  },
+  {
+   "arm": "KR2-snippet-mismatch",
+   "refused": true,
+   "error": "ValueError: SARIF region snippet for 'edge.py' lines 1-1 does not match the subject at that region"
+  },
+  {
+   "arm": "KR3-accepted-invalidated-on-byte-change",
+   "accepted_id": "edge.py::F401::e278b69739f6924af83017c5dd264c8ad2ec9ccf95238edf96ef5ec50a749269",
+   "before": {
+    "non_passed": [
+     [
+      "edge.py::F401::e278b69739f6924af83017c5dd264c8ad2ec9ccf95238edf96ef5ec50a749269",
+      "skipped"
+     ]
+    ],
+    "counts": {
+     "passed": 1,
+     "skipped": 1,
+     "failed": 0,
+     "errors": 0,
+     "xfailed": 0,
+     "xpassed": 0
+    }
+   },
+   "after": {
+    "non_passed": [
+     [
+      "edge.py",
+      "failed"
+     ],
+     [
+      "edge.py::F401::4938d553498bf16726716da79c0a25f85178e49584cb02377622e8b9c24ce4c5",
+      "failed"
+     ]
+    ],
+    "counts": {
+     "passed": 0,
+     "skipped": 0,
+     "failed": 2,
+     "errors": 0,
+     "xfailed": 0,
+     "xpassed": 0
+    }
+   },
+   "invalidated": true
+  },
+  {
+   "arm": "KR4-unreviewed-rule-still-blocks",
+   "non_passed": [
+    [
+     "edge.py",
+     "failed"
+    ],
+    [
+     "edge.py::E731::03ad7eff544bda1a2a9e2d7a9953916fe720d2e2677383360f1e8afc287ae898",
+     "failed"
+    ]
+   ],
+   "blocks": true
+  },
+  {
+   "arm": "KR5a-bad-json",
+   "refused": true,
+   "error": "ValueError: cannot parse SARIF artifact: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+  },
+  {
+   "arm": "KR5b-wrong-version",
+   "refused": true,
+   "error": "ValueError: SARIF artifact must declare version 2.1.0"
+  },
+  {
+   "arm": "KR5c-no-runs",
+   "refused": true,
+   "error": "ValueError: SARIF artifact carries no runs"
+  },
+  {
+   "arm": "KR6-scope-path-missing",
+   "missing": [
+    "gone.py"
+   ],
+   "absence_recorded": true
+  },
+  {
+   "arm": "KR7-invocation-failed",
+   "refused": true,
+   "error": "ValueError: SARIF invocation did not report executionSuccessful; a scan that declares its own failure is refused, and absence blocks"
+  },
+  {
+   "arm": "KR8-outside-subject",
+   "refused": true,
+   "error": "ValueError: SARIF result names '/etc/passwd', which is outside the materialised subject"
+  },
+  {
+   "arm": "KR8b-escaping-relative",
+   "refused": true,
+   "error": "ValueError: SARIF result names an escaping path: '../outside.py'"
+  },
+  {
+   "arm": "SV3-blocking-levels",
+   "warning_under_error": {
+    "non_passed": [],
+    "counts": {
+     "passed": 1,
+     "skipped": 0,
+     "failed": 0,
+     "errors": 0,
+     "xfailed": 0,
+     "xpassed": 0
+    }
+   },
+   "error_under_error": {
+    "non_passed": [
+     [
+      "edge.py",
+      "failed"
+     ],
+     [
+      "edge.py::F401::3ed7d47d1b818e529e0f45ed9643d0f0efe4afdb4324c230ffcca273bf7bf852",
+      "failed"
+     ]
+    ],
+    "counts": {
+     "passed": 0,
+     "skipped": 0,
+     "failed": 2,
+     "errors": 0,
+     "xfailed": 0,
+     "xpassed": 0
+    }
+   },
+   "level_omitted": {
+    "non_passed": [],
+    "counts": {
+     "passed": 1,
+     "skipped": 0,
+     "failed": 0,
+     "errors": 0,
+     "xfailed": 0,
+     "xpassed": 0
+    }
+   },
+   "warning_advisory": true,
+   "error_blocks": true,
+   "omitted_defaults_advisory": true
+  },
+  {
+   "arm": "AD7a-zero-finding-forgery",
+   "subject_carries": "unused import + syntax error",
+   "forged_summary": {
+    "non_passed": [],
+    "missing": [],
+    "counts": {
+     "passed": 1,
+     "skipped": 0,
+     "failed": 0,
+     "errors": 0,
+     "xfailed": 0,
+     "xpassed": 0
+    }
+   },
+   "reduction_clean": true,
+   "residual": "zero-scope forgery passes the reduction; caught only by the exit-code channel (a forged scanner controls it) or an artifacts/invocations witness \u2014 the kernel's own recorded GAP (v0.5 scope witness)"
+  },
+  {
+   "arm": "KR-manifest-digest-stability",
+   "digest": "sha256:0caea502ff668323941001613680289cbf3219099d470f3025fa4d981d61ca00",
+   "stable": true
+  }
+ ],
+ "host_facts": {
+  "captured_at": "2026-09-26T16:22:12+0800",
+  "host": "desk-tony",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+  "python": "3.14.7",
+  "cpu_count": 16,
+  "uname": {
+   "system": "Linux",
+   "node": "desk-tony",
+   "release": "7.0.0-31-generic",
+   "version": "#31~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Aug 10 09:38:02 UTC 2",
+   "machine": "x86_64",
+   "processor": "x86_64"
+  },
+  "engines": {
+   "ruff": "ruff 0.16.2",
+   "pyrefly": "pyrefly 1.2.0",
+   "uv": "uv 0.11.26 (x86_64-unknown-linux-gnu)"
+  },
+  "kernel_verdict_py_sha256": "2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+  "disk_free_gb": 333.0
+ }
+}
