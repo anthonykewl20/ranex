@@ -35,8 +35,6 @@ import signal
 import socket
 import stat
 import subprocess
-
-import _approver
 import sys
 import threading
 import time
@@ -45,6 +43,7 @@ from contextlib import nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 
+import _approver
 import pytest
 
 from ranex.foundation.canonical import command_digest

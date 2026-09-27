@@ -21,9 +21,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-import pytest
-
 import _approver
+import pytest
 from conftest import Signing, attach, signing_for
 
 from ranex.cli.main import main

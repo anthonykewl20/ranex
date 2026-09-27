@@ -26,9 +26,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import _approver
 import pytest
 
-import _approver
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.signing import generate_keypair
 

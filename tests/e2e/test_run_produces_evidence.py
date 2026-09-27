@@ -25,9 +25,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
-
 import _approver
+import pytest
 from conftest import Signing, attach, signing_for
 from launcher_host import build_closure_limitation, userns_limitation
 
