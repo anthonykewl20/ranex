@@ -248,8 +248,11 @@ def test_envelope_bytes_offered_as_evidence_are_refused(application) -> None:
     )
     refused = invoke(repo, "gate", "evaluate", "HEAD", "--external-repository",
                      str(repo), "--approver", "pilot", verdict_key=signer, approver_key=approver)
-    assert refused.returncode == 1, refused.stdout + refused.stderr
-    assert "malformed" in (refused.stdout + refused.stderr).lower()
+    # RISK-11: the forged record was never appended by ``run``, so the
+    # observation log refuses invented history before admission can name the
+    # malformed suite_results. Either way the claim stays unsatisfied.
+    assert refused.returncode == 2, refused.stdout + refused.stderr
+    assert "E-OBSERVATION-CHAIN" in refused.stderr
 
 
 def test_stop_hook_runs_autonomous_three_miss_loop(application) -> None:
