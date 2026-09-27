@@ -1,21 +1,23 @@
 # State
 
 **Updated:** 2026-09-27
-**Active slice:** [SLICE-096 — the architecture-freeze claim](docs/slices/SLICE-096-architecture-freeze-claim.md) — ADP's first family.
+**Active slice:** none — ADR-065 accepted; SLICE-096 wiring landed.
 
-**ADR-065 accepted** (this commit): operator approval is the freeze-origin.
-Promote wiring (freeze bytes + `gates.yaml` pin + scan manifesto) follows
-immediately as the next commit on this branch.
+**ADP / architecture freeze (promoted):**
+- ADR-065 **accepted**; `governance/architecture-freeze.json` pins
+  ranex's ten-subpackage graph + root `__init__` (digest
+  `sha256:e7325bdc592efb301cfca4d267984d2b9eea6f3b87887ba33a1f8693525515f8`).
+- `landing` gate carries claim `architecture` (scan manifesto
+  `governance/arch/scan-manifest.json`). Self-host argv is
+  `python3 -m ranex.foundation.arch_scan` — console-script `ranex-arch`
+  cannot live inside the governed tree (route-inside refusal).
 
 **Experiments:**
-- `ranex-stress-arch-freeze`: DIRECT 012 **READY** (PR #135). Receipt
-  `tools/dogfood/audits/2026-09-27-arch-stress/` — 24 VERIFIED, 2 GAP,
-  0 FALSE-PASS / 0 NON-DETERMINISTIC.
-- `ranex-adp-python-fracture-remediation`: **NOT-READY** (PR #136). F-AD3
-  and F-AD7 remain irreducible HOLDs. No new languages until Python READY.
+- `ranex-stress-arch-freeze`: DIRECT 012 **READY** (#135).
+- `ranex-adp-python-fracture-remediation`: **NOT-READY** (#136); F-AD3 /
+  F-AD7 HOLDs. No new languages until Python READY. BASE
+  `ranex promotion evaluate` unchanged (arch wiring ≠ BASE promotion).
 
-(#107 / RISK-07 authenticated-approver lane: preserve that branch's
-RISK-07 STATE lines on merge — append, do not claim #107 closed.)
+(#107 / RISK-07 lane: preserve that branch's RISK-07 STATE on merge.)
 
-Suite: standing DIRECT 003 host-drift red family on main unchanged
-(documented at eeee52d30 / post-#133).
+Suite: standing DIRECT 003 host-drift red family on main unchanged.

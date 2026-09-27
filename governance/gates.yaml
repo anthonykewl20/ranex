@@ -18,3 +18,8 @@ gates:
       - claim_id: host-qualification
         command: ["python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report=.local/ranex/qualification/strict-local-v1.json"]
         qualification_report: .local/ranex/qualification/strict-local-v1.json
+      - claim_id: architecture
+        command: ["python3", "-m", "ranex.foundation.arch_scan", "check", "--freeze", "governance/architecture-freeze.json", "--expected-freeze-digest", "sha256:e7325bdc592efb301cfca4d267984d2b9eea6f3b87887ba33a1f8693525515f8", "--output-format=sarif", "--output-file=governance/arch/scan.sarif"]
+        results_artifact: governance/arch/scan.sarif
+        results_reporter: sarif-2.1.0
+        results_manifest: governance/arch/scan-manifest.json

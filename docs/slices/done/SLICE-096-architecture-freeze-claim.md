@@ -1,6 +1,6 @@
 # SLICE-096 — The architecture-freeze claim (ADP's first family)
 
-**Status:** open
+**Status:** done
 **Origin:** captain DIRECT 011 FLAGSHIP; arch-maintain report §6/§10
 SLICE-A; ADR-065 (accepted).
 
