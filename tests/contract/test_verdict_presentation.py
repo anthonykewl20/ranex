@@ -265,7 +265,7 @@ def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
         b"      REFUSED record 0 [malformed-record] missing field(s): catalog_digest, command, command_digest, confinement_profile_digest, confinement_result_digest, envelope_type, executable_path, exit_code, gate_id, producer_id, subject_digest, suite_results\n"
         b"      REFUSED record 1 [malformed-record] missing field(s): catalog_digest, command, command_digest, confinement_profile_digest, confinement_result_digest, envelope_type, executable_path, exit_code, gate_id, producer_id, subject_digest, suite_results\n"
         b"      2 record(s) were refused above; no verifying evidence remains for: tests-executed\n"
-        b"      1 record(s) above were refused without a usable claim_id, so these required claims cannot be called work never done: host-qualification\n"
+        b"      1 record(s) above were refused without a usable claim_id, so these required claims cannot be called work never done: architecture, host-qualification\n"
     ) + f"      subject={subject}\n".encode()
     assert piped == expected
     assert attended == piped

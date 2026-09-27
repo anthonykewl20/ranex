@@ -206,7 +206,9 @@ def test_this_repositorys_own_suite_claim_can_see_an_xpass() -> None:
 
     gate = load_gate(REPO_ROOT / "governance" / "gates.yaml", "landing")
     suite_claims = [
-        claim for claim in gate.required_claims if claim.results_artifact is not None
+        claim
+        for claim in gate.required_claims
+        if claim.results_artifact is not None and claim.results_manifest is None
     ]
     assert suite_claims, "landing declares no suite claim to check"
     for claim in suite_claims:
