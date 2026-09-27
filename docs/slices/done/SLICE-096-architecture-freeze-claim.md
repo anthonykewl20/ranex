@@ -1,8 +1,8 @@
 # SLICE-096 — The architecture-freeze claim (ADP's first family)
 
-**Status:** open
+**Status:** done
 **Origin:** captain DIRECT 011 FLAGSHIP; arch-maintain report §6/§10
-SLICE-A; ADR-065 (proposed).
+SLICE-A; ADR-065 (accepted).
 
 ## Contract
 
@@ -29,7 +29,7 @@ ruff does (ADR-060, #97/#110 lineage).
   scanner pins the freeze, so weakening the freeze without moving the
   catalog is itself a finding that fails the freeze path.
 - `docs/adr/ADR-065-adp-agnostic-diagnostic-plane.md` — the ADP ADR,
-  **proposed**: A/B/C authority split (A: deterministic diagnostics as
+  **accepted**: A/B/C authority split (A: deterministic diagnostics as
   digest-bound SARIF-family claims; B: completions/hover/refs/rename
   feedback-only through the repair envelope; C: LLM-as-judge and
   RAG-as-oracle rejected), per-language calibration against the BASE
