@@ -322,7 +322,7 @@ def test_stage_2_gate_evaluate_fails_closed_and_names_the_missing_claim(
 
     operator.require("resolver", "clone")
     documented(
-        "python -m ranex.cli.main gate evaluate HEAD --approver reviewer_alice"
+        "python -m ranex.cli.main gate evaluate HEAD --approver release-approver"
     )
     code, out, err = ranex(
         operator.clone,
