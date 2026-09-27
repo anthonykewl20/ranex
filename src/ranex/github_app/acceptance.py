@@ -66,8 +66,15 @@ def resolve_acceptance(
     gate_id: str,
     catalog_digest: str | None,
     approver_id: str,
+    approvers: Mapping[str, tuple[str, ...]] | None = None,
 ) -> Acceptance:
-    """Map the reader's closed state machine onto outward outcomes."""
+    """Map the reader's closed state machine onto outward outcomes.
+
+    `approvers` is the committed catalog's approver principals (RISK-07): a
+    verdict whose record names one of them publishes nothing unless it also
+    carries that principal's signature — the reader answers UNAPPROVED and
+    `code_for_state` fails closed into a rejection naming the state.
+    """
 
     result = read_verdict(
         verdict_path(verdicts_dir, binding),
@@ -76,5 +83,6 @@ def resolve_acceptance(
         gate_id=gate_id,
         catalog_digest=catalog_digest,
         approver_id=approver_id,
+        approvers=approvers,
     )
     return Acceptance(code_for_state(result.state), result.state, result.record)

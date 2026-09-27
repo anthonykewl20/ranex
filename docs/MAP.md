@@ -914,9 +914,10 @@ precisely what a gauge exists to replace.
 model credential. Producer confinement is available only when `run` is invoked
 with the qualified `strict-local` profile; ordinary non-confined `run` does not
 make that claim. Even strict-local keeps a same-UID controller in the trusted
-computing base, and the ordinary gate approver remains an unauthenticated string
-(`RISK-07`). "True" and "someone will pay"
-remain distinct; see `RISK-01`.
+computing base. Gate approval is a cryptographic control (catalogued
+`role: approver`, possession before judgment, second signature — ADR-066 /
+`RISK-07` closed). "True" and "someone will pay" remain distinct; see
+`RISK-01`.
 
 **What Ranex explicitly does not claim — `PROVISIONAL` policy, `CLAUDE.md`:**
 it does not improve the quality of generated code, by any margin. Program output,
@@ -992,7 +993,7 @@ below are new and come directly from the 2026-08-03 session.
 | `PR-01` | **A verdict can be re-derived by the operator — who did not write the work — from the record alone** | `C-01` `C-04` | `PROVISIONAL` — the record exists; no re-derivation has been performed. **Reframed in `2.2.0`**: `2.1.0` said "by someone who did not produce the work, offline," which was written for an acquirer who is not a stakeholder in this design |
 | `PR-02` | No model output is ever an authorization. A gate passes on evidence or does not pass | `C-01` | `CONFIRMED` for the kernel path: `evaluate()` imports no model client, and the suite passes with no model credential present |
 | `PR-03` | Absence blocks. A required claim with no satisfying evidence is `FAIL`, never a default and never a skip | `C-01` | `CONFIRMED` for the kernel |
-| `PR-04` | **The identity that produces evidence cannot approve it — the *agent* produces, the *human* approves** | `C-01` | `CONFIRMED` as a string comparison; `UNRESOLVED` as a control, because `approver_id` is unauthenticated (`RISK-07`). A prior typed, authenticated, unrevoked, scope-authorized human decision is only a future boundary (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md:65-76`). |
+| `PR-04` | **The identity that produces evidence cannot approve it — the *agent* produces, the *human* approves** | `C-01` | `CONFIRMED` as a control — catalogued `role: approver`, possession before judgment, second signature in the verdict (ADR-066 / SLICE-097 / #107). |
 | `PR-05` | Every verdict binds the exact subject digest it was measured against, so stale evidence stops counting automatically | `C-01` `C-03` | `CONFIRMED` — SLICE-001 and SLICE-004 |
 | `PR-06` | **Every gauge carries a calibration result. An uncalibrated gauge yields no information and must not be reported as though it did** | `C-01` `C-03` | `PROVISIONAL` — `mutmut` is a calibration procedure and runs; nothing consumes its result as a gate, and 880 mutants survive |
 | `PR-07` | **The record binds the full production configuration — model, harness version, skill and tool manifest, prompt digest — not the code alone** | `C-04` `C-02` | `PROVISIONAL` — accepted design in ADR-016, unbuilt; no treatment record exists. §5.5 |
@@ -1676,7 +1677,7 @@ Those are the two forces that would eventually overturn local-first.
 | Boundary | Rule | Status |
 |---|---|---|
 | Producer ↔ gauge | The gauge is external to the producer and unalterable by it | **`CONFIRMED` for the bound command** — ADR-006 (`accepted 2026-08-15`) confines it (SLICE-046; `RISK-06` closed); the controller subprocess remains same-uid trusted (ADR-023 standing limit); tests/security/test_slice004_hermetic_observation.py, tests/e2e/test_confinement_real.py |
-| Producer ↔ approver | The identity producing evidence cannot approve it | `CONFIRMED` as a comparison; `UNRESOLVED` as a control (`RISK-07`); tests/unit/test_gate_verdict.py |
+| Producer ↔ approver | The identity producing evidence cannot approve it | `CONFIRMED` as a control (ADR-066 / SLICE-097); tests/e2e/test_approver_authentication_real.py |
 | Model ↔ authority | A model verdict is evidence, never authority | `CONFIRMED` for the kernel; tests/unit/test_gate_verdict.py |
 | Enforcement ↔ inference | No enforcement check invokes a model. Removing model access changes no verdict | `CONFIRMED` for the kernel path; the credential-removal control is executed by tools/dogfood/release_audit.py |
 | Ranex ↔ its own confinement | Ranex writes the journal, so it cannot be confined by the domain it applies to the worker | standing limit; ADR-006 is accepted and the worker is confined, but the signer/controller remains same-uid trusted infrastructure (ADR-023) |
@@ -1846,7 +1847,7 @@ verdict — and deleting them would lose the reasoning.
 
 | ID | Risk | Settled by |
 |---|---|---|
-| `RISK-01` | **Only the deterministic half of the thesis is true by construction.** The producer-unalterable scorer is built for the bound command (ADR-006 accepted; `RISK-06` closed with the same-uid controller standing limit) and `RISK-07` leaves approval unauthenticated, so `1.1.0`'s truth risk remains alongside the question of whether anyone will pay | Confinement landing, then a buyer paying for it |
+| `RISK-01` | **Only the deterministic half of the thesis is true by construction.** The producer-unalterable scorer is built for the bound command (ADR-006 accepted; `RISK-06` closed with the same-uid controller standing limit) and approval is now a cryptographic control (`RISK-07` closed by ADR-066), so `1.1.0`'s remaining truth risk is whether anyone will pay | A buyer paying for it |
 | `RISK-02` | **Timing.** The provability nightmare (§1.1 level four) may be three to five years early. No one has been sued at scale over AI-written code. Founders do not buy diligence insurance in advance. Right and early is operationally identical to wrong | Evidence of present-tense pain, or a wedge that pays before the nightmare arrives |
 | `RISK-03` | **Partially closed (ADR-067).** A witnessed verdict is an outward record a hostile outsider can re-verify from the UUID alone against the pinned log key. Unwitnessed publication remains a local certificate |
 | `RISK-04` | **The buyer is post-disillusionment.** Someone who still believes a prompt produces an app does not want gates — they want the magic, and competitors sell it. The buyer is the person who already burned weeks and thousands and now distrusts the loop. Real, growing, and smaller than the believer market | Contact with actual buyers |
@@ -1901,7 +1902,8 @@ is absent today; a complete experiment system does not exist. The frozen
 
 ADR-016 bounds its parked measurement-local build path: M0 prototype, then F1 monitoring-only manifest/corpus
 observations, F2 pure paired grader, F3 paired runner and fault capture, and F4
-owner-authorized promotion/rollback. RISK-07/19 block F4; RISK-06 closed by
+owner-authorized promotion/rollback. RISK-19 blocks F4 (`RISK-07` closed by
+ADR-066); RISK-06 closed by
 SLICE-046 (its standing controller limit is recorded in §11.5). Provider correlation,
 generalization, exact power and the absent translator remain named limits or separate
 work, not gates this feature pretends to close. The composition remains UNPROVEN:
@@ -1923,7 +1925,7 @@ is best.
 | ID | Risk |
 |---|---|
 | `RISK-06` | ~~**The measured party runs under the uid that signs the measurement.**~~ **Closed by SLICE-046 (ADR-023, ADR-006 accepted 2026-08-15)**: the bound command runs inside the qualified strict-local session (Landlock/seccomp/cgroup, env allowlisted to LC_ALL/TZ, no inherited fds), and evidence is signed only after fail-closed validation of the confinement result — the worker cannot reach the key or forge its measurement. Standing limit, recorded: the controller subprocess itself remains same-uid trusted infrastructure (sudo-monitor model, ADR-023); controller env narrowing is a named follow-up |
-| `RISK-07` | **`approver_id` is an unauthenticated string.** No-self-approval is a comparison, so any caller can name an approver that is not themselves. The strongest remaining hole once confinement lands |
+| `RISK-07` | ~~**`approver_id` is an unauthenticated string.**~~ **CLOSED** by ADR-066 / SLICE-097 (#107): catalogued approver, possession before judgment, second signature |
 | `RISK-08` | **Ranex did not gate its own repository** — `gates.yaml` required a command a hermetic tree could not run; it is why the SLICE-004 defect got through, and it was §8.4's disconnected gauge. **Closed by SLICE-006 (ADR-007, accepted) and SLICE-009**: the self-gate runs the provisioned suite sealed and offline against the real commit, and judges the manifest diff, not the exit code |
 | `RISK-09` | **880 surviving mutants**, 47 in `verdict.py`, and **44 refusals no test executes**. The gauge's own calibration report, unaddressed |
 | `RISK-10` | Mutmut recorded **573 survivors and 65 unreached** in `cli/main.py`; the signal is weak because key e2e tests are excluded, not absent (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) |
@@ -2191,7 +2193,8 @@ that cannot name its evidence or its absence is not in the ledger.
 
 | Mechanism | Executed evidence | Residual hole it does not cover |
 |---|---|---|
-| Deterministic verdict kernel | `evaluate()` is pure (`src/ranex/governed_execution/domain/verdict.py:375`); `tests/unit/test_gate_verdict.py` | `approver_id` is an unauthenticated string (`RISK-07`) |
+| Deterministic verdict kernel | `evaluate()` is pure (`src/ranex/governed_execution/domain/verdict.py:375`); `tests/unit/test_gate_verdict.py` | — |
+| Approver authentication | catalogued `role: approver`, CLI possession before judgment, second Ed25519 signature in the verdict (ADR-066 / SLICE-097 / #107); `tests/e2e/test_approver_authentication_real.py`; dogfood `tools/dogfood/audits/2026-09-26-approver-authentication/` (11/11 VERIFIED) | `deps approve --approver` still records an unauthenticated string; archived single-signature verdicts remain readable as `UNAPPROVED` (never gating) |
 | Subject-bound evidence | SLICE-001; stale evidence stops counting (`tests/unit/test_gate_verdict.py`) | — |
 | Evidence authenticity | SLICE-002; Ed25519 verified against a committed keyring (`tests/security/test_evidence_trust_root.py`, `tests/security/test_slice002_trust_root_reopened.py`) | the controller subprocess remains same-uid trusted infrastructure (`RISK-06` standing limit, ADR-023) |
 | Claim↔command binding | SLICE-003; `tests/security/test_slice003_command_binding.py`; six audits failed to break the binding itself | six false-PASS routes *around* it were one root cause, closed by SLICE-004 |
@@ -2249,7 +2252,6 @@ solves this, or would building it be invention?
 |---|---|---|
 | The translator (§5.1) | absent; `C-04` unserved (`RISK-12`) | none — a read-only projection of *this* record is novel, and by §4.3 it may never be a model that decides anything |
 | Outward-facing record | absent; deferred with §11.1 (`RISK-03`) | **Mature.** Certificate transparency is the solved form of this exact problem; see §15.3 |
-| Approver authentication | no design; `RISK-07` | mature elsewhere (signature-bound approval); not yet designed here |
 | Calibration consumption, negative controls | §8.4 names four consequences; none satisfied | negative controls are standard assay practice (§8.4); the machinery is small and unbuilt |
 
 **The system-level verdict.** Every row in §15.1 is a component fact. The
@@ -2352,9 +2354,10 @@ concern by concern.
         ▼
  PASS only if every required claim is satisfied by admitted evidence
 
- holes that remain: the approver is an unauthenticated string (RISK-07) ·
-  the confinement controller is same-uid trusted infrastructure (RISK-06 standing limit, ADR-023) ·
+ holes that remain: the confinement controller is same-uid trusted
+ infrastructure (RISK-06 standing limit, ADR-023) ·
  a consistent journal prefix survives row removal (RISK-19)
+ (`RISK-07` closed by ADR-066 / SLICE-097)
 ```
 
 ### 16.2 `C-03` — "It broke something else" — weak; the binding and the run exist, the regression view does not
@@ -2435,7 +2438,7 @@ Its supervisor owns wall-clock and spend bounds, cancellation, and
 
 | Concern | Built steps | What is missing | Defence today |
 |---|---|---|---|
-| `C-01` "done isn't" | all six of §16.1 | `RISK-07`, `RISK-19` (plus `RISK-06`'s standing controller limit) | mostly defended, holes named |
+| `C-01` "done isn't" | all six of §16.1 | `RISK-19` (plus `RISK-06`'s standing controller limit; `RISK-07` closed by ADR-066) | mostly defended, holes named |
 | `C-02` "money gone" | none | bounds, stop, escalation — all | **undefended**; nearest planned machinery is the agent manager (§0.15), parked behind P0 |
 | `C-03` "broke other" | subject binding + the full-suite self-gate (SLICE-006, SLICE-009) | a regression view (VP-06) | weak — the suite runs; "still works" has no view yet |
 | `C-04` "can't tell" | record + chain verify | translator, configuration record | record exists, unreadable |

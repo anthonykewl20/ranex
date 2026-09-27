@@ -70,7 +70,9 @@ def head_subject(repo: Path) -> str:
     return "sha256:" + canonical_sha256({"tree": tree})
 
 
-def invoke(repo: Path, argv: list[str], producer: str = "w") -> int:
+def invoke(
+    repo: Path, argv: list[str], producer: str = "w", approver: str | None = None
+) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
         monkeypatch.setattr(
@@ -79,6 +81,15 @@ def invoke(repo: Path, argv: list[str], producer: str = "w") -> int:
         monkeypatch.setenv(
             "RANEX_SIGNING_KEY", str(signing_for(repo).key_path(producer))
         )
+        if approver is None:
+            monkeypatch.delenv("RANEX_APPROVER_SIGNING_KEY", raising=False)
+        else:
+            # RISK-07: an evaluation naming a catalogued approver must prove
+            # possession of that principal's key before judgment.
+            monkeypatch.setenv(
+                "RANEX_APPROVER_SIGNING_KEY",
+                str(signing_for(repo).approver_path(approver)),
+            )
         return main(argv)
 
 
@@ -200,6 +211,7 @@ def test_wrong_shaped_evidence_is_refused_not_silently_emptied(
         repo,
         ["gate", "evaluate", "HEAD", "--repository", ".", "--gate-catalog",
          "gates.yaml", "--evidence", "evidence.json", "--approver", "someone"],
+        approver="someone",
     ) == 2
 
 

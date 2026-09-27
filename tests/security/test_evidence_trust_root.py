@@ -30,6 +30,7 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.foundation.canonical import command_digest
@@ -81,6 +82,8 @@ class Keys:
     root: Path
     private: dict[str, str] = field(default_factory=dict)
     public: dict[str, str] = field(default_factory=dict)
+    approver_path: str = ""
+    approver_public: str = ""
 
     def path(self, producer: str) -> Path:
         return self.root / f"{producer}.key"
@@ -100,6 +103,9 @@ def keys(tmp_path: Path) -> Keys:
         path = bundle.path(producer)
         path.write_text(private_key + "\n", encoding="utf-8")
         path.chmod(0o600)
+    # RISK-07: the approver is a second identity, never a producer's key.
+    minted_path, minted_public = _approver.mint_approver(tmp_path)
+    bundle.approver_path, bundle.approver_public = str(minted_path), minted_public
     return bundle
 
 
@@ -121,7 +127,13 @@ def repo(tmp_path: Path) -> Path:
     return repository
 
 
-def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
+def invoke(
+    repo: Path,
+    argv: list[str],
+    key_path: Path | None = None,
+    *,
+    approver_path: str | None = None,
+) -> int:
     from ranex.cli.main import main
 
     with pytest.MonkeyPatch.context() as monkeypatch:
@@ -133,6 +145,10 @@ def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(key_path))
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
         return main(argv)
 
 
@@ -141,9 +157,13 @@ def commit_all(repo: Path, message: str = "initial") -> None:
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", message], check=True)
 
 
-def write_keyring(repo: Path, **producers: str) -> None:
+def write_keyring(repo: Path, approver_public: str, **producers: str) -> None:
     lines = "\n".join(f"  {name}: {key}" for name, key in producers.items())
-    (repo / "producers.yaml").write_text(f"producers:\n{lines}\n", encoding="utf-8")
+    keyring = repo / "producers.yaml"
+    keyring.write_text(f"producers:\n{lines}\n", encoding="utf-8")
+    # RISK-07: the committed keyring carries the catalogued approver beside
+    # the producers, or no evaluation of this tree can name one.
+    _approver.register_approver(keyring, "reviewer", approver_public)
 
 
 def git_output(repo: Path, *args: str) -> str:
@@ -233,7 +253,7 @@ def run_cmd(
     )
 
 
-def evaluate(repo: Path, approver: str = "reviewer") -> int:
+def evaluate(repo: Path, keys: Keys, approver: str = "reviewer") -> int:
     return invoke(
         repo,
         [
@@ -244,6 +264,7 @@ def evaluate(repo: Path, approver: str = "reviewer") -> int:
             "--producers", "producers.yaml",
             "--approver", approver,
         ],
+        approver_path=keys.approver_path,
     )
 
 
@@ -269,7 +290,7 @@ def test_run_refuses_a_command_that_edits_and_reverts_the_tree(
     reads as proof.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     assert not check_passes(repo), (
@@ -313,7 +334,7 @@ def test_run_refuses_a_skip_worktree_modification(repo: Path, keys: Keys) -> Non
     check that the observed party can switch off is not a check.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     subprocess.run(
@@ -364,7 +385,7 @@ def test_uncommitted_keyring_entry_cannot_admit_evidence(
     from an uncommitted file, an attacker chooses it.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     keyring_path = repo / "producers.yaml"
@@ -391,7 +412,7 @@ def test_uncommitted_keyring_entry_cannot_admit_evidence(
         ],
     )
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "an uncommitted line in the keyring made an unregistered producer's "
         "record count; the trust root was chosen by the attacker"
     )
@@ -417,14 +438,14 @@ def test_uncommitted_gate_catalog_cannot_decide_a_verdict(
     the policy all along.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     # Honest work, for a claim the committed gate does not require.
     assert run_cmd(
         repo, keys.path("worker"), "sh", "-c", "exit 0", claim="trivial"
     ) == EXIT_PASS
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "the committed gate must not already be satisfied"
     )
 
@@ -433,7 +454,7 @@ def test_uncommitted_gate_catalog_cannot_decide_a_verdict(
         "the catalog edit must be uncommitted, or this test proves nothing"
     )
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "an uncommitted edit to required_claims turned a FAIL into a PASS; the "
         "gate was chosen after the work, by the party being gated"
     )
@@ -507,7 +528,7 @@ def test_rejection_without_a_claim_id_is_not_reported_as_absence(
     `7` is the entire attack.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     tampered = signed(
@@ -522,7 +543,7 @@ def test_rejection_without_a_claim_id_is_not_reported_as_absence(
     write_evidence(repo, [tampered])
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     captured = capsys.readouterr()
     output = captured.out + captured.err
 

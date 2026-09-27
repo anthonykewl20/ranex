@@ -32,6 +32,8 @@ import json
 import os
 import shutil
 import subprocess
+
+import _approver
 import sys
 from pathlib import Path
 
@@ -73,7 +75,16 @@ def keys(tmp_path: Path) -> dict[str, str]:
     path = tmp_path / "worker.key"
     path.write_text(private + "\n", encoding="utf-8")
     path.chmod(0o600)
-    return {"private": private, "public": public, "path": str(path)}
+    # RISK-07: every evaluation names a catalogued approver and must hold
+    # that approver's key; the approver is a second identity, never the
+    # worker's own key.
+    import _approver
+
+    approver_path, approver_public = _approver.mint_approver(tmp_path)
+    return {
+        "private": private, "public": public, "path": str(path),
+        "approver_path": str(approver_path), "approver_public": approver_public,
+    }
 
 
 @pytest.fixture()
@@ -85,9 +96,13 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
             ["git", "-C", str(repository), "config", key, value], check=True
         )
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
-    (repository / "producers.yaml").write_text(
+    keyring = repository / "producers.yaml"
+    keyring.write_text(
         f"producers:\n  worker: {keys['public']}\n", encoding="utf-8"
     )
+    import _approver
+
+    _approver.register_approver(keyring, "reviewer", keys["approver_public"])
     return repository
 
 
@@ -102,6 +117,7 @@ def invoke(
     key_path: str | None = None,
     *,
     path_prefix: Path | None = None,
+    approver_path: str | None = None,
 ) -> int:
     """Run the CLI. Returns the exit code, including argparse's own.
 
@@ -121,6 +137,10 @@ def invoke(
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", key_path)
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
         if path_prefix is not None:
             monkeypatch.setenv(
                 "PATH", f"{path_prefix}{os.pathsep}{os.environ['PATH']}"
@@ -157,7 +177,7 @@ def run_cmd(
     )
 
 
-def evaluate(repo: Path, approver: str = "reviewer") -> int:
+def evaluate(repo: Path, keys: dict[str, str], approver: str = "reviewer") -> int:
     return invoke(
         repo,
         [
@@ -168,6 +188,7 @@ def evaluate(repo: Path, approver: str = "reviewer") -> int:
             "--producers", "producers.yaml",
             "--approver", approver,
         ],
+        approver_path=keys["approver_path"],
     )
 
 
@@ -254,7 +275,7 @@ def test_a_genuine_outside_binary_is_still_allowed(
 
     assert run_cmd(repo, keys, str(outside)) == EXIT_PASS
     assert marker.exists()
-    assert evaluate(repo) == EXIT_PASS
+    assert evaluate(repo, keys) == EXIT_PASS
 
 
 # --- D8: one inode, two names, and containment only reads names -------------
@@ -310,7 +331,7 @@ def test_run_refuses_a_hardlink_to_a_file_inside_the_worktree(
     )
     assert not marker.exists(), "the in-repo bytes executed"
     assert not (repo / "evidence.json").exists()
-    assert evaluate(repo) != EXIT_PASS
+    assert evaluate(repo, keys) != EXIT_PASS
 
 
 # --- D3: the path is re-walked between the decision and the exec ------------
@@ -559,7 +580,7 @@ def test_a_command_mismatch_is_not_reported_as_work_never_done(
     assert record["command_digest"] != command_digest(["sh", "run-tests.sh"])
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -705,7 +726,7 @@ def test_an_honest_run_of_the_bound_command_reports_the_red_suite(
         f"nothing: {record}"
     )
     assert record["command_digest"] == command_digest(BOUND_SUITE)
-    assert evaluate(repo_with_a_red_suite) == EXIT_FAIL
+    assert evaluate(repo_with_a_red_suite, keys) == EXIT_FAIL
 
 
 # --- D12: the dirty-tree check cannot see an ignored file -------------------
@@ -746,7 +767,7 @@ def test_the_honest_run_of_a_tree_that_fails_its_own_check_reports_failure(
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_FAIL
     (record,) = records(repo)
     assert record["exit_code"] == 1
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
 
 
 # --- D13: git can be told to lie about what a commit carries ----------------
@@ -808,7 +829,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_gate_catalog(
     # Evidence for a trivial command: honest, signed, and satisfying nothing the
     # committed catalog binds.
     assert run_cmd(repo, keys, "true") == EXIT_PASS
-    assert evaluate(repo) == EXIT_FAIL, "the committed catalog must not be satisfied"
+    assert evaluate(repo, keys) == EXIT_FAIL, "the committed catalog must not be satisfied"
 
     attacker = build_gates("tests-executed", ["true"]).encode("utf-8")
     replace_object(repo, object_id(repo, "HEAD:gates.yaml"), attacker)
@@ -816,7 +837,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_gate_catalog(
     # working tree rather than on the substitution this test is about.
     (repo / "gates.yaml").write_bytes(attacker)
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "a gate catalog no commit carries decided the verdict; git was asked "
         "what HEAD holds and answered with a local ref the attacker wrote"
     )
@@ -861,7 +882,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_keyring(
         encoding="utf-8",
     )
 
-    assert evaluate(repo) == EXIT_FAIL, "an unregistered producer must be refused"
+    assert evaluate(repo, keys) == EXIT_FAIL, "an unregistered producer must be refused"
 
     attacker = (
         f"producers:\n  worker: {keys['public']}\n  mallory: {mallory_public}\n"
@@ -869,7 +890,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_keyring(
     replace_object(repo, object_id(repo, "HEAD:producers.yaml"), attacker)
     (repo / "producers.yaml").write_bytes(attacker)
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "a producer registered in a keyring no commit carries signed the "
         "evidence that decided this verdict"
     )
@@ -899,13 +920,13 @@ def test_a_replaced_commit_cannot_substitute_the_subject_tree(
     passing_commit = object_id(repo, "HEAD")
 
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_PASS
-    assert evaluate(repo) == EXIT_PASS, "the green tree must genuinely pass"
+    assert evaluate(repo, keys) == EXIT_PASS, "the green tree must genuinely pass"
 
     # The suite is then broken and committed. The old record is now stale.
     script(repo / "run-tests.sh", "exit 1")
     commit_all(repo, "red")
     broken_commit = object_id(repo, "HEAD")
-    assert evaluate(repo) == EXIT_FAIL, "stale evidence must not satisfy the new tree"
+    assert evaluate(repo, keys) == EXIT_FAIL, "stale evidence must not satisfy the new tree"
 
     subprocess.run(
         ["git", "-C", str(repo), "replace", broken_commit, passing_commit], check=True
@@ -914,7 +935,7 @@ def test_a_replaced_commit_cannot_substitute_the_subject_tree(
         "the ref must still name the broken commit, or nothing is being hidden"
     )
 
-    assert evaluate(repo) != EXIT_PASS, (
+    assert evaluate(repo, keys) != EXIT_PASS, (
         "evidence bound to an abandoned tree satisfied the gate; HEAD was asked "
         "for its tree and answered with one the commit does not carry"
     )
@@ -948,7 +969,7 @@ def test_a_malformed_committed_catalog_is_refused_not_reported_as_a_failure(
     commit_all(repo)
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     output = capsys.readouterr()
 
     assert code == EXIT_USAGE, (

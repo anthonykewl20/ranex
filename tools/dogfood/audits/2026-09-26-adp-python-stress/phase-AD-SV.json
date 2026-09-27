@@ -1,0 +1,242 @@
+{
+ "schema": "ranex-adp-python-stress-phase-AD-SV-v1",
+ "phase": "AD-SV",
+ "prereg_sha256": "cb46915854572c448b7cb073db6944d2e765a3af86d21902ddcc4a4c97c06445",
+ "status_vocabulary": [
+  "VERIFIED",
+  "GAP",
+  "FALSE-PASS",
+  "NON-DETERMINISTIC",
+  "UNVERIFIED"
+ ],
+ "notes": "AD7 forgery arms and AD8 catalog tamper live in phase-KR / phase-GOV.",
+ "arms": [
+  {
+   "arm": "AD1a-noqa-F401-unhardened",
+   "expectation": "suppressed -> documented FALSE-PASS of the unhardened shape",
+   "rc": 0,
+   "results": [],
+   "suppressed": true
+  },
+  {
+   "arm": "AD1b-noqa-F401-hardened",
+   "expectation": "caught",
+   "rc": 1,
+   "results": [
+    [
+     "F401",
+     "plant.py"
+    ]
+   ],
+   "caught": true
+  },
+  {
+   "arm": "AD2-bare-noqa-hardened",
+   "rc": 1,
+   "results": [
+    [
+     "F401",
+     "plant.py"
+    ]
+   ],
+   "caught": true
+  },
+  {
+   "arm": "AD3-pyrefly-ignore-comment",
+   "with_ignore": {
+    "rc": 0,
+    "errors": []
+   },
+   "without_ignore": {
+    "rc": 1,
+    "errors": [
+     [
+      "bad-assignment",
+      "error",
+      "plant.py",
+      2
+     ]
+    ]
+   },
+   "suppressed": true
+  },
+  {
+   "arm": "AD4-pyrefly-config-tamper",
+   "configured": {
+    "rc": 1,
+    "errors": [
+     [
+      "bad-assignment",
+      "error",
+      "plant.py",
+      2
+     ]
+    ]
+   },
+   "toml_deleted": {
+    "rc": 1,
+    "errors": [
+     [
+      "bad-assignment",
+      "error",
+      "plant.py",
+      2
+     ]
+    ]
+   },
+   "preset_basic": {
+    "rc": 0,
+    "errors": []
+   },
+   "type_checks_silenced": false,
+   "expectation": "config file must sit inside the frozen claim scope or this is a HOLD"
+  },
+  {
+   "arm": "AD5-fake-ruff-toml",
+   "isolated": {
+    "rc": 1,
+    "results": [
+     [
+      "E731",
+      "plant.py"
+     ]
+    ],
+    "wall_clock_s": 0.071
+   },
+   "discovery": {
+    "rc": 0,
+    "results": [],
+    "wall_clock_s": 0.051
+   },
+   "isolated_pins_config": true,
+   "discovery_applies_fake": true
+  },
+  {
+   "arm": "AD6-ruff-version-drift-on-six",
+   "versions": {
+    "ruff@0.14.11": {
+     "rc": 1,
+     "findings": 28,
+     "rules": [
+      "E402",
+      "E701",
+      "E741",
+      "F401",
+      "F811",
+      "F821"
+     ],
+     "wall_clock_s": 1.637
+    },
+    "ruff@0.16.2": {
+     "rc": 1,
+     "findings": 28,
+     "rules": [
+      "E402",
+      "E701",
+      "E741",
+      "F401",
+      "F811",
+      "F821"
+     ],
+     "wall_clock_s": 0.051
+    },
+    "ruff@0.17.0": {
+     "rc": 1,
+     "findings": 28,
+     "rules": [
+      "E402",
+      "E701",
+      "E741",
+      "F401",
+      "F811",
+      "F821"
+     ],
+     "wall_clock_s": 0.062
+    }
+   },
+   "note": "outputs differ across versions -> the version pin is load-bearing; in-band enforcement is the pinned toolchain residency (G-3)"
+  },
+  {
+   "arm": "AD6b-pyrefly-version-drift",
+   "versions": {
+    "1.0.1": {
+     "rc": 1,
+     "errors": -1
+    },
+    "1.1.0": {
+     "rc": 1,
+     "errors": 1
+    },
+    "1.2.0": {
+     "rc": 1,
+     "errors": 1
+    }
+   }
+  },
+  {
+   "arm": "SV1-pyrefly-plant-severities",
+   "severities": {
+    "l2:unknown-name": "error",
+    "t1:bad-argument-type": "error",
+    "t2:unknown-name": "error",
+    "t3:bad-return": "error",
+    "t4:missing-attribute": "error",
+    "t5:missing-argument": "error",
+    "t6:bad-assignment": "error"
+   },
+   "misfiled_as_non_error": {},
+   "rate": "0/7"
+  },
+  {
+   "arm": "SV1b-pyrefly-warning-visibility-in-json",
+   "json_errors": [],
+   "note": "pyrefly 1.2.0 JSON carries only errors; warnings are absent from the artifact entirely, so warning-class findings never reach the claim plane (advisory by construction, not by mapping)"
+  },
+  {
+   "arm": "SV2-ruff-sarif-level-census",
+   "levels": {
+    "E402": [
+     "error"
+    ],
+    "E701": [
+     "error"
+    ],
+    "E741": [
+     "error"
+    ],
+    "F401": [
+     "error"
+    ],
+    "F811": [
+     "error"
+    ],
+    "F821": [
+     "error"
+    ]
+   },
+   "all_error": true
+  }
+ ],
+ "host_facts": {
+  "captured_at": "2026-09-26T16:17:52+0800",
+  "host": "desk-tony",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+  "python": "3.14.7",
+  "cpu_count": 16,
+  "uname": {
+   "system": "Linux",
+   "node": "desk-tony",
+   "release": "7.0.0-31-generic",
+   "version": "#31~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Aug 10 09:38:02 UTC 2",
+   "machine": "x86_64",
+   "processor": "x86_64"
+  },
+  "engines": {
+   "ruff": "ruff 0.16.2",
+   "pyrefly": "pyrefly 1.2.0",
+   "uv": "uv 0.11.26 (x86_64-unknown-linux-gnu)"
+  },
+  "kernel_verdict_py_sha256": "2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+  "disk_free_gb": 333.2
+ }
+}

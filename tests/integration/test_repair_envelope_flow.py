@@ -42,6 +42,7 @@ def commit(repo: Path, message: str = "pilot application") -> None:
 
 def invoke(repo: Path, *args: str, key: Path | None = None,
            verdict_key: Path | None = None,
+           approver_key: Path | None = None,
            stdin: str | None = None) -> subprocess.CompletedProcess[str]:
     environment = {
         name: value for name, value in os.environ.items()
@@ -53,6 +54,8 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
     if verdict_key is not None:
         environment["RANEX_VERDICT_SIGNING_KEY"] = str(verdict_key)
         environment["RANEX_VERDICT_DIR"] = "governance/verdicts"
+    if approver_key is not None:
+        environment["RANEX_APPROVER_SIGNING_KEY"] = str(approver_key)
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *args], cwd=repo,
         env=environment, capture_output=True, text=True, check=False, timeout=120,
@@ -61,7 +64,7 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
 
 
 @pytest.fixture
-def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
+def application(tmp_path: Path) -> tuple[Path, Path, Path, str, Path]:
     available = subprocess.run(
         [str(PYTEST_PYTHON), "-m", "pytest", "--version"],
         capture_output=True, check=False,
@@ -92,9 +95,17 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
     signer = tmp_path / "verdict.key"
     signer.write_text(signing + "\n")
     signer.chmod(0o600)
+    # RISK-07: the approver is a catalogued second identity with its own key.
+    approving, approver_public = generate_keypair()
+    approver = tmp_path / "approver.key"
+    approver.write_text(approving + "\n")
+    approver.chmod(0o600)
     (repo / "governance/producers.yaml").write_text(
         f"producers:\n  worker: {public}\n"
         f"verdict_signer:\n  id: kernel-verdict-signer\n  public_key: {verifying}\n"
+        "principals:\n"
+        f"  worker:\n    role: worker\n    keys:\n      - key: {public}\n        status: active\n"
+        f"  pilot:\n    role: approver\n    keys:\n      - key: {approver_public}\n        status: active\n"
     )
     command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true",
                "--junitxml=governance/suite_results.xml", "test_application.py"]
@@ -105,7 +116,7 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
         "        results_artifact: governance/suite_results.xml\n"
     )
     commit(repo)
-    return repo, worker, signer, verifying
+    return repo, worker, signer, verifying, approver
 
 
 COMMAND = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true",
@@ -124,19 +135,21 @@ def _subject_hex(repo: Path) -> str:
     return hashlib.sha256(canonical_json_bytes({"tree": tree})).hexdigest()
 
 
-def _stop_hook(repo: Path, worker: Path, signer: Path, *, stdin: str = "{}",
+def _stop_hook(repo: Path, worker: Path, signer: Path, approver: Path, *,
+               stdin: str = "{}",
                mode: str = "stop", with_key: bool = True) -> dict[str, object]:
     completed = invoke(
         repo, "task", "stop-hook", "--mode", mode, "--external-repository", str(repo),
         "--producer", "worker", "--approver", "pilot",
-        key=worker if with_key else None, verdict_key=signer, stdin=stdin,
+        key=worker if with_key else None, verdict_key=signer, approver_key=approver,
+        stdin=stdin,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
     return json.loads(completed.stdout.strip().splitlines()[-1])
 
 
 def _freeze(application) -> Path:
-    repo, _worker, _signer, _verifying = application
+    repo, _worker, _signer, _verifying, _approver = application
     frozen = invoke(repo, "suite", "freeze", "--external-repository", str(repo),
                     "--artifact", "governance/suite_results.xml", "--", *COMMAND)
     assert frozen.returncode == 0, frozen.stdout + frozen.stderr
@@ -147,7 +160,7 @@ def _freeze(application) -> Path:
 def test_retained_junit_and_projection_envelope_carry_real_failure_detail(
     application,
 ) -> None:
-    repo, worker, signer, _verifying = application
+    repo, worker, signer, _verifying, approver = application
     _freeze(application)
     _break_the_subject(repo)
     observed = invoke(repo, "run", "--external-repository", str(repo),
@@ -164,7 +177,7 @@ def test_retained_junit_and_projection_envelope_carry_real_failure_detail(
     assert b"test_value" in junit_bytes and b"<failure" in junit_bytes
 
     evaluated = invoke(repo, "gate", "evaluate", "HEAD", "--external-repository",
-                       str(repo), "--approver", "pilot", verdict_key=signer)
+                       str(repo), "--approver", "pilot", verdict_key=signer, approver_key=approver)
     assert evaluated.returncode == 1, evaluated.stdout + evaluated.stderr
 
     envelope_path = repo / "governance/verdicts" / f"{subject_hex}.envelope.json"
@@ -191,7 +204,7 @@ def test_retained_junit_and_projection_envelope_carry_real_failure_detail(
 
 
 def test_envelope_bytes_offered_as_evidence_are_refused(application) -> None:
-    repo, worker, signer, _verifying = application
+    repo, worker, signer, _verifying, approver = application
     _freeze(application)
     _break_the_subject(repo)
     observed = invoke(repo, "run", "--external-repository", str(repo),
@@ -199,7 +212,7 @@ def test_envelope_bytes_offered_as_evidence_are_refused(application) -> None:
                       "--", *COMMAND, key=worker)
     assert observed.returncode == 1, observed.stdout + observed.stderr
     evaluated = invoke(repo, "gate", "evaluate", "HEAD", "--external-repository",
-                       str(repo), "--approver", "pilot", verdict_key=signer)
+                       str(repo), "--approver", "pilot", verdict_key=signer, approver_key=approver)
     assert evaluated.returncode == 1, evaluated.stdout + evaluated.stderr
 
     subject_hex = _subject_hex(repo)
@@ -234,17 +247,17 @@ def test_envelope_bytes_offered_as_evidence_are_refused(application) -> None:
         canonical_json_bytes(forged) + b"\n"
     )
     refused = invoke(repo, "gate", "evaluate", "HEAD", "--external-repository",
-                     str(repo), "--approver", "pilot", verdict_key=signer)
+                     str(repo), "--approver", "pilot", verdict_key=signer, approver_key=approver)
     assert refused.returncode == 1, refused.stdout + refused.stderr
     assert "malformed" in (refused.stdout + refused.stderr).lower()
 
 
 def test_stop_hook_runs_autonomous_three_miss_loop(application) -> None:
-    repo, worker, signer, _verifying = application
+    repo, worker, signer, _verifying, approver = application
     _freeze(application)
     _break_the_subject(repo)
 
-    first = _stop_hook(repo, worker, signer)
+    first = _stop_hook(repo, worker, signer, approver)
     assert first["decision"] == "block"
     assert first["read_state"] == "verified"
     assert first["misses"] == 1 and first["budget"] == 3
@@ -253,10 +266,10 @@ def test_stop_hook_runs_autonomous_three_miss_loop(application) -> None:
     assert envelope["failures"][0]["id"] == "test_application.py::test_value"
     assert "assert 41 == 42" in first["reason"]
 
-    second = _stop_hook(repo, worker, signer)
+    second = _stop_hook(repo, worker, signer, approver)
     assert second["decision"] == "block" and second["misses"] == 2
 
-    third = _stop_hook(repo, worker, signer)
+    third = _stop_hook(repo, worker, signer, approver)
     # The 3-miss rule: the stop is deterministic, not a human's decision.
     assert third["decision"] == "approve"
     assert third["misses"] == 3
@@ -265,7 +278,7 @@ def test_stop_hook_runs_autonomous_three_miss_loop(application) -> None:
     # A passing subject resets the budget and approves.
     (repo / "src/application.py").write_text("VALUE = 42\n")
     commit(repo, "repair the value")
-    repaired = _stop_hook(repo, worker, signer)
+    repaired = _stop_hook(repo, worker, signer, approver)
     assert repaired["decision"] == "approve"
     assert repaired["misses"] == 0
     assert repaired["envelope"]["verdict"] == "PASS"
@@ -274,11 +287,11 @@ def test_stop_hook_runs_autonomous_three_miss_loop(application) -> None:
 
 
 def test_stop_hook_without_credential_never_fabricates(application) -> None:
-    repo, _worker, signer, _verifying = application
+    repo, _worker, signer, _verifying, approver = application
     _freeze(application)
     _break_the_subject(repo)
 
-    answer = _stop_hook(repo, _worker, signer, with_key=False)
+    answer = _stop_hook(repo, _worker, signer, approver, with_key=False)
     assert answer["decision"] == "approve"
     assert answer["read_state"] == "absent"
     assert "no signing credential" in answer["reason"]
@@ -286,15 +299,15 @@ def test_stop_hook_without_credential_never_fabricates(application) -> None:
 
 
 def test_pretooluse_blocks_running_the_suite_by_hand(application) -> None:
-    repo, worker, signer, _verifying = application
+    repo, worker, signer, _verifying, approver = application
     _freeze(application)
     payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": " ".join(COMMAND)}})
-    blocked = _stop_hook(repo, worker, signer, stdin=payload, mode="pretooluse")
+    blocked = _stop_hook(repo, worker, signer, approver, stdin=payload, mode="pretooluse")
     assert blocked["decision"] == "block"
     assert "verdict read channel" in blocked["reason"]
 
     unrelated = _stop_hook(
-        repo, worker, signer,
+        repo, worker, signer, approver,
         stdin=json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls -la"}}),
         mode="pretooluse",
     )

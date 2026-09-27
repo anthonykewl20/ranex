@@ -28,6 +28,7 @@ from pathlib import Path
 
 import pytest
 
+import _approver
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.signing import generate_keypair
 
@@ -48,6 +49,7 @@ def invoke(
     repo: Path,
     *args: str,
     verdict_key: Path | None = None,
+    approver_key: Path | None = None,
     env_extra: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     environment = {
@@ -59,6 +61,8 @@ def invoke(
     if verdict_key is not None:
         environment["RANEX_VERDICT_SIGNING_KEY"] = str(verdict_key)
         environment["RANEX_VERDICT_DIR"] = "governance/verdicts"
+    if approver_key is not None:
+        environment["RANEX_APPROVER_SIGNING_KEY"] = str(approver_key)
     if env_extra:
         environment.update(env_extra)
     return subprocess.run(
@@ -78,7 +82,7 @@ def subject_hex(repo: Path) -> str:
 
 
 @pytest.fixture
-def witnessed_repo(tmp_path: Path) -> tuple[Path, Path]:
+def witnessed_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     if not REKOR_KEY.is_file():
         pytest.fail(f"pinned Rekor public key missing: {REKOR_KEY}")
     repo = tmp_path / "subject"
@@ -98,9 +102,22 @@ def witnessed_repo(tmp_path: Path) -> tuple[Path, Path]:
     signer.chmod(0o600)
     _worker_priv, worker_pub = generate_keypair()
     del _worker_priv
+    approver_key, approver_pub = _approver.mint_approver(tmp_path, "pilot")
+    other_key, other_pub = _approver.mint_approver(tmp_path, "other-pilot")
     (repo / "governance" / "producers.yaml").write_text(
-        f"producers:\n  worker: {worker_pub}\n"
-        f"verdict_signer:\n  id: kernel-verdict-signer\n  public_key: {verifying}\n",
+        "producers:\n"
+        f"  worker: {worker_pub}\n"
+        "verdict_signer:\n"
+        f"  id: kernel-verdict-signer\n  public_key: {verifying}\n"
+        "principals:\n"
+        f"  worker:\n    role: worker\n    keys:\n"
+        f"      - key: {worker_pub}\n        status: active\n"
+        f"  kernel-verdict-signer:\n    role: service\n    keys:\n"
+        f"      - key: {verifying}\n        status: active\n"
+        f"  pilot:\n    role: approver\n    keys:\n"
+        f"      - key: {approver_pub}\n        status: active\n"
+        f"  other-pilot:\n    role: approver\n    keys:\n"
+        f"      - key: {other_pub}\n        status: active\n",
         encoding="utf-8",
     )
     (repo / "governance" / "gates.yaml").write_text(
@@ -112,12 +129,13 @@ def witnessed_repo(tmp_path: Path) -> tuple[Path, Path]:
     (repo / "README.md").write_text("witness subject\n", encoding="utf-8")
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "init")
-    return repo, signer
+    return repo, signer, approver_key, other_key
 
 
 def _evaluate(
     repo: Path,
     signer: Path,
+    approver_key: Path,
     *,
     witness: bool = False,
     env_extra: dict[str, str] | None = None,
@@ -133,14 +151,18 @@ def _evaluate(
     ]
     if witness:
         args.append("--witness")
-    return invoke(repo, *args, verdict_key=signer, env_extra=env_extra)
+    return invoke(
+        repo, *args, verdict_key=signer, approver_key=approver_key, env_extra=env_extra
+    )
 
 
-def test_arm1_publish_and_witnessed_verify(witnessed_repo: tuple[Path, Path]) -> None:
+def test_arm1_publish_and_witnessed_verify(
+    witnessed_repo: tuple[Path, Path, Path, Path],
+) -> None:
     """VERIFIED: witness.json present; --witnessed accepts."""
 
-    repo, signer = witnessed_repo
-    completed = _evaluate(repo, signer, witness=True)
+    repo, signer, approver_key, _other = witnessed_repo
+    completed = _evaluate(repo, signer, approver_key, witness=True)
     assert completed.returncode == 1, completed.stdout + completed.stderr
     hex_digest = subject_hex(repo)
     verdict = repo / "governance" / "verdicts" / f"{hex_digest}.json"
@@ -159,16 +181,19 @@ def test_arm1_publish_and_witnessed_verify(witnessed_repo: tuple[Path, Path]) ->
         str(verdict.relative_to(repo)),
         "--witnessed",
         verdict_key=signer,
+        approver_key=approver_key,
     )
     assert verified.returncode == 0, verified.stdout + verified.stderr
     assert "witness=verified" in verified.stdout
 
 
-def test_arm2_rewrite_refused_when_witnessed(witnessed_repo: tuple[Path, Path]) -> None:
+def test_arm2_rewrite_refused_when_witnessed(
+    witnessed_repo: tuple[Path, Path, Path, Path],
+) -> None:
     """VERIFIED negative: self-consistent rewrite fails --witnessed."""
 
-    repo, signer = witnessed_repo
-    assert _evaluate(repo, signer, witness=True).returncode == 1
+    repo, signer, approver_key, other_key = witnessed_repo
+    assert _evaluate(repo, signer, approver_key, witness=True).returncode == 1
     hex_digest = subject_hex(repo)
     verdict = repo / "governance" / "verdicts" / f"{hex_digest}.json"
     witness = repo / "governance" / "verdicts" / f"{hex_digest}.witness.json"
@@ -182,8 +207,6 @@ def test_arm2_rewrite_refused_when_witnessed(witnessed_repo: tuple[Path, Path]) 
         connection.commit()
     finally:
         connection.close()
-    # Same subject, different approver → a new signed digest; the old witness
-    # still names the first. Local chain verify may accept; --witnessed must not.
     rewritten = invoke(
         repo,
         "gate",
@@ -194,6 +217,7 @@ def test_arm2_rewrite_refused_when_witnessed(witnessed_repo: tuple[Path, Path]) 
         "--approver",
         "other-pilot",
         verdict_key=signer,
+        approver_key=other_key,
     )
     assert rewritten.returncode == 1, rewritten.stdout + rewritten.stderr
     new_digest = "sha256:" + hashlib.sha256(verdict.read_bytes()).hexdigest()
@@ -212,6 +236,7 @@ def test_arm2_rewrite_refused_when_witnessed(witnessed_repo: tuple[Path, Path]) 
         str(verdict.relative_to(repo)),
         "--witnessed",
         verdict_key=signer,
+        approver_key=approver_key,
     )
     assert witnessed.returncode == 2, witnessed.stdout + witnessed.stderr
     assert "E-WITNESS" in witnessed.stderr
@@ -219,14 +244,15 @@ def test_arm2_rewrite_refused_when_witnessed(witnessed_repo: tuple[Path, Path]) 
 
 
 def test_arm3_network_down_refuses_and_unwitnessed_publishes(
-    witnessed_repo: tuple[Path, Path],
+    witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED negative: --witness + unreachable log → exit 2, no verdict."""
 
-    repo, signer = witnessed_repo
+    repo, signer, approver_key, _other = witnessed_repo
     down = _evaluate(
         repo,
         signer,
+        approver_key,
         witness=True,
         env_extra={"RANEX_WITNESS_URL": "http://127.0.0.1:1"},
     )
@@ -236,17 +262,19 @@ def test_arm3_network_down_refuses_and_unwitnessed_publishes(
     verdict = repo / "governance" / "verdicts" / f"{hex_digest}.json"
     assert not verdict.exists()
 
-    published = _evaluate(repo, signer, witness=False)
+    published = _evaluate(repo, signer, approver_key, witness=False)
     assert published.returncode == 1, published.stdout + published.stderr
     assert verdict.is_file()
     assert not (repo / "governance" / "verdicts" / f"{hex_digest}.witness.json").exists()
 
 
-def test_arm4_tampered_witness_refused(witnessed_repo: tuple[Path, Path]) -> None:
+def test_arm4_tampered_witness_refused(
+    witnessed_repo: tuple[Path, Path, Path, Path],
+) -> None:
     """VERIFIED negative: edited inclusion proof fails."""
 
-    repo, signer = witnessed_repo
-    assert _evaluate(repo, signer, witness=True).returncode == 1
+    repo, signer, approver_key, _other = witnessed_repo
+    assert _evaluate(repo, signer, approver_key, witness=True).returncode == 1
     hex_digest = subject_hex(repo)
     verdict = repo / "governance" / "verdicts" / f"{hex_digest}.json"
     witness = repo / "governance" / "verdicts" / f"{hex_digest}.witness.json"
@@ -264,24 +292,23 @@ def test_arm4_tampered_witness_refused(witnessed_repo: tuple[Path, Path]) -> Non
         str(verdict.relative_to(repo)),
         "--witnessed",
         verdict_key=signer,
+        approver_key=approver_key,
     )
     assert completed.returncode == 2, completed.stdout + completed.stderr
     assert "inclusion proof does not verify" in completed.stderr
 
 
 def test_arm5_repeats_identical_local_artifacts(
-    witnessed_repo: tuple[Path, Path],
+    witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
-    """VERIFIED: identical inputs → identical payload digests; UUIDs differ."""
+    """VERIFIED: identical inputs → identical payload digests; log coalesces."""
 
-    repo, signer = witnessed_repo
-    first = _evaluate(repo, signer, witness=True)
+    repo, signer, approver_key, _other = witnessed_repo
+    first = _evaluate(repo, signer, approver_key, witness=True)
     assert first.returncode == 1, first.stdout + first.stderr
     hex_digest = subject_hex(repo)
     witness_path = repo / "governance" / "verdicts" / f"{hex_digest}.witness.json"
     first_record = json.loads(witness_path.read_text(encoding="utf-8"))
-    # Reset the journal to genesis so the next evaluate rebuilds the same
-    # single-row chain (same journal_head → same verdict bytes → same digest).
     journal = repo / "governance" / "journal.sqlite3"
     connection = sqlite3.connect(journal)
     try:
@@ -290,12 +317,9 @@ def test_arm5_repeats_identical_local_artifacts(
         connection.commit()
     finally:
         connection.close()
-    second = _evaluate(repo, signer, witness=True)
+    second = _evaluate(repo, signer, approver_key, witness=True)
     assert second.returncode == 1, second.stdout + second.stderr
     second_record = json.loads(witness_path.read_text(encoding="utf-8"))
     assert first_record["payload_digest"] == second_record["payload_digest"]
-    # The public Rekor instance coalesces equivalent DSSE entries (HTTP 409 →
-    # fetch existing UUID). Identical local artifacts therefore share one log
-    # UUID; that coalescing is the real-log behaviour this arm records.
     assert second_record["entry_uuid"] == first_record["entry_uuid"]
     assert second_record["log_index"] == first_record["log_index"]

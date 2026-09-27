@@ -22,6 +22,8 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
+import _approver
 from conftest import Signing, attach, signing_for
 
 from ranex.cli.main import main
@@ -128,7 +130,9 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     return repository
 
 
-def invoke(repo: Path, argv: list[str], producer: str | None = None) -> int:
+def invoke(
+    repo: Path, argv: list[str], producer: str | None = None, *, approver: str | None = None
+) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
         monkeypatch.setattr("ranex.cli.main.governed_repository_root", lambda: repo.resolve())
@@ -136,6 +140,14 @@ def invoke(repo: Path, argv: list[str], producer: str | None = None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(signing_for(repo).key_path(producer)))
+        if approver is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            # RISK-07: prove possession of the catalogued approver's key.
+            monkeypatch.setenv(
+                _approver.APPROVER_ENV,
+                str(signing_for(repo).approver_path(approver)),
+            )
         return main(argv)
 
 
@@ -184,6 +196,7 @@ def evaluate(repo: Path) -> int:
             "--producers", "producers.yaml",
             "--approver", "reviewer",
         ],
+        approver="reviewer",
     )
 
 

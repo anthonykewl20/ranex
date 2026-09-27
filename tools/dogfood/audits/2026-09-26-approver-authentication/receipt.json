@@ -1,0 +1,105 @@
+{
+  "issue": "anthonykewl20/ranex#107",
+  "risk": "RISK-07",
+  "protocol": "#95 \u2014 real subprocesses, no mocked seams, positive/negative controls, 3 identical-input repeats",
+  "generated_utc": "2026-09-26T09:18:16Z",
+  "host": {
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+    "python": "3.14.7",
+    "kernel_commit": "3b97d875c2866597fb04327076f3436bcae2d562"
+  },
+  "arms": [
+    {
+      "arm": "R1-possession-positive",
+      "status": "VERIFIED",
+      "detail": "the real approver key reached judgment 3x (exits [1, 1, 1])",
+      "repeats": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "arm": "R2-key-absent",
+      "status": "VERIFIED",
+      "detail": "exit 2 naming E-APPROVER-KEY-ABSENT 3x; journal rows 0->0",
+      "repeats": [
+        2,
+        2,
+        2
+      ],
+      "code": "E-APPROVER-KEY-ABSENT"
+    },
+    {
+      "arm": "R3-worker-as-approver",
+      "status": "VERIFIED",
+      "detail": "exit 2 naming E-APPROVER-ROLE 3x; journal rows 0->0",
+      "repeats": [
+        2,
+        2,
+        2
+      ],
+      "code": "E-APPROVER-ROLE"
+    },
+    {
+      "arm": "R4-unknown-approver",
+      "status": "VERIFIED",
+      "detail": "exit 2 naming E-APPROVER-UNKNOWN 3x; journal rows 0->0",
+      "repeats": [
+        2,
+        2,
+        2
+      ],
+      "code": "E-APPROVER-UNKNOWN"
+    },
+    {
+      "arm": "R5-key-mismatch",
+      "status": "VERIFIED",
+      "detail": "exit 2 naming E-APPROVER-KEY-MISMATCH 3x; journal rows 0->0",
+      "repeats": [
+        2,
+        2,
+        2
+      ],
+      "code": "E-APPROVER-KEY-MISMATCH"
+    },
+    {
+      "arm": "R6-kernel-unchanged",
+      "status": "VERIFIED",
+      "detail": "sha256(verdict.py)=matches the BASE freeze digest",
+      "kernel_digest": "sha256:2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+      "frozen_digest": "sha256:2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6"
+    },
+    {
+      "arm": "L1-two-signature-publication",
+      "status": "VERIFIED",
+      "detail": "signers=['kernel-verdict-signer', 'release-approver']; 3 identical-state runs -> 1 distinct verdict byte-sets",
+      "signers": [
+        "kernel-verdict-signer",
+        "release-approver"
+      ],
+      "verdict_sha256": "1aa3095ee24c9063da0bcc6fd2980b9b9c7889cf62b99401625d000d02a54185"
+    },
+    {
+      "arm": "L2-openssl-both-signatures",
+      "status": "VERIFIED",
+      "detail": "openssl out-of-band verification: {'signer': True, 'approver': True}"
+    },
+    {
+      "arm": "L3-tampered-verdict-anchors-nothing",
+      "status": "VERIFIED",
+      "detail": "journal verify --against-verdict refusals: {'stripped': True, 'altered': True}"
+    },
+    {
+      "arm": "L4-one-key-two-principals",
+      "status": "VERIFIED",
+      "detail": "exit 2; refusal names the shared key"
+    },
+    {
+      "arm": "L5-kernel-self-approval-refuses",
+      "status": "VERIFIED",
+      "detail": "run exit 0, evaluate exit 1, self_approval=True",
+      "reason": "self-approval refused: release-approver produced evidence and approved it"
+    }
+  ]
+}

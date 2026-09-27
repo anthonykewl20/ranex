@@ -35,6 +35,8 @@ import signal
 import socket
 import stat
 import subprocess
+
+import _approver
 import sys
 import threading
 import time
@@ -84,7 +86,12 @@ def keys(tmp_path: Path) -> dict[str, str]:
     path = tmp_path / "worker.key"
     path.write_text(private + "\n", encoding="utf-8")
     path.chmod(0o600)
-    return {"private": private, "public": public, "path": str(path)}
+    import _approver
+
+    approver_path, approver_public = _approver.mint_approver(tmp_path)
+    return {"private": private, "public": public, "path": str(path), "approver_path": str(approver_path),
+        "approver_public": approver_public,
+    }
 
 
 @pytest.fixture()
@@ -97,6 +104,11 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
         )
     (repository / "producers.yaml").write_text(
         f"producers:\n  worker: {keys['public']}\n", encoding="utf-8"
+    )
+    import _approver
+
+    _approver.register_approver(
+        repository / "producers.yaml", "reviewer", keys["approver_public"]
     )
     return repository
 
@@ -113,6 +125,7 @@ def invoke(
     *,
     path_prefix: Path | None = None,
     environment: dict[str, str] | None = None,
+    approver_path: str | None = None,
 ) -> int:
     from ranex.cli.main import main
 
@@ -125,6 +138,10 @@ def invoke(
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", key_path)
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
         if path_prefix is not None:
             monkeypatch.setenv(
                 "PATH", f"{path_prefix}{os.pathsep}{os.environ['PATH']}"
@@ -163,7 +180,9 @@ def run_cmd(
     )
 
 
-def evaluate(repo: Path, *, path_prefix: Path | None = None) -> int:
+def evaluate(
+    repo: Path, keys: dict[str, str], *, path_prefix: Path | None = None
+) -> int:
     return invoke(
         repo,
         [
@@ -175,6 +194,7 @@ def evaluate(repo: Path, *, path_prefix: Path | None = None) -> int:
             "--approver", "reviewer",
         ],
         path_prefix=path_prefix,
+        approver_path=keys["approver_path"],
     )
 
 
@@ -252,7 +272,7 @@ def test_a_self_contained_command_runs_records_and_passes(
     (record,) = records(repo)
     assert record["exit_code"] == 0
     assert record["command_digest"] == command_digest(["sh", "run-tests.sh"])
-    assert evaluate(repo) == EXIT_PASS
+    assert evaluate(repo, keys) == EXIT_PASS
 
 
 def test_suite_results_refuses_utf16_dtd_before_xml_parsing() -> None:
@@ -526,7 +546,7 @@ def test_the_honest_run_of_a_tree_that_fails_its_own_check_reports_failure(
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_FAIL
     (record,) = records(repo)
     assert record["exit_code"] == 1
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
 
 
 def test_an_ignored_file_cannot_decide_the_outcome_of_the_bound_command(
@@ -562,7 +582,7 @@ def test_an_ignored_file_cannot_decide_the_outcome_of_the_bound_command(
     )
     (record,) = records(repo)
     assert record["exit_code"] == 1
-    assert evaluate(repo) == EXIT_FAIL, (
+    assert evaluate(repo, keys) == EXIT_FAIL, (
         "a PASS was bound to the digest of a tree whose own committed check fails"
     )
 
@@ -636,7 +656,7 @@ def test_a_configured_clean_filter_cannot_hide_a_modified_tracked_file(
     )
     (record,) = records(repo)
     assert record["exit_code"] == 1
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
 
 
 # --- D15: a loose object overwritten in place ------------------------------
@@ -668,7 +688,7 @@ def test_an_honest_catalog_is_read_and_evaluated(
     commit_all(repo)
 
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_FAIL
-    assert evaluate(repo) == EXIT_FAIL, "an honest store must reach a verdict"
+    assert evaluate(repo, keys) == EXIT_FAIL, "an honest store must reach a verdict"
 
 
 def test_a_poisoned_loose_object_cannot_substitute_the_gate_catalog(
@@ -710,7 +730,7 @@ def test_a_poisoned_loose_object_cannot_substitute_the_gate_catalog(
     )
 
     capsys.readouterr()
-    code = evaluate(repo)
+    code = evaluate(repo, keys)
     output = capsys.readouterr()
 
     assert code == EXIT_USAGE, (
@@ -747,7 +767,7 @@ def test_a_poisoned_loose_object_cannot_substitute_the_keyring(
     poison_loose_object(repo, object_id(repo, "HEAD:producers.yaml"), attacker)
     (repo / "producers.yaml").write_bytes(attacker)
 
-    assert evaluate(repo) == EXIT_USAGE, (
+    assert evaluate(repo, keys) == EXIT_USAGE, (
         "a keyring no commit carries was admitted; a producer nobody reviewed "
         "could sign the evidence that decides this verdict"
     )
@@ -916,7 +936,7 @@ def test_the_git_ranex_asks_cannot_be_chosen_by_the_observed_party(
     )
     (repo / "gates.yaml").write_bytes(attacker)
 
-    assert evaluate(repo) == EXIT_USAGE, "the fix must hold without the shim"
+    assert evaluate(repo, keys) == EXIT_USAGE, "the fix must hold without the shim"
 
     shim = tmp_path / "shim"
     shim.mkdir()
@@ -929,7 +949,7 @@ def test_the_git_ranex_asks_cannot_be_chosen_by_the_observed_party(
     )
     (shim / "git").chmod(0o755)
 
-    assert evaluate(repo, path_prefix=shim) == EXIT_USAGE, (
+    assert evaluate(repo, keys, path_prefix=shim) == EXIT_USAGE, (
         "a `git` the observed party placed on PATH answered every question the "
         "verdict rests on; deleting one argument removed the fix"
     )
@@ -1035,7 +1055,7 @@ def test_an_honest_run_of_the_bound_command_reports_the_red_suite(
     (record,) = records(repo)
     assert record["exit_code"] == 1, f"the suite must genuinely fail: {record}"
     assert record["command_digest"] == command_digest(BOUND_SUITE)
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
 
 
 def test_the_inherited_environment_must_not_rewrite_the_bound_command(
@@ -1070,7 +1090,7 @@ def test_the_inherited_environment_must_not_rewrite_the_bound_command(
     )
     (record,) = records(repo)
     assert record["exit_code"] == 1
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
 
 
 def test_no_ambient_variable_reaches_the_observed_command(
@@ -1145,7 +1165,7 @@ def test_a_shadowed_binary_on_path_must_not_satisfy_the_claim(
         "`tests-executed`; the claim names a command and the machine decided "
         "which one"
     )
-    assert evaluate(repo) != EXIT_PASS
+    assert evaluate(repo, keys) != EXIT_PASS
 
 
 def test_the_observed_command_is_not_handed_the_operators_path(

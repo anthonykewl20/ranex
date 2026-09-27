@@ -34,6 +34,23 @@ KNOWN_PRODUCERS = (
     "someone",
 )
 
+# RISK-07 / issue #107: the names the e2e suites pass to `--approver`. Every
+# keyring `write_keyring` writes now carries a `principals:` block, and each
+# of these names is an `approver`-role principal there (every other registered
+# name is a worker principal, which is what `_require_blocks_agree` demands).
+# A name that also produces evidence keeps its `producers:` entry: admission
+# does not consult roles, and the kernel's own no-self-approval comparison is
+# what fires when the two meet — unchanged by this slice.
+APPROVER_NAMES = (
+    "owner",
+    "reviewer",
+    "reviewer_alice",
+    "someone",
+    "alice",
+    "pilot",
+    "slice036-observer-calibration",
+)
+
 
 @dataclass
 class Signing:
@@ -90,11 +107,38 @@ class Signing:
         self.register(producer)
         return self.root / f"{producer}.key"
 
+    def approver_path(self, approver: str) -> Path:
+        """The private key file for a catalogued approver, for
+        $RANEX_APPROVER_SIGNING_KEY (RISK-07).
+
+        The keyring `write_keyring` wrote carries this name as an
+        `approver`-role principal bound to exactly this key, so an evaluation
+        naming it passes possession and judges. A name no keyring wrote stays
+        unregistered on purpose — a test naming an uncatalogued approver is
+        exercising `E-APPROVER-UNKNOWN`, and minting a key for it here would
+        silently move that refusal's goalposts.
+        """
+
+        if approver not in self.public:
+            raise KeyError(
+                f"{approver!r} was not registered when the keyring was written; "
+                "an uncatalogued approver is a refusal, not a key to mint"
+            )
+        return self.root / f"{approver}.key"
+
     def write_keyring(self, repo: Path, name: str = "producers.yaml") -> None:
         lines = "\n".join(
             f"  {producer}: {key}" for producer, key in sorted(self.public.items())
         )
-        (repo / name).write_text(f"producers:\n{lines}\n", encoding="utf-8")
+        principals = "\n".join(
+            f"  {principal}:\n    role: "
+            f"{'approver' if principal in APPROVER_NAMES else 'worker'}\n"
+            f"    keys:\n      - key: {key}\n        status: active"
+            for principal, key in sorted(self.public.items())
+        )
+        (repo / name).write_text(
+            f"producers:\n{lines}\nprincipals:\n{principals}\n", encoding="utf-8"
+        )
 
     def sign(self, content: dict[str, object], producer: str) -> dict[str, object]:
         """A record as `run` would have written it, for tests that hand-build
@@ -133,7 +177,9 @@ def signing_for(repo: Path) -> Signing:
 def signing(tmp_path: Path) -> Signing:
     root = tmp_path / "keys"
     root.mkdir(parents=True, exist_ok=True)
-    return Signing(root=root).register(*KNOWN_PRODUCERS)
+    # The approver names ride along so `write_keyring` can catalogue them as
+    # approver principals — possession needs their private halves on disk.
+    return Signing(root=root).register(*KNOWN_PRODUCERS, *APPROVER_NAMES)
 
 
 # --- SLICE-055 / ADR-032: the frame's module-scoped prereq fixtures -------------

@@ -54,23 +54,41 @@ def _cli(*args: str) -> list[str]:
     return [sys.executable, "-m", "ranex.cli.main", *args]
 
 
-def _environment() -> dict[str, str]:
+def _environment(verdict: bool = False) -> dict[str, str]:
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(REPO_ROOT / "src")
     # Deliberately NOT set: a test that only passes with NO_COLOR set would
     # prove the opposite of the rule. The claim is that content never varies,
     # not that colour can be suppressed on request.
     environment.pop("NO_COLOR", None)
+    if verdict:
+        # RISK-07: judging this repository means proving possession of the
+        # catalogued approver's key (release-approver in the committed
+        # catalog). That is the operator's credential: taken from the
+        # environment or its conventional home, and skipped honestly where
+        # the host does not hold it — never faked, never weakened.
+        key = os.environ.get("RANEX_APPROVER_SIGNING_KEY")
+        if not key:
+            conventional = Path.home() / ".config" / "ranex" / "approver.key"
+            if conventional.is_file():
+                key = str(conventional)
+        if not key or not Path(key).is_file():
+            pytest.skip(
+                "a real verdict on this repository needs the operator's "
+                "approver key (RANEX_APPROVER_SIGNING_KEY or "
+                "~/.config/ranex/approver.key); nowhere to be found here"
+            )
+        environment["RANEX_APPROVER_SIGNING_KEY"] = key
     return environment
 
 
-def _through_pipe(args: list[str]) -> bytes:
+def _through_pipe(args: list[str], *, verdict: bool = False) -> bytes:
     """stdout and stderr interleaved, with neither attached to a terminal."""
 
     completed = subprocess.run(
         args,
         cwd=REPO_ROOT,
-        env=_environment(),
+        env=_environment(verdict),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         timeout=600,
@@ -79,14 +97,14 @@ def _through_pipe(args: list[str]) -> bytes:
     return completed.stdout
 
 
-def _through_pty(args: list[str]) -> bytes:
+def _through_pty(args: list[str], *, verdict: bool = False) -> bytes:
     """The same command with a real terminal on both streams."""
 
     master, slave = pty.openpty()
     process = subprocess.Popen(
         args,
         cwd=REPO_ROOT,
-        env=_environment(),
+        env=_environment(verdict),
         stdout=slave,
         stderr=slave,
         close_fds=True,
@@ -121,7 +139,7 @@ def _verdict_arguments() -> tuple[list[str], Path]:
     journal = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
     arguments = [
         "gate", "evaluate", "HEAD",
-        "--approver", "owner",
+        "--approver", "release-approver",
         "--journal", f"governance/{journal.name}",
     ]
     return arguments, journal
@@ -142,7 +160,11 @@ def _run(name: str) -> tuple[bytes, bytes]:
         arguments = ["gate", "evaluate", "--help"]
 
     try:
-        return _through_pipe(_cli(*arguments)), _through_pty(_cli(*arguments))
+        verdict = name == "verdict"
+        return (
+            _through_pipe(_cli(*arguments), verdict=verdict),
+            _through_pty(_cli(*arguments), verdict=verdict),
+        )
     finally:
         if journal is not None:
             journal.unlink(missing_ok=True)
@@ -218,12 +240,16 @@ def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
     journal_pipe = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
     journal_pty = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
     common = [
-        "gate", "evaluate", "HEAD", "--approver", "owner",
+        "gate", "evaluate", "HEAD", "--approver", "release-approver",
         "--evidence", f"governance/{evidence.name}",
     ]
     try:
-        piped = _through_pipe(_cli(*common, "--journal", f"governance/{journal_pipe.name}"))
-        attended = _through_pty(_cli(*common, "--journal", f"governance/{journal_pty.name}"))
+        piped = _through_pipe(
+            _cli(*common, "--journal", f"governance/{journal_pipe.name}"), verdict=True
+        )
+        attended = _through_pty(
+            _cli(*common, "--journal", f"governance/{journal_pty.name}"), verdict=True
+        )
     finally:
         evidence.unlink(missing_ok=True)
         journal_pipe.unlink(missing_ok=True)

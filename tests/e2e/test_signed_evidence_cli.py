@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+import _approver
+
 from ranex.cli.main import main
 from ranex.foundation.canonical import canonical_sha256, command_digest
 
@@ -61,7 +63,13 @@ def commit_all(repo: Path, message: str = "initial") -> None:
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", message], check=True)
 
 
-def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
+def invoke(
+    repo: Path,
+    argv: list[str],
+    key_path: Path | None = None,
+    *,
+    approver_path: Path | None = None,
+) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
         monkeypatch.setattr(
@@ -71,6 +79,10 @@ def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(key_path))
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, str(approver_path))
         return main(argv)
 
 
@@ -92,7 +104,20 @@ def keygen(repo: Path, key_path: Path, producer: str = "worker") -> str:
 
 def write_keyring(repo: Path, **producers: str) -> None:
     lines = "\n".join(f"  {name}: {key}" for name, key in producers.items())
-    (repo / "producers.yaml").write_text(f"producers:\n{lines}\n", encoding="utf-8")
+    keyring = repo / "producers.yaml"
+    keyring.write_text(f"producers:\n{lines}\n", encoding="utf-8")
+    # RISK-07: every evaluation names the catalogued `reviewer_alice`
+    # approver, so the keyring this test commits carries that principal too,
+    # with its own key minted outside the repository (repo.parent is the
+    # journey's tmp directory, not the governed tree).
+    approver_path, approver_public = _approver.mint_approver(
+        repo.parent, name="reviewer_alice"
+    )
+    _approver.register_approver(keyring, "reviewer_alice", approver_public)
+    _APPROVER_KEYS[repo.resolve()] = approver_path
+
+
+_APPROVER_KEYS: dict[Path, Path] = {}
 
 
 def run_cmd(repo: Path, key_path: Path | None, *command: str,
@@ -124,6 +149,7 @@ def evaluate(repo: Path, approver: str = "reviewer_alice") -> int:
             "--producers", "producers.yaml",
             "--approver", approver,
         ],
+        approver_path=_APPROVER_KEYS[repo.resolve()],
     )
 
 

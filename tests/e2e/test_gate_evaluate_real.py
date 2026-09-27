@@ -81,6 +81,8 @@ from pathlib import Path
 
 import pytest
 
+import _approver
+
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
@@ -113,6 +115,7 @@ _DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}")
 #: SLICE-055 R2 edit: unwired children carry no coverage environment).
 _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
+    "RANEX_APPROVER_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
@@ -122,7 +125,8 @@ _STRIPPED_ENV = (
 
 
 def ranex(
-    subject: Path, argv: list[str], key: Path | None = None
+    subject: Path, argv: list[str], key: Path | None = None,
+    approver_key: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Invoke the CLI the way an operator does: a real process, the
     subject's own source on PYTHONPATH (the clone judges the clone), the
@@ -132,6 +136,9 @@ def ranex(
     env["PYTHONPATH"] = str(subject / "src")
     if key is not None:
         env["RANEX_SIGNING_KEY"] = str(key)
+    if approver_key is not None:
+        # RISK-07: prove possession of the catalogued approver's key.
+        env[_approver.APPROVER_ENV] = str(approver_key)
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
         cwd=subject,
@@ -211,10 +218,31 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
     ):
         assert git(subject, "config", name, value).returncode == 0
 
-    # --- FAIL arm: the pristine real subject, no evidence at all --------
+    # --- the journey's approver, before any judgment can name it (RISK-07).
+    # A real keygen key, registered as the clone's committed approver
+    # principal — the same honest-difference pattern the producer takes below,
+    # taken one step earlier because the FAIL arm names the approver too.
+    approver_key = base / "reviewer.key"
+    approver_generated = ranex(
+        subject, ["keygen", "--producer", "reviewer"], key=approver_key
+    )
+    assert approver_generated.returncode == 0, approver_generated.stderr
+    approver_match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", approver_generated.stdout)
+    assert approver_match, f"keygen printed no public key: {approver_generated.stdout!r}"
+    keyring = subject / "governance" / "producers.yaml"
+    _approver.register_approver(keyring, "reviewer", approver_match.group(1))
+    registered = git(subject, "add", "governance/producers.yaml")
+    assert registered.returncode == 0, registered.stderr
+    registered = git(
+        subject, "commit", "-q", "-m", "register the journey's catalogued approver"
+    )
+    assert registered.returncode == 0, registered.stderr
+
+    # --- FAIL arm: the real subject with no evidence at all --------
     fail = ranex(
         subject,
         ["gate", "evaluate", "HEAD", "--repository", ".", "--approver", "reviewer"],
+        approver_key=approver_key,
     )
     assert fail.returncode == 1, (
         "the no-evidence evaluation of the real landing gate must FAIL "
@@ -229,7 +257,6 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
     assert match, f"keygen printed no public key: {generated.stdout!r}"
     public = match.group(1)
 
-    keyring = subject / "governance" / "producers.yaml"
     _prereqs.register_worker_key(keyring, FAMILY_PRODUCER, public)
 
     catalog = subject / "governance" / "gates.yaml"
@@ -288,6 +315,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
             "--approver",
             "reviewer",
         ],
+        approver_key=approver_key,
     )
     assert passed.returncode == 0, (
         f"the green evaluation must exit 0: {passed.stdout}{passed.stderr}"
@@ -320,6 +348,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
             "--approver",
             "reviewer",
         ],
+        approver_key=approver_key,
     )
     assert stale.returncode == 1, (
         f"evidence bound to a moved tree must FAIL (exit 1): {stale.stdout}"

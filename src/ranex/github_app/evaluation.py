@@ -30,6 +30,12 @@ class EvidenceEvaluator:
     verdicts_dir: Path
     signing_key: Path
     state_dir: Path
+    #: RISK-07 — the approver's private key, passed through the minimal
+    #: environment exactly as the verdict signer's, so the evaluation this
+    #: receiver drives proves approver key possession before judgment. None
+    #: disables nothing: the listener refuses to start an evaluating receiver
+    #: without it.
+    approver_key: Path | None = None
     _policy: tuple[bytes, ...] = field(init=False, repr=False)
     _policy_names: tuple[str, ...] = field(init=False, repr=False)
 
@@ -114,6 +120,11 @@ class EvidenceEvaluator:
             "RANEX_VERDICT_DIR": str(self.verdicts_dir.relative_to(self.repository)),
             "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
         }
+        if self.approver_key is not None:
+            # Omitted entirely rather than passed as a dead value: an
+            # evaluation without the approver's key must refuse naming
+            # E-APPROVER-KEY-ABSENT, never judge and publish unsigned.
+            environment["RANEX_APPROVER_SIGNING_KEY"] = str(self.approver_key)
         argv = [sys.executable, "-m", "ranex.cli.main", "gate", "evaluate",
                 binding.head_sha, "--external-repository", str(self.repository),
                 "--evidence", self.evidence, "--gate", self.gate,

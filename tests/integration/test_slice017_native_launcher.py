@@ -132,9 +132,14 @@ RESPONSE_LIMIT = 65_536
 # SLICE-095 (P1) adds `promotion` (BASE freeze gate, ADR-064) and SLICE-094
 # (P2) adds `antislop` (C3 census); DEFAULT_CALIBRATION_DIR + antislop
 # dispatch in run/gate/freeze. No confinement, launcher or strict-local
-# call site is touched. This pin is the merge of all three; the 2026-09-26
+# call site is touched. This pin is the merge of all four; the 2026-09-26
 # renumber commit moved only the slice/ADR references in these comments.
-MAIN_PY_SHA256 = "1d9334c1448686f5626924d49476858afaf61e267cb57d0989729a8e07f51ff4"
+# Issue #107 (RISK-07) adds the catalogued approver: APPROVER_SIGNING_KEY_VARIABLE,
+# require_catalogued_approver (possession proved before judgment; the
+# E-APPROVER-* refusals), the approver countersignature handed to publish_verdict,
+# and the approvers map threaded to the verdict readers. No confinement,
+# launcher or strict-local call site is touched. This pin is the merge of all five.
+MAIN_PY_SHA256 = "86150ef50d559f80542a468c61c64ea8226e55be02934ae05eb0f41013814831"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

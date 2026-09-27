@@ -60,6 +60,7 @@ import pytest
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
+import _approver  # noqa: E402
 import _prereqs  # noqa: E402
 
 REAL_REPO = E2E_DIR.parents[1]
@@ -71,6 +72,7 @@ TRUNCATED_RELATIVE = "governance/journal-truncated.sqlite3"
 #: See test_gate_evaluate_real.py's _STRIPPED_ENV for the rationale.
 _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
+    "RANEX_APPROVER_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
@@ -79,12 +81,19 @@ _STRIPPED_ENV = (
 )
 
 
-def ranex(subject: Path, argv: list[str]) -> subprocess.CompletedProcess[str]:
+def ranex(
+    subject: Path,
+    argv: list[str],
+    approver_key: Path | None = None,
+) -> subprocess.CompletedProcess[str]:
     """Invoke the CLI the way an operator does: a real process, the
     subject's own source on PYTHONPATH (the clone judges the clone)."""
 
     env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
     env["PYTHONPATH"] = str(subject / "src")
+    if approver_key is not None:
+        # RISK-07: prove possession of the catalogued approver's key.
+        env[_approver.APPROVER_ENV] = str(approver_key)
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
         cwd=subject,
@@ -148,12 +157,52 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> JournalJourney:
     )
     assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
 
+    # RISK-07: the journey's own approver — minted with the same keygen the
+    # operator uses, registered as the clone's committed approver principal
+    # (the honest-difference pattern `register_worker_key` set) so the
+    # evaluations below prove possession of a key the worker never holds.
+    approver_key = base / "reviewer.key"
+    # keygen reads its target path from RANEX_SIGNING_KEY, which this
+    # module's ranex helper does not set, so the operator invocation is made
+    # directly: real CLI, real environment variable, real 0600 file.
+    import os as _os
+
+    generated = subprocess.run(
+        [sys.executable, "-m", "ranex.cli.main", "keygen", "--producer", "reviewer"],
+        cwd=subject,
+        capture_output=True,
+        text=True,
+        env={
+            **{k: v for k, v in _os.environ.items() if k not in _STRIPPED_ENV},
+            "PYTHONPATH": str(subject / "src"),
+            "RANEX_SIGNING_KEY": str(approver_key),
+        },
+        check=False,
+    )
+    assert generated.returncode == 0, generated.stderr
+    match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+    assert match, f"keygen printed no public key: {generated.stdout!r}"
+    _approver.register_approver(
+        subject / "governance" / "producers.yaml", "reviewer", match.group(1)
+    )
+    committed = subprocess.run(
+        ["git", "-C", str(subject), "add", "governance/producers.yaml"],
+        capture_output=True, text=True, check=False,
+    )
+    assert committed.returncode == 0, committed.stderr
+    committed = subprocess.run(
+        ["git", "-C", str(subject), "commit", "-q", "-m", "register the journey approver"],
+        capture_output=True, text=True, check=False,
+    )
+    assert committed.returncode == 0, committed.stderr
+
     # Two real evaluations write a real two-row chain. Both FAILs are the
     # honest no-evidence verdicts of the real landing gate — real data.
     for attempt in (1, 2):
         evaluation = ranex(
             subject,
             ["gate", "evaluate", "HEAD", "--repository", ".", "--approver", "reviewer"],
+            approver_key=approver_key,
         )
         assert evaluation.returncode == 1, (
             f"no-evidence evaluation {attempt} must FAIL (exit 1): "

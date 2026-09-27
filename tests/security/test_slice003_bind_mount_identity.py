@@ -49,6 +49,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+import _approver
 import pytest
 
 EXIT_PASS = 0
@@ -180,7 +181,11 @@ def keys(tmp_path: Path) -> dict[str, str]:
     path = tmp_path / "worker.key"
     path.write_text(private + "\n", encoding="utf-8")
     path.chmod(0o600)
-    return {"private": private, "public": public, "path": str(path)}
+    approver_path, approver_public = _approver.mint_approver(tmp_path)
+    return {
+        "private": private, "public": public, "path": str(path),
+        "approver_path": str(approver_path), "approver_public": approver_public,
+    }
 
 
 @pytest.fixture()
@@ -210,6 +215,11 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
     (repository / "producers.yaml").write_text(
         f"producers:\n  worker: {keys['public']}\n", encoding="utf-8"
     )
+    # RISK-07: the evaluation names a catalogued approver, so the committed
+    # keyring must carry that principal before the tree is judged.
+    _approver.register_approver(
+        repository / "producers.yaml", "reviewer", keys["approver_public"]
+    )
     return repository
 
 
@@ -224,6 +234,7 @@ def environment_for(
     *,
     key_path: str | None = None,
     path_prefix: Path | None = None,
+    approver_path: str | None = None,
 ) -> dict[str, str]:
     """The child's whole environment, built rather than inherited."""
 
@@ -242,6 +253,10 @@ def environment_for(
     }
     if key_path is not None:
         environment["RANEX_SIGNING_KEY"] = key_path
+    if approver_path is not None:
+        # RISK-07: the approver's key rides the child's environment exactly
+        # as the worker's does — the built environment inherits nothing.
+        environment[_approver.APPROVER_ENV] = approver_path
     return environment
 
 
@@ -262,6 +277,7 @@ def run_argv(*command: str, claim: str = "tests-executed") -> list[str]:
 def evaluate(
     repo: Path,
     tmp_path: Path,
+    keys: dict[str, str],
     approver: str = "reviewer",
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -275,7 +291,7 @@ def evaluate(
             "--approver", approver,
         ],
         cwd=repo,
-        env=environment_for(repo, tmp_path),
+        env=environment_for(repo, tmp_path, approver_path=keys["approver_path"]),
         capture_output=True,
         text=True,
         check=False,
@@ -377,7 +393,7 @@ def test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file(
         "a record was written for a command whose bytes came out of the subject "
         "worktree"
     )
-    assert evaluate(repo, tmp_path).returncode != EXIT_PASS, (
+    assert evaluate(repo, tmp_path, keys).returncode != EXIT_PASS, (
         "a PASS remained reachable after the refusal should have stopped it"
     )
 
@@ -555,7 +571,7 @@ def test_run_refuses_when_the_identity_scan_cannot_read_the_worktree(
         "a record was written for a command the tool could not prove came from "
         "outside the subject worktree"
     )
-    assert evaluate(repo, tmp_path).returncode != EXIT_PASS, (
+    assert evaluate(repo, tmp_path, keys).returncode != EXIT_PASS, (
         "a PASS remained reachable after the refusal should have stopped it"
     )
 
@@ -612,7 +628,7 @@ def test_a_genuine_outside_binary_still_runs_and_still_reaches_a_pass(
     assert marker.exists(), "the outside tool did not actually run"
     assert (repo / "evidence.json").exists(), "no record was written"
 
-    verdict = evaluate(repo, tmp_path)
+    verdict = evaluate(repo, tmp_path, keys)
     assert verdict.returncode == EXIT_PASS, (
         "honest evidence from an honest binary did not reach a PASS: "
         f"stdout={verdict.stdout!r} stderr={verdict.stderr!r}"

@@ -10,10 +10,17 @@ Start with the public quickstart for a small real-repository demonstration.
 ```sh
 uv run --frozen pytest -q
 
-uv run --frozen ranex gate evaluate HEAD --approver reviewer_alice
+export RANEX_APPROVER_SIGNING_KEY=$HOME/.config/ranex/approver.key
+uv run --frozen ranex gate evaluate HEAD --approver release-approver
 # Equivalent module-path form from the source checkout:
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main gate evaluate HEAD --approver reviewer_alice
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main gate evaluate HEAD --approver release-approver
 ```
+
+`gate evaluate --approver` names a catalogued `role: approver` principal
+(here `release-approver`). `RANEX_APPROVER_SIGNING_KEY` must point at that
+principal's private key (0600, outside the checkout); possession is proven
+before `evaluate()` runs (ADR-066 / RISK-07). Absent, unknown, wrong-role, or
+mismatched keys refuse with `E-APPROVER-*` and write nothing.
 
 Always `--frozen`. Plain `uv run` re-locks and rewrites `uv.lock`, which is a
 trust root here: it silently dropped the resolution epoch once, after which
@@ -135,8 +142,9 @@ catalog, public keyring and frozen manifest, the core loop is:
 ```sh
 uv run --frozen ranex run --external-repository /path/to/repo \
   --claim tests-executed --producer worker -- /usr/bin/python3 -m pytest -q
+export RANEX_APPROVER_SIGNING_KEY=$HOME/.config/ranex/approver.key
 uv run --frozen ranex gate evaluate HEAD --external-repository /path/to/repo \
-  --approver reviewer_alice
+  --approver release-approver
 uv run --frozen ranex journal verify --external-repository /path/to/repo
 ```
 
@@ -428,8 +436,9 @@ about the exact bytes a merge would land.
    the listener after changing them.
 
 Producing verdicts is unchanged: a `gate evaluate` run against the PR head
-(wired with `RANEX_VERDICT_SIGNING_KEY` and `RANEX_VERDICT_DIR`) writes the
-signed publication the App reads. The one-shot
+(wired with `RANEX_VERDICT_SIGNING_KEY`, `RANEX_VERDICT_DIR`, and
+`RANEX_APPROVER_SIGNING_KEY`) writes the dual-signed publication the App
+reads. The one-shot
 `ranex github check publish --head-sha <sha> --installation <id> --repo
 owner/name` exercises the same path without a webhook, for debugging.
 
@@ -470,8 +479,9 @@ tree says PASS.
 
 Add `--evaluate-evidence` to `github listen` and set
 `RANEX_VERDICT_SIGNING_KEY` to the absolute path of the external private key
-matching the committed verdict signer. `--evidence` defaults to
-`governance/evidence.json`; `--suite-manifest` defaults to
+matching the committed verdict signer, and `RANEX_APPROVER_SIGNING_KEY` to the
+catalogued approver's private key (the `--approver` principal). `--evidence`
+defaults to `governance/evidence.json`; `--suite-manifest` defaults to
 `governance/suite_manifest.json`. The observer must deliver signed evidence
 through the existing evidence format and atomic publication path.
 
@@ -629,8 +639,11 @@ Current limits visible in code:
   (ADR-009);
 - this repository contains no installed agent harness, owner-facing intake,
   task board, deployment command, or built-in model provider;
-- ordinary `gate evaluate --approver` uses an unauthenticated string; signed
-  approver verification exists only in the task-merge approval path;
+- `gate evaluate --approver` requires a catalogued `role: approver` principal
+  and `RANEX_APPROVER_SIGNING_KEY` possession before judgment; published
+  verdicts carry that principal's Ed25519 signature beside the verdict
+  signer's (ADR-066). `deps approve --approver` still records an
+  unauthenticated string in the deps-approval journal row;
 - `task delegate` records `suite_exit` but returns orchestration success after a
   completed delegation even when that suite exit is nonzero; it does not issue
   a gate verdict;

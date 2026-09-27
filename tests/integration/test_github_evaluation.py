@@ -23,8 +23,15 @@ from ranex.github_app.receiver import _ReceiverState, process_delivery, refresh_
 application = test_external_repository.application
 
 
+def pilot_approvers(repo) -> dict[str, tuple[str, ...]]:
+    """The catalogued approver the test repo's verdicts are countersigned by."""
+    key = yaml.safe_load((repo / 'governance/producers.yaml').read_bytes())[
+        'principals']['pilot']['keys'][0]['key']
+    return {'pilot': (key,)}
+
+
 def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeypatch):
-    repo, worker, signer, public = application
+    repo, worker, signer, public, approver = application
     ignore = repo / '.gitignore'
     ignore.write_text(ignore.read_text() + '.local/\n')
     commit(repo)
@@ -37,7 +44,8 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
     evaluator = EvidenceEvaluator(repo, 'governance/evidence.json', 'landing',
                                   'governance/gates.yaml', 'governance/producers.yaml',
                                   'governance/suite_manifest.json', 'pilot',
-                                  repo / 'governance/verdicts', signer, repo / '.local/evaluation')
+                                  repo / 'governance/verdicts', signer, repo / '.local/evaluation',
+                                  approver_key=approver)
 
     def acceptance():
         binding = bind_pr_head(repo, git(repo, 'rev-parse', 'HEAD'))
@@ -45,7 +53,8 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
         return resolve_acceptance(evaluator.verdicts_dir, binding,
                                   {'kernel-verdict-signer': public}, gate_id='landing',
                                   catalog_digest=catalog_digest_for(
-                                      (repo / 'governance/gates.yaml').read_bytes()), approver_id='pilot')
+                                      (repo / 'governance/gates.yaml').read_bytes()), approver_id='pilot',
+                                  approvers=pilot_approvers(repo))
 
     assert not acceptance().publishable
     observed = invoke(repo, 'run', '--external-repository', str(repo), '--claim', 'tests-executed',
@@ -110,7 +119,7 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
 
 
 def test_receiver_rejudges_late_evidence_and_recovers_without_duplicate_success(application, tmp_path):
-    repo, worker, signer, public = application
+    repo, worker, signer, public, approver = application
     ignore = repo / '.gitignore'
     ignore.write_text(ignore.read_text() + '.local/\n')
     commit(repo)
@@ -122,11 +131,13 @@ def test_receiver_rejudges_late_evidence_and_recovers_without_duplicate_success(
     evaluator = EvidenceEvaluator(repo, 'governance/evidence.json', 'landing',
                                   'governance/gates.yaml', 'governance/producers.yaml',
                                   'governance/suite_manifest.json', 'pilot',
-                                  repo / 'governance/verdicts', signer, repo / '.local/evaluation')
+                                  repo / 'governance/verdicts', signer, repo / '.local/evaluation',
+                                  approver_key=approver)
     with _github_fake.receiver_environment(tmp_path / 'api', with_verdict=False) as env:
         config = replace(env.config, repo_root=repo, remote=str(repo), evaluator=evaluator,
                          verdicts_dir=evaluator.verdicts_dir, approver_id='pilot',
                          keyring={'kernel-verdict-signer': public},
+                         approvers=pilot_approvers(repo),
                          catalog_digest=catalog_digest_for((repo / 'governance/gates.yaml').read_bytes()))
         head = git(repo, 'rev-parse', 'HEAD')
         body = _github_fake.pull_request_event_body(head)
@@ -178,7 +189,7 @@ def test_listener_requires_a_matching_external_signer_before_enabling_evaluation
     from ranex.cli.main import main
     from ranex.github_app import receiver
 
-    repo, worker, signer, _public = application
+    repo, worker, signer, _public, approver = application
     command = yaml.safe_load((repo / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
     result = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
                     '--artifact', 'governance/suite_results.xml', '--', *command)
@@ -202,6 +213,8 @@ def test_listener_requires_a_matching_external_signer_before_enabling_evaluation
     assert main(argv) == 2
     assert configurations == []
     monkeypatch.setenv('RANEX_VERDICT_SIGNING_KEY', str(signer))
+    # The evaluating listener also proves the catalogued approver's key (RISK-07).
+    monkeypatch.setenv('RANEX_APPROVER_SIGNING_KEY', str(approver))
     assert main(argv) == 0
     assert isinstance(configurations[0].evaluator, EvidenceEvaluator)
 

@@ -41,6 +41,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.foundation.canonical import command_digest
@@ -323,7 +324,13 @@ def repo(tmp_path: Path) -> Path:
     return repository
 
 
-def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
+def invoke(
+    repo: Path,
+    argv: list[str],
+    key_path: Path | None = None,
+    *,
+    approver_path: Path | None = None,
+) -> int:
     from ranex.cli.main import main
 
     with pytest.MonkeyPatch.context() as monkeypatch:
@@ -335,6 +342,10 @@ def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(key_path))
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, str(approver_path))
         return main(argv)
 
 
@@ -348,22 +359,30 @@ def keygen(repo: Path, key_path: Path, producer: str = "worker") -> str:
     return match.group(1)
 
 
-def register(repo: Path, tmp_path: Path) -> Path:
-    """keygen a worker key, commit the keyring, return the key path."""
+def register(repo: Path, tmp_path: Path) -> tuple[Path, Path]:
+    """keygen a worker key and the approver's, commit the keyring.
+
+    RISK-07: the committed keyring carries the catalogued approver beside the
+    worker, so the evaluation this keyring feeds can prove possession.
+    Returns (worker key path, approver key path).
+    """
 
     key_path = tmp_path / "worker.key"
     public = keygen(repo, key_path)
-    (repo / "producers.yaml").write_text(
+    keyring = repo / "producers.yaml"
+    keyring.write_text(
         f"producers:\n  worker: {public}\n", encoding="utf-8"
     )
+    approver_path, approver_public = _approver.mint_approver(tmp_path)
+    _approver.register_approver(keyring, "reviewer", approver_public)
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True
     )
-    return key_path
+    return key_path, approver_path
 
 
-def evaluate(repo: Path, approver: str = "reviewer") -> int:
+def evaluate(repo: Path, approver_path: Path, approver: str = "reviewer") -> int:
     return invoke(
         repo,
         [
@@ -374,6 +393,7 @@ def evaluate(repo: Path, approver: str = "reviewer") -> int:
             "--producers", "producers.yaml",
             "--approver", approver,
         ],
+        approver_path=approver_path,
     )
 
 
@@ -409,7 +429,7 @@ def test_a_record_naming_an_in_repository_executable_does_not_satisfy(
 
     from ranex.foundation.signing import sign_evidence
 
-    key_path = register(repo, tmp_path)
+    key_path, approver_path = register(repo, tmp_path)
     private = key_path.read_text(encoding="utf-8").strip()
 
     # A shadowed `sh` sitting in the tree under observation: exactly the
@@ -425,7 +445,7 @@ def test_a_record_naming_an_in_repository_executable_does_not_satisfy(
     )
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_FAIL, (
+    assert evaluate(repo, approver_path) == EXIT_FAIL, (
         "a record naming an executable inside the repository under observation "
         "satisfied the claim; the containment rule is enforced only by `run` "
         "and can be walked around by writing the record directly"
@@ -454,9 +474,12 @@ def test_a_hand_swapped_digest_is_reported_as_a_refusal_not_as_absence(
 
     key_path = tmp_path / "worker.key"
     public = keygen(repo, key_path)
-    (repo / "producers.yaml").write_text(
+    keyring = repo / "producers.yaml"
+    keyring.write_text(
         f"producers:\n  worker: {public}\n", encoding="utf-8"
     )
+    approver_path, approver_public = _approver.mint_approver(tmp_path)
+    _approver.register_approver(keyring, "reviewer", approver_public)
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True
@@ -493,6 +516,7 @@ def test_a_hand_swapped_digest_is_reported_as_a_refusal_not_as_absence(
             "--producers", "producers.yaml",
             "--approver", "reviewer",
         ],
+        approver_path=approver_path,
     ) == EXIT_FAIL
 
     captured = capsys.readouterr()

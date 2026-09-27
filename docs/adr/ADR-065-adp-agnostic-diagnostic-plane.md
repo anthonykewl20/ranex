@@ -1,16 +1,15 @@
 # ADR-065 — the Agnostic Diagnostic Plane: authority split, and the architecture freeze as its first claim
 
-**Status:** proposed
+**Status:** accepted
 
 DIRECT 011 (flagship), DIRECT 008 FINAL (machine-closed scoring), DIRECT 013
 (per-language diagnostics feed). Source evidence: the arch-maintain scout
 report (`third_party/firstmate/data/ranex-arch-maintain-steal/report.md`,
 2026-09-25) whose micro-experiment proved the mechanism through the real
 kernel before this ADR was drafted — pristine PASS ×3, planted forbidden
-edge FAIL ×3, absence FAIL. This ADR is **proposed**: under DIRECT 008
-FINAL the operator's approval of this document is the freeze — until then
-no repository's graph is frozen, and the machinery shipped beside this ADR
-stays proof-backed and unwired.
+edge FAIL ×3, absence FAIL. This ADR is **accepted**: under DIRECT 008
+FINAL the operator's approval of this document IS the freeze — thereafter
+freeze bytes, digest pin and scan manifest move together as promote ships.
 
 ## Context and Problem Statement
 

@@ -24,6 +24,7 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.foundation.canonical import command_digest
@@ -80,6 +81,8 @@ class Keys:
     root: Path
     private: dict[str, str] = field(default_factory=dict)
     public: dict[str, str] = field(default_factory=dict)
+    approver_path: str = ""
+    approver_public: str = ""
 
     def path(self, producer: str) -> Path:
         return self.root / f"{producer}.key"
@@ -99,6 +102,9 @@ def keys(tmp_path: Path) -> Keys:
         path = bundle.path(producer)
         path.write_text(private_key + "\n", encoding="utf-8")
         path.chmod(0o600)
+    # RISK-07: the approver is a second identity, never a producer's key.
+    minted_path, minted_public = _approver.mint_approver(tmp_path)
+    bundle.approver_path, bundle.approver_public = str(minted_path), minted_public
     return bundle
 
 
@@ -117,7 +123,13 @@ def repo(tmp_path: Path) -> Path:
     return repository
 
 
-def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
+def invoke(
+    repo: Path,
+    argv: list[str],
+    key_path: Path | None = None,
+    *,
+    approver_path: str | None = None,
+) -> int:
     from ranex.cli.main import main
 
     with pytest.MonkeyPatch.context() as monkeypatch:
@@ -129,6 +141,10 @@ def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(key_path))
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
         return main(argv)
 
 
@@ -137,9 +153,13 @@ def commit_all(repo: Path, message: str = "initial") -> None:
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", message], check=True)
 
 
-def write_keyring(repo: Path, **producers: str) -> None:
+def write_keyring(repo: Path, approver_public: str, **producers: str) -> None:
     lines = "\n".join(f"  {name}: {key}" for name, key in producers.items())
-    (repo / "producers.yaml").write_text(f"producers:\n{lines}\n", encoding="utf-8")
+    keyring = repo / "producers.yaml"
+    keyring.write_text(f"producers:\n{lines}\n", encoding="utf-8")
+    # RISK-07: the committed keyring carries the catalogued approver beside
+    # the producers, or no evaluation of this tree can name one.
+    _approver.register_approver(keyring, "reviewer", approver_public)
 
 
 def subject_digest(repo: Path, ref: str = "HEAD") -> str:
@@ -252,6 +272,7 @@ def run_cmd(
 
 def evaluate(
     repo: Path,
+    keys: Keys,
     approver: str = "reviewer",
     evidence: str = "evidence.json",
 ) -> int:
@@ -265,6 +286,7 @@ def evaluate(
             "--producers", "producers.yaml",
             "--approver", approver,
         ],
+        approver_path=keys.approver_path,
     )
 
 
@@ -301,7 +323,7 @@ def test_a_trivial_command_satisfies_no_bound_claim(
     Neither proves any work happened; that is what this slice adds.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     write_evidence(
@@ -320,7 +342,7 @@ def test_a_trivial_command_satisfies_no_bound_claim(
     )
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_FAIL, (
+    assert evaluate(repo, keys) == EXIT_FAIL, (
         "a command that exits 0 against any tree was accepted as evidence for a "
         "claim bound to a different command"
     )
@@ -403,7 +425,7 @@ def test_run_does_not_hand_the_signing_key_to_the_command(
     "something on this machine ran".
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     leak = tmp_path / "leak"
@@ -478,7 +500,7 @@ def test_refused_claim_is_never_listed_as_no_evidence(
     (repo / "gates.yaml").write_text(
         build_gates("tests-executed", "lint-clean"), encoding="utf-8"
     )
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     tampered = signed(
@@ -494,7 +516,7 @@ def test_refused_claim_is_never_listed_as_no_evidence(
     write_evidence(repo, [tampered])
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -526,7 +548,10 @@ def test_pass_still_reports_refused_records(
     verdict; a probe that leaves no trace is a probe worth repeating.
     """
 
-    write_keyring(repo, worker=keys.public["worker"], alice=keys.public["alice"])
+    write_keyring(
+        repo, keys.approver_public,
+        worker=keys.public["worker"], alice=keys.public["alice"],
+    )
     commit_all(repo)
 
     digest = subject_digest(repo)
@@ -547,7 +572,7 @@ def test_pass_still_reports_refused_records(
     write_evidence(repo, [honest, forged])
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_PASS
+    assert evaluate(repo, keys) == EXIT_PASS
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -600,7 +625,7 @@ def test_unreadable_evidence_is_loud_not_absent(
     technique — chmod is easier than forging a signature.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     vault = repo / "vault"
@@ -620,7 +645,7 @@ def test_unreadable_evidence_is_loud_not_absent(
 
     capsys.readouterr()
     try:
-        code = evaluate(repo, evidence="vault/evidence.json")
+        code = evaluate(repo, keys, evidence="vault/evidence.json")
         captured = capsys.readouterr()
     finally:
         vault.chmod(0o755)
@@ -649,7 +674,7 @@ def test_run_refuses_before_running_when_evidence_is_corrupt(
     having done so.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
     (repo / "evidence.json").write_text("[{ truncated", encoding="utf-8")
@@ -683,7 +708,10 @@ def test_stale_subject_diagnosis_survives_a_refusal(
     sitting in the file — the replay attack the subject binding exists to catch.
     """
 
-    write_keyring(repo, worker=keys.public["worker"], alice=keys.public["alice"])
+    write_keyring(
+        repo, keys.approver_public,
+        worker=keys.public["worker"], alice=keys.public["alice"],
+    )
     commit_all(repo)
 
     # Both name the real catalog: this test is about a stale subject surviving
@@ -712,7 +740,7 @@ def test_stale_subject_diagnosis_survives_a_refusal(
     write_evidence(repo, [stale, forged])
 
     capsys.readouterr()
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo, keys) == EXIT_FAIL
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
@@ -737,7 +765,7 @@ def test_run_refuses_a_signing_key_inside_the_repository(
     the point of use, not only at the point of creation, or it is advisory.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     inside = repo / "worker.key"
     inside.write_text(keys.private["worker"] + "\n", encoding="utf-8")
     inside.chmod(0o600)
@@ -850,7 +878,7 @@ def test_evidence_exemption_never_covers_a_tracked_file(
     dirty-working-tree refusal into a false claim.
     """
 
-    write_keyring(repo, worker=keys.public["worker"])
+    write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     (repo / "payload.json").write_text("[]\n", encoding="utf-8")
     commit_all(repo)
 

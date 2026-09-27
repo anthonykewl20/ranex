@@ -26,6 +26,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+import _approver
 from conftest import Signing, attach, signing_for
 from launcher_host import build_closure_limitation, userns_limitation
 
@@ -117,7 +119,9 @@ def subject_of(repo: Path) -> str:
     return "sha256:" + canonical_sha256({"tree": tree})
 
 
-def invoke(repo: Path, argv: list[str], producer: str | None = None) -> int:
+def invoke(
+    repo: Path, argv: list[str], producer: str | None = None, *, approver: str | None = None
+) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
         monkeypatch.setattr(
@@ -128,6 +132,14 @@ def invoke(repo: Path, argv: list[str], producer: str | None = None) -> int:
         else:
             monkeypatch.setenv(
                 "RANEX_SIGNING_KEY", str(signing_for(repo).key_path(producer))
+            )
+        if approver is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            # RISK-07: prove possession of the catalogued approver's key.
+            monkeypatch.setenv(
+                _approver.APPROVER_ENV,
+                str(signing_for(repo).approver_path(approver)),
             )
         return main(argv)
 
@@ -162,6 +174,7 @@ def evaluate(repo: Path, approver: str = "reviewer") -> int:
             "--suite-manifest", "suite_manifest.json",
             "--approver", approver,
         ],
+        approver=approver,
     )
 
 

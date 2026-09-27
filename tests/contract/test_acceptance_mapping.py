@@ -84,7 +84,7 @@ def test_every_reader_state_has_exactly_one_outcome() -> None:
     assert set(ReadState) == {
         "absent", "malformed", "unsigned", "bad-signature", "unknown-signer",
         "wrong-payload-type", "missing-key", "context-mismatch",
-        "unknown-cause", "verified",
+        "unknown-cause", "verified", "unapproved",
     }
     publishable = [state for state in ReadState if code_for_state(state) == ACCEPTED]
     assert publishable == [ReadState.VERIFIED]
