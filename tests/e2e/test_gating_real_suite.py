@@ -45,6 +45,8 @@ import sys
 from pathlib import Path
 
 import pytest
+
+import _approver
 from _host_evidence import record_host_qualification as record_live_host_qualification
 
 from ranex.foundation.canonical import command_digest
@@ -206,6 +208,7 @@ class Session:
         self.reached: set[str] = set()
         self.clone: Path | None = None
         self.key_path: Path | None = None
+        self.approver_key_path: Path | None = None
         self.store: Path | None = None
 
     def reach(self, stage: str) -> None:
@@ -261,7 +264,8 @@ def git(repo: Path, *arguments: str) -> subprocess.CompletedProcess:
 
 
 def ranex(
-    repo: Path, argv: list[str], key_path: Path | None = None
+    repo: Path, argv: list[str], key_path: Path | None = None,
+    approver_path: Path | None = None,
 ) -> tuple[int, str, str]:
     """Invoke the CLI the way an operator does: a real process, the repo's
     own source on PYTHONPATH, the key in the real environment variable."""
@@ -281,8 +285,12 @@ def ranex(
     }
     env["PYTHONPATH"] = str(repo / "src")
     env.pop("RANEX_SIGNING_KEY", None)
+    env.pop(_approver.APPROVER_ENV, None)
     if key_path is not None:
         env["RANEX_SIGNING_KEY"] = str(key_path)
+    if approver_path is not None:
+        # RISK-07: prove possession of the catalogued approver's key.
+        env[_approver.APPROVER_ENV] = str(approver_path)
     completed = subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
         cwd=repo,
@@ -449,7 +457,7 @@ def run_argv(store: Path, *command: str) -> list[str]:
     ]
 
 
-def evaluate_argv() -> list[str]:
+def evaluate_argv(approver: str = "reviewer") -> list[str]:
     return [
         "gate",
         "evaluate",
@@ -457,7 +465,7 @@ def evaluate_argv() -> list[str]:
         "--repository",
         ".",
         "--approver",
-        "reviewer",
+        approver,
     ]
 
 
@@ -546,12 +554,25 @@ def test_stage_01_clone_the_real_repository(session: Session) -> None:
     # The clone is the real tree with one honest difference: a producer this
     # session holds the key for. Committed, as the trust root demands.
     private_key, public_key = generate_keypair()
-    (clone / "governance" / "producers.yaml").write_text(
+    approver_private, approver_public = generate_keypair()
+    keyring = clone / "governance" / "producers.yaml"
+    keyring.write_text(
         f"producers:\n  worker: {public_key}\n"
+        f"principals:\n"
+        f"  worker:\n    role: worker\n    keys:\n"
+        f"      - key: {public_key}\n        status: active\n"
+        f"  reviewer:\n    role: approver\n    keys:\n"
+        f"      - key: {approver_public}\n        status: active\n"
     )
     key_path = session.store.parent / "worker.key"
     key_path.write_text(private_key + "\n")
     key_path.chmod(0o600)
+    # RISK-07: the session's own approver key, minted beside the worker's —
+    # a second identity, so the green evaluations below prove possession of
+    # a key the producing worker never holds.
+    session.approver_key_path = session.store.parent / "reviewer.key"
+    session.approver_key_path.write_text(approver_private + "\n")
+    session.approver_key_path.chmod(0o600)
     git(clone, "add", "governance/producers.yaml")
     committed = git(clone, "commit", "-q", "-m", "register the e2e producer")
     assert committed.returncode == 0, committed.stderr
@@ -838,7 +859,9 @@ def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
         f"{suite_tail(out, err)}"
     )
     record_live_host_qualification(session.clone, session.key_path)
-    code, out, _ = ranex(session.clone, evaluate_argv())
+    code, out, _ = ranex(
+        session.clone, evaluate_argv(), approver_path=session.approver_key_path
+    )
     assert code == 0
     assert out.startswith("PASS")
 
@@ -1011,6 +1034,15 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
     if pinned_resolver() is None:
         pytest.skip("the pinned resolver is absent or does not match its digest")
     key = os.environ.get("RANEX_SIGNING_KEY")
+    approver_key = os.environ.get(_approver.APPROVER_ENV)
+    if not approver_key:
+        # RISK-07: the self-gate names the repository's catalogued approver,
+        # so the operator stage needs the operator's approver key — the same
+        # loudly-skipped precondition the signing key already carries.
+        pytest.skip(
+            "ranex-prereq:approver_key: RANEX_APPROVER_SIGNING_KEY is not "
+            "set; the operator runs this stage"
+        )
     if not key:
         # Sanctioned spine edit (SLICE-055 R1d): the skip message now
         # byte-matches the manifest's probe-grammar declaration — direction
@@ -1062,7 +1094,11 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
         f"the suite did not pass under governance: {suite_tail(out, err)}"
     )
     record_live_host_qualification(REAL_REPO, Path(key), producer_id="anthony")
-    code, out, _ = ranex(REAL_REPO, evaluate_argv())
+    code, out, _ = ranex(
+        REAL_REPO,
+        evaluate_argv("release-approver"),
+        approver_path=Path(approver_key),
+    )
     assert code == 0
     assert out.startswith("PASS")
 
@@ -1130,7 +1166,9 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     assert baseline_results["missing"] == []
 
     record_live_host_qualification(repository, session.key_path)
-    baseline_verdict, baseline_output, _ = ranex(repository, evaluate_argv())
+    baseline_verdict, baseline_output, _ = ranex(
+        repository, evaluate_argv(), approver_path=session.approver_key_path
+    )
     assert baseline_verdict == 0
     assert baseline_output.startswith("PASS")
 
@@ -1158,7 +1196,9 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         )
 
         record_live_host_qualification(repository, session.key_path)
-        verdict_code, verdict_output, _ = ranex(repository, evaluate_argv())
+        verdict_code, verdict_output, _ = ranex(
+            repository, evaluate_argv(), approver_path=session.approver_key_path
+        )
         assert verdict_code == 1
         assert verdict_output.startswith("FAIL")
         assert missing_id in verdict_output

@@ -59,6 +59,8 @@ from pathlib import Path
 
 import pytest
 
+import _approver
+
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
@@ -92,6 +94,7 @@ _ED25519_PKCS8_PREFIX = bytes.fromhex("302e020100300506032b657004220420")
 #: unwired-children rule), and the trace variables.
 _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
+    "RANEX_APPROVER_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
@@ -234,6 +237,18 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> KeygenJourney:
 
     keyring = subject / "governance" / "producers.yaml"
     _prereqs.register_worker_key(keyring, FAMILY_PRODUCER, public)
+
+    # RISK-07: the journey's own approver, minted with the same real keygen
+    # CLI and registered as the committed catalog's approver principal — a
+    # second identity, so possession is proven by a key the worker never holds.
+    approver_key = base / "reviewer.key"
+    approver_generated = ranex(
+        subject, ["keygen", "--producer", "reviewer"], key=approver_key
+    )
+    assert approver_generated.returncode == 0, approver_generated.stderr
+    approver_match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", approver_generated.stdout)
+    assert approver_match, approver_generated.stdout
+    _approver.register_approver(keyring, "reviewer", approver_match.group(1))
     with (subject / "governance" / "gates.yaml").open("a", encoding="utf-8") as file:
         file.write(
             "  - gate_id: keygen-family\n"
@@ -290,6 +305,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> KeygenJourney:
             "--approver",
             "reviewer",
         ],
+        extra_env={_approver.APPROVER_ENV: str(approver_key)},
     )
     assert evaluated.returncode == 0, (
         f"the green evaluation must exit 0: {evaluated.stdout}{evaluated.stderr}"

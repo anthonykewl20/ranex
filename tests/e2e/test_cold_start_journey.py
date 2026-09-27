@@ -32,6 +32,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import _approver  # noqa: F401
 import pytest
 import yaml
 from _host_evidence import record_host_qualification as record_live_host_qualification
@@ -84,6 +85,16 @@ pytestmark = [
         ),
     ),
 ]
+
+
+def _approver_public_key(stdout: str) -> str | None:
+    """The public key half keygen printed, or None (kept local: `re` is not
+    otherwise a dependency of this journey's stages)."""
+
+    import re
+
+    match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", stdout)
+    return match.group(1) if match else None
 
 
 def documented(*fragments: str) -> None:
@@ -147,6 +158,7 @@ class Operator:
         self.reached: set[str] = set()
         self.clone: Path | None = None
         self.key: Path | None = None
+        self.approver_key: Path | None = None
         self.store: Path | None = None
 
     def reach(self, stage: str) -> None:
@@ -190,20 +202,26 @@ def operator(tmp_path_factory: pytest.TempPathFactory) -> Operator:
         state.reach("resolver")
     root = tmp_path_factory.mktemp("cold-start")
     state.key = root / "keys" / "worker.key"
+    state.approver_key = root / "keys" / "reviewer_alice.key"
     state.store = root / "store"
     state.clone = root / "clone"
     return state
 
 
 def ranex(
-    repo: Path, argv: list[str], key: Path | None = None
+    repo: Path, argv: list[str], key: Path | None = None,
+    approver_key: Path | None = None,
 ) -> tuple[int, str, str]:
     """Exactly the documented invocation: PYTHONPATH=src, module path, no venv."""
 
     environment = {**os.environ, "PYTHONPATH": str(repo / "src"), GUARD: "1"}
     environment.pop("RANEX_SIGNING_KEY", None)
+    environment.pop(_approver.APPROVER_ENV, None)
     if key is not None:
         environment["RANEX_SIGNING_KEY"] = str(key)
+    if approver_key is not None:
+        # RISK-07: prove possession of the catalogued approver's key.
+        environment[_approver.APPROVER_ENV] = str(approver_key)
     completed = subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
         cwd=repo,
@@ -255,13 +273,39 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
     # (SLICE-006 stage 12). Zero state is the OPERATOR's — no private key, no
     # store — not the repository's. What must hold is that only public halves
     # are in the tree; the private keys those entries verify live outside it.
-    keyring = yaml.safe_load(
+    keyring_document = yaml.safe_load(
         (operator.clone / "governance" / "producers.yaml").read_text(encoding="utf-8")
     )
-    assert keyring["producers"], keyring
+    assert keyring_document["producers"], keyring_document
     assert all(
-        str(value).startswith("ed25519:") for value in keyring["producers"].values()
-    ), keyring
+        str(value).startswith("ed25519:") for value in keyring_document["producers"].values()
+    ), keyring_document
+
+    # RISK-07 setup: the journey's own approver identity, minted with the
+    # same keygen CLI the operator will meet in stage 3 and registered as the
+    # clone's committed approver principal. An evaluation may not judge
+    # without proving possession of a catalogued approver's key, so the
+    # walkthrough's evaluations (stages 2 and 9) need this identity in place
+    # first — a second key the producing worker never holds.
+    operator.approver_key.parent.mkdir(parents=True, exist_ok=True)
+    minted = ranex(
+        operator.clone,
+        ["keygen", "--producer", "reviewer_alice"],
+        key=operator.approver_key,
+    )
+    assert minted[0] == 0, minted[2]
+    approver_public = _approver_public_key(minted[1])
+    assert approver_public, f"keygen printed no public key: {minted[1]!r}"
+    _approver.register_approver(
+        operator.clone / "governance" / "producers.yaml",
+        "reviewer_alice",
+        approver_public,
+    )
+    git(operator.clone, "add", "governance/producers.yaml")
+    committed = git(
+        operator.clone, "commit", "-q", "-m", "register the journey's approver"
+    )
+    assert committed.returncode == 0, committed.stderr
 
 
 # --------------------------------------------------------------------------
@@ -278,10 +322,12 @@ def test_stage_2_gate_evaluate_fails_closed_and_names_the_missing_claim(
 
     operator.require("resolver", "clone")
     documented(
-        "python -m ranex.cli.main gate evaluate HEAD --approver reviewer_alice"
+        "python -m ranex.cli.main gate evaluate HEAD --approver release-approver"
     )
     code, out, err = ranex(
-        operator.clone, ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"]
+        operator.clone,
+        ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
+        approver_key=operator.approver_key,
     )
     assert code == 1, err
     assert out.startswith("FAIL"), out
@@ -481,6 +527,7 @@ def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
     code, out, err = ranex(
         operator.clone,
         ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
+        approver_key=operator.approver_key,
     )
     assert code == 0, (
         "the gate did not accept the evidence stage 8 recorded; it exited "

@@ -18,6 +18,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import _approver
 import pytest
 
 EXIT_PASS = 0
@@ -36,13 +37,18 @@ def command_catalog() -> str:
     )
 
 
-def make_repository(path: Path, public_key: str, check_body: str) -> Path:
+def make_repository(
+    path: Path, public_key: str, approver_public: str, check_body: str
+) -> Path:
     subprocess.run(["git", "init", "-q", str(path)], check=True)
     for key, value in (("user.email", "t@example.com"), ("user.name", "Test")):
         subprocess.run(["git", "-C", str(path), "config", key, value], check=True)
     (path / "producers.yaml").write_text(
         f"producers:\n  worker: {public_key}\n", encoding="utf-8"
     )
+    # RISK-07: the evaluation below names a catalogued approver, so the
+    # repository's committed keyring must carry that principal.
+    _approver.register_approver(path / "producers.yaml", "reviewer", approver_public)
     (path / "gates.yaml").write_text(command_catalog(), encoding="utf-8")
     check = path / "run-tests.sh"
     check.write_text(f"#!/bin/sh\n{check_body}\n", encoding="utf-8")
@@ -53,7 +59,11 @@ def make_repository(path: Path, public_key: str, check_body: str) -> Path:
 
 
 def invoke(
-    repository: Path, argv: list[str], key_path: str | None = None
+    repository: Path,
+    argv: list[str],
+    key_path: str | None = None,
+    *,
+    approver_path: str | None = None,
 ) -> int:
     from ranex.cli.main import main
 
@@ -66,6 +76,10 @@ def invoke(
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", key_path)
+        if approver_path is None:
+            _approver.strip_approvers(monkeypatch)
+        else:
+            monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
         try:
             return main(argv)
         except SystemExit as exit_info:
@@ -84,7 +98,7 @@ def run(repository: Path, key_path: str) -> int:
     )
 
 
-def evaluate(repository: Path) -> int:
+def evaluate(repository: Path, approver_path: str) -> int:
     return invoke(
         repository,
         [
@@ -92,6 +106,7 @@ def evaluate(repository: Path) -> int:
             "--gate-catalog", "gates.yaml", "--evidence", "evidence.json",
             "--producers", "producers.yaml", "--approver", "reviewer",
         ],
+        approver_path=approver_path,
     )
 
 
@@ -106,13 +121,27 @@ def signing_key(tmp_path: Path) -> tuple[str, str]:
     return str(key_path), public
 
 
+@pytest.fixture()
+def approver(tmp_path: Path) -> tuple[str, str]:
+    # RISK-07: the evaluation names a catalogued approver and must hold that
+    # approver's key — a second identity, never the worker's own key.
+    path, public = _approver.mint_approver(tmp_path)
+    return str(path), public
+
+
 def test_relative_git_dir_cannot_make_shadow_evidence_pass(
-    tmp_path: Path, signing_key: tuple[str, str], monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    signing_key: tuple[str, str],
+    approver: tuple[str, str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """A relative GIT_DIR must not redirect Ranex's own git queries."""
     key_path, public = signing_key
-    honest = make_repository(tmp_path / "governed", public, "exit 1")
-    shadow = make_repository(tmp_path / "shadow", public, "exit 0")
+    approver_path, approver_public = approver
+    honest = make_repository(
+        tmp_path / "governed", public, approver_public, "exit 1"
+    )
+    shadow = make_repository(tmp_path / "shadow", public, approver_public, "exit 0")
 
     assert run(shadow, key_path) == EXIT_PASS, (
         "the shadow run must succeed honestly, or this reproduction proves nothing"
@@ -122,7 +151,7 @@ def test_relative_git_dir_cannot_make_shadow_evidence_pass(
     with monkeypatch.context() as environment:
         environment.chdir(honest)
         environment.delenv("GIT_DIR", raising=False)
-        honest_verdict = evaluate(honest)
+        honest_verdict = evaluate(honest, approver_path)
     assert honest_verdict == EXIT_FAIL, (
         "control: without GIT_DIR, evidence from the shadow must fail against "
         "the governed repository whose committed check exits 1"
@@ -131,7 +160,7 @@ def test_relative_git_dir_cannot_make_shadow_evidence_pass(
     with monkeypatch.context() as environment:
         environment.chdir(honest)
         environment.setenv("GIT_DIR", "../shadow/.git")
-        poisoned_verdict = evaluate(honest)
+        poisoned_verdict = evaluate(honest, approver_path)
     # The same verdict as the control, not merely "not a PASS". GIT_DIR must
     # make no difference at all: an assertion of `!= EXIT_PASS` is also
     # satisfied by a crash, and a refusal Ranex reaches by falling over is a
@@ -144,11 +173,17 @@ def test_relative_git_dir_cannot_make_shadow_evidence_pass(
 
 
 def test_honest_run_and_evaluation_still_pass_without_git_environment(
-    tmp_path: Path, signing_key: tuple[str, str], monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    signing_key: tuple[str, str],
+    approver: tuple[str, str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Sanitising GIT_* must not prevent an ordinary honest PASS."""
     key_path, public = signing_key
-    repository = make_repository(tmp_path / "governed", public, "exit 0")
+    approver_path, approver_public = approver
+    repository = make_repository(
+        tmp_path / "governed", public, approver_public, "exit 0"
+    )
 
     with monkeypatch.context() as environment:
         environment.chdir(repository)
@@ -156,7 +191,7 @@ def test_honest_run_and_evaluation_still_pass_without_git_environment(
         assert run(repository, key_path) == EXIT_PASS, (
             "control: an honest check must still record successfully with GIT_* absent"
         )
-        assert evaluate(repository) == EXIT_PASS, (
+        assert evaluate(repository, approver_path) == EXIT_PASS, (
             "control: an honest record must still satisfy its matching gate"
         )
 

@@ -9,13 +9,23 @@ verdict_signer:
 # attributes past work while authorising none. `load_principals` refuses this
 # file if the blocks ever disagree about who owns a key.
 #
-# No approver principal is declared. Adding one requires generating key
-# material, which is the owner's act and not a slice's.
+# RISK-07 / issue #107: `release-approver` is the catalogued approver. Its key
+# was minted with `ranex keygen` on the operator host into
+# ~/.config/ranex/approver.key (0600, outside every checkout) and registered
+# here by the slice the issue authorized to do so. From this commit on,
+# `gate evaluate --approver release-approver` proves possession of this key
+# before judgment and the published verdict carries this principal's own
+# signature beside the verdict signer's.
 principals:
   anthony:
     role: worker
     keys:
       - key: ed25519:cT08b8ut4tLoZqjJN6fCnHUb0kMv7R++1+nDqGnfyQQ=
+        status: active
+  release-approver:
+    role: approver
+    keys:
+      - key: ed25519:ot1zsfwQyFBw9KBRkyme5sprwWhAEHcS4d8A3+cE1dE=
         status: active
   kernel-verdict-signer:
     role: service

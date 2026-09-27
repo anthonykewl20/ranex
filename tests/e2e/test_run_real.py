@@ -76,6 +76,8 @@ from pathlib import Path
 
 import pytest
 
+import _approver
+
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
@@ -109,6 +111,7 @@ _DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}")
 #: baseline must be genuinely off; the traced arms set their own).
 _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
+    "RANEX_APPROVER_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
@@ -121,7 +124,7 @@ _STRIPPED_ENV = (
 
 
 def ranex(
-    subject: Path, argv: list[str], key: Path | None = None, extra_env: dict[str, str] | None = None
+    subject: Path, argv: list[str], key: Path | None = None, approver_key: Path | None = None, extra_env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
     """Invoke the CLI the way an operator does: a real process, the
     subject's own source on PYTHONPATH (the clone judges the clone), the
@@ -131,6 +134,9 @@ def ranex(
     env["PYTHONPATH"] = str(subject / "src")
     if key is not None:
         env["RANEX_SIGNING_KEY"] = str(key)
+    if approver_key is not None:
+        # RISK-07: prove possession of the catalogued approver's key.
+        env[_approver.APPROVER_ENV] = str(approver_key)
     env.update(extra_env or {})
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
@@ -313,6 +319,20 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
 
     _register_family_gate(subject, FAMILY_PRODUCER, public)
 
+    # RISK-07: the journey's own approver — a real keygen key, registered as
+    # the subject's committed approver principal, a second identity whose
+    # possession the evaluations below must prove.
+    approver_key = base / "reviewer.key"
+    approver_generated = ranex(
+        subject, ["keygen", "--producer", "reviewer"], key=approver_key
+    )
+    assert approver_generated.returncode == 0, approver_generated.stderr
+    approver_match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", approver_generated.stdout)
+    assert approver_match, f"keygen printed no public key: {approver_generated.stdout!r}"
+    _approver.register_approver(
+        subject / "governance" / "producers.yaml", "reviewer", approver_match.group(1)
+    )
+
     # The self-contained subject: no committed pins file, no dependency
     # provisioning demanded — the kernel's own documented activation rule.
     removed = git(subject, "rm", "-q", "governance/deps.yaml")
@@ -357,6 +377,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
         subject,
         ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
          "--approver", "reviewer"],
+        approver_key=approver_key,
     )
     assert removed_eval.returncode == 1, (
         f"the no-evidence evaluation must FAIL (exit 1): "
@@ -392,6 +413,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
         subject,
         ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
          "--approver", "reviewer"],
+        approver_key=approver_key,
     )
     assert swapped_eval.returncode == 1, (
         "swapped evidence must FAIL the evaluation (exit 1): "

@@ -80,6 +80,11 @@ class ReceiverConfig:
     client: GitHubClient
     state_dir: Path
     evaluator: Callable[[PrHeadBinding], None] | None = None
+    #: RISK-07 — the committed catalog's approver principals (id → active
+    #: public keys). A verdict whose record names one of them must carry that
+    #: principal's own signature or the reader answers UNAPPROVED and nothing
+    #: publishes. Empty for repositories whose catalog declares no approver.
+    approvers: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -392,6 +397,7 @@ def _process_delivery(
             gate_id=config.gate_id,
             catalog_digest=config.catalog_digest,
             approver_id=config.approver_id,
+            approvers=config.approvers,
         )
         revalidate_pr_head(config.repo_root, binding)
         # The attempt record goes down before the API call: a crash between
@@ -579,6 +585,7 @@ def _refresh_head(
     acceptance = resolve_acceptance(
         config.verdicts_dir, binding, config.keyring, gate_id=config.gate_id,
         catalog_digest=config.catalog_digest, approver_id=config.approver_id,
+        approvers=config.approvers,
     )
     if acceptance.code == ABSENT_CODE:
         return None
@@ -604,6 +611,7 @@ def _refresh_evaluated_head(
     acceptance = resolve_acceptance(
         config.verdicts_dir, binding, config.keyring, gate_id=config.gate_id,
         catalog_digest=config.catalog_digest, approver_id=config.approver_id,
+        approvers=config.approvers,
     )
     if acceptance.code == ABSENT_CODE:
         return None

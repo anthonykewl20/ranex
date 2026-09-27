@@ -70,6 +70,12 @@ def run(repo: Path, *extra: str) -> int:
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
         )
+        # RISK-07: the evaluation names the catalogued `owner` approver, so it
+        # must prove possession of that principal's key before judgment.
+        monkeypatch.setenv(
+            "RANEX_APPROVER_SIGNING_KEY",
+            str(signing_for(repo).approver_path("owner")),
+        )
         return main(
             [
                 "gate",

@@ -31,7 +31,8 @@ def commit(repo: Path) -> None:
 
 
 def invoke(repo: Path, *args: str, key: Path | None = None,
-           verdict_key: Path | None = None) -> subprocess.CompletedProcess[str]:
+           verdict_key: Path | None = None,
+           approver_key: Path | None = None) -> subprocess.CompletedProcess[str]:
     environment = {
         name: value for name, value in os.environ.items()
         if not name.startswith(("RANEX_", "GIT_", "PYTHON"))
@@ -42,6 +43,8 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
     if verdict_key is not None:
         environment["RANEX_VERDICT_SIGNING_KEY"] = str(verdict_key)
         environment["RANEX_VERDICT_DIR"] = "governance/verdicts"
+    if approver_key is not None:
+        environment["RANEX_APPROVER_SIGNING_KEY"] = str(approver_key)
     prefix = [sys.executable]
     if environment.get("COVERAGE_PROCESS_START") or environment.get("COVERAGE_PROCESS_CONFIG"):
         # This child runs from an external application's cwd. The standard
@@ -59,7 +62,7 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
 
 
 @pytest.fixture
-def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
+def application(tmp_path: Path) -> tuple[Path, Path, Path, str, Path]:
     available = subprocess.run(
         [str(PYTEST_PYTHON), "-m", "pytest", "--version"],
         capture_output=True, check=False,
@@ -90,9 +93,18 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
     signer = tmp_path / "verdict.key"
     signer.write_text(signing + "\n")
     signer.chmod(0o600)
+    # RISK-07: the approver is a catalogued second identity with its own key;
+    # evaluation proves possession of it before judgment.
+    approving, approver_public = generate_keypair()
+    approver = tmp_path / "approver.key"
+    approver.write_text(approving + "\n")
+    approver.chmod(0o600)
     (repo / "governance/producers.yaml").write_text(
         f"producers:\n  worker: {public}\n"
         f"verdict_signer:\n  id: kernel-verdict-signer\n  public_key: {verifying}\n"
+        "principals:\n"
+        f"  worker:\n    role: worker\n    keys:\n      - key: {public}\n        status: active\n"
+        f"  pilot:\n    role: approver\n    keys:\n      - key: {approver_public}\n        status: active\n"
     )
     command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true",
                "--junitxml=governance/suite_results.xml", "test_application.py"]
@@ -103,11 +115,11 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
         "        results_artifact: governance/suite_results.xml\n"
     )
     commit(repo)
-    return repo, worker, signer, verifying
+    return repo, worker, signer, verifying, approver
 
 
 def test_separate_src_application_freeze_observe_sign_reject_and_recover(application) -> None:
-    repo, worker, signer, verifying = application
+    repo, worker, signer, verifying, approver = application
     command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true",
                "--junitxml=governance/suite_results.xml", "test_application.py"]
     frozen = invoke(repo, "suite", "freeze", "--external-repository", str(repo),
@@ -122,17 +134,23 @@ def test_separate_src_application_freeze_observe_sign_reject_and_recover(applica
 
     def evaluate():
         return invoke(repo, "gate", "evaluate", "HEAD", "--external-repository", str(repo),
-                      "--approver", "pilot", verdict_key=signer)
+                      "--approver", "pilot", verdict_key=signer, approver_key=approver)
 
     observed = observe()
     assert observed.returncode == 0, observed.stdout + observed.stderr
     passed = evaluate()
     assert passed.returncode == 0, passed.stdout + passed.stderr
     binding = bind_pr_head(repo, git(repo, "rev-parse", "HEAD"))
+    # RISK-07: the published verdict carries the approver's own signature, so
+    # the deciding reader must carry the catalogued approver to verify it.
+    import yaml
+
+    pilot_key = yaml.safe_load((repo / "governance/producers.yaml").read_bytes())[
+        "principals"]["pilot"]["keys"][0]["key"]
     acceptance = resolve_acceptance(
         repo / "governance/verdicts", binding, {"kernel-verdict-signer": verifying},
         gate_id="landing", catalog_digest=catalog_digest_for((repo / "governance/gates.yaml").read_bytes()),
-        approver_id="pilot",
+        approver_id="pilot", approvers={"pilot": (pilot_key,)},
     )
     assert acceptance.publishable and acceptance.record["verdict"] == "PASS"
     evidence = repo / "governance/evidence.json"
@@ -160,7 +178,7 @@ def test_separate_src_application_freeze_observe_sign_reject_and_recover(applica
 
 
 def test_external_target_does_not_relax_paths_keys_or_implicit_authority(application) -> None:
-    repo, worker, _signer, _verifying = application
+    repo, worker, _signer, _verifying, _approver = application
     implicit = invoke(repo, "journal", "verify", "--repository", str(repo))
     assert implicit.returncode == 2
     conflict = invoke(repo, "journal", "verify", "--external-repository", str(repo),

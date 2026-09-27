@@ -38,6 +38,7 @@ from collections.abc import Iterator
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.cli.main import main
@@ -312,6 +313,14 @@ def build_repository(
     (governance / "producers.yaml").write_text(
         f"producers:\n  worker: {public_key}\n"
     )
+    # RISK-07: the committed keyring carries the catalogued approver so the
+    # evaluation below can prove possession before judgment.
+    _, approver_public = _approver.mint_approver(
+        tmp_path, name=f"{root.name}-approver"
+    )
+    _approver.register_approver(
+        governance / "producers.yaml", "reviewer", approver_public
+    )
     key_path = tmp_path / f"{root.name}.key"
     key_path.write_text(private_key + "\n")
     key_path.chmod(0o600)
@@ -412,6 +421,9 @@ def test_an_approved_hash_correct_wheel_forces_success_NOT_CAUGHT(
 
     # And the gate accepts it. That is the whole cost of the limit: a PASS
     # minted from a suite that failed, with every integrity control green.
+    monkeypatch.setenv(
+        _approver.APPROVER_ENV, str(tmp_path / f"{root.name}-approver.key")
+    )
     assert (
         main(
             [

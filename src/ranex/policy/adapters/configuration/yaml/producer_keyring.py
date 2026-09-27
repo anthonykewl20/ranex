@@ -152,6 +152,12 @@ class TrustKeyring:
     producers: dict[str, str]
     verdict_signer_id: str
     verdict_signer_public_key: str
+    #: RISK-07 — every catalogued approver principal and its active public
+    #: keys, from the same committed bytes the verdict signer comes from. The
+    #: readers that decide anything (check publication, journal verification)
+    #: hand this to `read_verdict` so a record naming one of these principals
+    #: must carry that principal's own signature or read UNAPPROVED.
+    approvers: dict[str, tuple[str, ...]]
 
 
 def load_trust_keyring(path: Path | str) -> TrustKeyring:
@@ -195,4 +201,11 @@ def load_trust_keyring_text(text: str, source: object) -> TrustKeyring:
             principals.require(signer["public_key"], role="service")
             if principal.principal_id != signer["id"]:
                 raise KeyringError("verdict_signer and principal disagree about identity")
-    return TrustKeyring(producers, signer["id"], signer["public_key"])
+        approvers = {
+            candidate.principal_id: candidate.active_keys
+            for candidate in principals.principals.values()
+            if candidate.role == "approver"
+        }
+    else:
+        approvers = {}
+    return TrustKeyring(producers, signer["id"], signer["public_key"], approvers)

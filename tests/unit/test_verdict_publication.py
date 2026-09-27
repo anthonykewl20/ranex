@@ -21,6 +21,95 @@ def test_publication_validator_refuses_non_bmp_keys() -> None:
         validate_publication_value({"\U0001f600": "value"})
 
 
+# --- RISK-07: the approver's own signature in the published envelope ------
+
+
+def _record() -> dict[str, object]:
+    from ranex.foundation.canonical import canonical_sha256
+
+    body: dict[str, object] = {
+        "verdict": "FAIL", "gate_id": "landing",
+        "subject_digest": "sha256:" + "a" * 64,
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "catalog_digest": "sha256:" + "b" * 64,
+        "approver_id": "release-approver", "failing_rule": "TESTS_EXECUTED",
+        "missing_claims": ["tests"], "considered": [],
+        "causes": [{"claim_id": "tests", "cause": "absent"}],
+        "rejections": [], "self_approval": False,
+        "reason": "no evidence for required claim: tests",
+        "journal_head": "sha256:" + "c" * 64,
+    }
+    return {**body, "record_digest": "sha256:" + canonical_sha256(body)}
+
+
+def _published(
+    tmp_path: Path, signer_private: str | None = None, **kwargs: object
+) -> dict[str, object]:
+    import json
+
+    from ranex.foundation.signing import generate_keypair
+    from ranex.governed_execution.verdict_publication import publish_verdict
+
+    if signer_private is None:
+        signer_private, _ = generate_keypair()
+    record = _record()
+    publish_verdict(
+        tmp_path / "verdict.json", record, root=tmp_path,
+        signer_id="kernel-verdict-signer", private_key=signer_private,
+        **kwargs,
+    )
+    return json.loads((tmp_path / "verdict.json").read_text(encoding="utf-8"))
+
+
+def _approver() -> tuple[str, str]:
+    from ranex.foundation.signing import generate_keypair
+
+    private, public = generate_keypair()
+    return private, public
+
+
+def test_publication_without_approver_signs_once(tmp_path: Path) -> None:
+    envelope = _published(tmp_path)
+
+    assert [entry["signer_id"] for entry in envelope["signatures"]] == [
+        "kernel-verdict-signer"
+    ]
+
+
+def test_publication_appends_the_approvers_own_signature(tmp_path: Path) -> None:
+    from ranex.foundation import verdict_signing
+    from ranex.foundation.signing import generate_keypair, public_key_for
+
+    signer_private, _ = generate_keypair()
+    approver_private, _ = _approver()
+    envelope = _published(
+        tmp_path, signer_private,
+        approver=("release-approver", approver_private),
+    )
+
+    signatures = envelope["signatures"]
+    assert [entry["signer_id"] for entry in signatures] == [
+        "kernel-verdict-signer", "release-approver"
+    ]
+    # Same signed fields, same domain: both signatures cover the identical
+    # content, and the approver's verifies under the approver's public half.
+    content = {
+        field: envelope["record"][field]
+        for field in verdict_signing.SIGNED_FIELDS
+    }
+    assert verdict_signing.verify_verdict(
+        content, signatures[1]["signature"], public_key_for(approver_private),
+        payload_type=envelope["payload_type"],
+    )
+    # Identical-input republication is byte-identical: Ed25519 is
+    # deterministic, so repeats prove the publication is reproducible.
+    first = (tmp_path / "verdict.json").read_bytes()
+    _published(
+        tmp_path, signer_private, approver=("release-approver", approver_private)
+    )
+    assert (tmp_path / "verdict.json").read_bytes() == first
+
+
 def test_shared_atomic_writer_is_used_by_both_callers() -> None:
     from ranex.cli import host_confinement
     from ranex.governed_execution import verdict_publication

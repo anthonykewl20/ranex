@@ -27,6 +27,7 @@ class ReadState(StrEnum):
     MISSING_KEY = "missing-key"
     CONTEXT_MISMATCH = "context-mismatch"
     UNKNOWN_CAUSE = "unknown-cause"
+    UNAPPROVED = "unapproved"
     VERIFIED = "verified"
 
 
@@ -40,6 +41,7 @@ STATE_PRESENTATION = {
     ReadState.MISSING_KEY: "The verdict signer key is unavailable.",
     ReadState.CONTEXT_MISMATCH: "The verdict belongs to another judgment context.",
     ReadState.UNKNOWN_CAUSE: "The verdict contains an unclassified blocking cause.",
+    ReadState.UNAPPROVED: "The verdict names a catalogued approver whose signature it does not carry.",
     ReadState.VERIFIED: "The verdict is verified; freshness is unestablished.",
 }
 
@@ -67,7 +69,10 @@ class ReadResult:
         return head if isinstance(head, str) else None
 
 
-def read_verdict_unbound(path: Path, keyring: Mapping[str, str]) -> ReadResult:
+def read_verdict_unbound(
+    path: Path, keyring: Mapping[str, str],
+    *, approvers: Mapping[str, tuple[str, ...]] | None = None,
+) -> ReadResult:
     """Envelope, digest and signature only — no judgment-context comparison.
 
     ADR-057. `journal verify --against-verdict` needs the anchor a verdict
@@ -78,19 +83,25 @@ def read_verdict_unbound(path: Path, keyring: Mapping[str, str]) -> ReadResult:
     absent, which is the caller's own question here.
     """
 
-    return _read(path, keyring, context=None)
+    return _read(path, keyring, context=None, approvers=approvers)
 
 
-def read_verdict(path: Path, keyring: Mapping[str, str], *, subject_digest: str,
-                  gate_id: str, catalog_digest: str | None, approver_id: str) -> ReadResult:
+def read_verdict(
+    path: Path, keyring: Mapping[str, str], *, subject_digest: str,
+    gate_id: str, catalog_digest: str | None, approver_id: str,
+    approvers: Mapping[str, tuple[str, ...]] | None = None,
+) -> ReadResult:
     return _read(path, keyring, context=(
         ("subject_digest", subject_digest), ("gate_id", gate_id),
         ("catalog_digest", catalog_digest), ("approver_id", approver_id),
-    ))
+    ), approvers=approvers)
 
 
-def _read(path: Path, keyring: Mapping[str, str],
-          *, context: tuple[tuple[str, str | None], ...] | None) -> ReadResult:
+def _read(
+    path: Path, keyring: Mapping[str, str],
+    *, context: tuple[tuple[str, str | None], ...] | None,
+    approvers: Mapping[str, tuple[str, ...]] | None,
+) -> ReadResult:
     try:
         value = json.loads(
             Path(path).read_bytes(),
@@ -117,12 +128,24 @@ def _read(path: Path, keyring: Mapping[str, str],
             return ReadResult(ReadState.MALFORMED)
         if not signatures:
             return ReadResult(ReadState.UNSIGNED)
-        signature = signatures[0]
-        if not isinstance(signature, Mapping) or set(signature) != {"signer_id", "signature"}:
-            return ReadResult(ReadState.MALFORMED)
-        signer = signature["signer_id"]
-        if not isinstance(signer, str):
-            return ReadResult(ReadState.MALFORMED)
+        # RISK-07: every entry in `signatures` is verified, not only the
+        # first. `signatures[0]` stays the judgment signature — the verdict
+        # signer writes it and only the judgment keyring may answer it, so an
+        # approver's key can never stand in for the kernel's. Entries after it
+        # may name a judgment signer or a catalogued approver; an approver's
+        # entry verifies against that principal's active keys, so rotation
+        # retires nothing and resurrects nothing.
+        named: set[str] = set()
+        for signature in signatures:
+            if not isinstance(signature, Mapping) or set(signature) != {"signer_id", "signature"}:
+                return ReadResult(ReadState.MALFORMED)
+            signer = signature["signer_id"]
+            if not isinstance(signer, str):
+                return ReadResult(ReadState.MALFORMED)
+            if signer in named:
+                return ReadResult(ReadState.MALFORMED)
+            named.add(signer)
+        signer = signatures[0]["signer_id"]
         if signer not in keyring:
             return ReadResult(ReadState.MISSING_KEY if not keyring else ReadState.UNKNOWN_SIGNER)
         record = value["record"]
@@ -131,8 +154,24 @@ def _read(path: Path, keyring: Mapping[str, str],
         content = {field: record[field] for field in fields}
         if record["record_digest"] != "sha256:" + canonical_sha256(content):
             return ReadResult(ReadState.BAD_SIGNATURE)
-        if not verify_verdict(content, signature["signature"], keyring[signer], payload_type=payload_type):
+        if not verify_verdict(content, signatures[0]["signature"], keyring[signer], payload_type=payload_type):
             return ReadResult(ReadState.BAD_SIGNATURE)
+        catalogued = approvers or {}
+        for signature in signatures[1:]:
+            co_signer = signature["signer_id"]
+            if co_signer in keyring:
+                if not verify_verdict(content, signature["signature"], keyring[co_signer], payload_type=payload_type):
+                    return ReadResult(ReadState.BAD_SIGNATURE)
+                continue
+            keys = catalogued.get(co_signer)
+            if keys is None:
+                empty = not keyring and not catalogued
+                return ReadResult(ReadState.MISSING_KEY if empty else ReadState.UNKNOWN_SIGNER)
+            if not any(
+                verify_verdict(content, signature["signature"], key, payload_type=payload_type)
+                for key in keys
+            ):
+                return ReadResult(ReadState.BAD_SIGNATURE)
         if context is not None and any(
             record[field] != expected for field, expected in context
         ):
@@ -143,6 +182,19 @@ def _read(path: Path, keyring: Mapping[str, str],
             return ReadResult(ReadState.MALFORMED)
         if any(not isinstance(cause, Mapping) or cause.get("cause") not in known for cause in causes):
             return ReadResult(ReadState.UNKNOWN_CAUSE, record, payload_type)
+        # RISK-07, and deliberately the LAST check before VERIFIED: a record
+        # whose approver the caller's catalog carries must also carry that
+        # approver's own signature, or it is UNAPPROVED — authentic as a
+        # document, unapproved as a decision. Callers that verify archives and
+        # decide nothing pass no approver catalog, so a single-signature
+        # record still reads VERIFIED for them (the ADR-057 precedent:
+        # reading is permitted, deciding is not).
+        record_approver = record.get("approver_id")
+        if isinstance(record_approver, str) and record_approver in catalogued:
+            if not any(
+                signature["signer_id"] == record_approver for signature in signatures[1:]
+            ):
+                return ReadResult(ReadState.UNAPPROVED, record, payload_type)
         return ReadResult(ReadState.VERIFIED, record, payload_type)
     except (OSError, UnicodeError, ValueError, TypeError):
         return ReadResult(ReadState.MALFORMED)

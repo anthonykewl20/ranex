@@ -243,6 +243,7 @@ def cmd_task_stop_hook(args: argparse.Namespace) -> int:
             gate_id=args.gate,
             catalog_digest=catalog_digest_for(catalog_source),
             approver_id=args.approver,
+            approvers=trust.approvers,
         )
         envelope: dict[str, object] | None = None
         envelope_path = verdicts_dir / f"{subject_hex}.envelope.json"

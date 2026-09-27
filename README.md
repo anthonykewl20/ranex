@@ -88,15 +88,18 @@ After you have committed the policy, public keyring and frozen test manifest,
 provisioned dependencies and configured the signing key, the core loop is:
 
 ```sh
+export RANEX_APPROVER_SIGNING_KEY=$HOME/.config/ranex/approver.key
 uv run --frozen ranex run \
   --claim tests-executed --producer worker -- uv run pytest -q
-uv run --frozen ranex gate evaluate HEAD --approver reviewer_alice
+uv run --frozen ranex gate evaluate HEAD --approver release-approver
 uv run --frozen ranex journal verify
 ```
 
-These commands use this repository’s command binding and identities. Your
-catalog must bind the command you actually run. A fresh clone has no accepted
-evidence, so its gate refuses until the prerequisites and observations exist.
+These commands use this repository’s command binding and identities
+(`release-approver` is the catalogued approver; possession is required before
+judgment). Your catalog must bind the command you actually run. A fresh clone
+has no accepted evidence, so its gate refuses until the prerequisites and
+observations exist.
 
 For pull requests, the [GitHub App guide](docs/OPERATIONS.md#the-github-acceptance-loop-ranex-github-app)
 explains the listener and the `ranex/acceptance` check. The App publishes a
@@ -243,6 +246,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-097 — Authenticated approver](docs/slices/done/SLICE-097-authenticated-approver.md): catalogued `role: approver`, key possession before judgment, second Ed25519 signature in the verdict (ADR-066 / RISK-07 / #107).
 
 - [SLICE-096 — The architecture-freeze claim](docs/slices/done/SLICE-096-architecture-freeze-claim.md): ADP's first A-family claim (ADR-065) — holds a human-approved module graph true on every candidate; ranex's own ten-subpackage freeze is pinned in `governance/gates.yaml` after DIRECT 012 stress READY.
 
