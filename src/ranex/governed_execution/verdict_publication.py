@@ -16,14 +16,17 @@ def publish_verdict(
     path: Path, record: Mapping[str, Any], *, root: Path,
     signer_id: str, private_key: str,
     approver: tuple[str, str] | None = None,
-) -> None:
-    """Publish the signed verdict, optionally countersigned by its approver.
+) -> bytes:
+    """Publish the signed verdict; return the exact bytes written.
 
     `approver` is the catalogued approver's `(principal_id, private_key)`
     (RISK-07). The approver signs the same content over the same domain as the
     verdict signer — a second proof, never a different payload — and the entry
     is appended after the signer's so `signatures[0]` stays the judgment
     signature every existing reader already verifies.
+
+    The returned bytes are what an external witness must digest and wrap — the
+    same canonical form on disk — so a caller never re-serialises (ADR-067).
     """
 
     if set(record) != {*SIGNED_FIELDS, "record_digest"}:
@@ -44,4 +47,6 @@ def publish_verdict(
     envelope = {
         "payload_type": PAYLOAD_TYPE, "record": dict(record), "signatures": signatures,
     }
-    atomic_writer.write_atomic(path, canonical_json_bytes(envelope), root=root)
+    payload = canonical_json_bytes(envelope)
+    atomic_writer.write_atomic(path, payload, root=root)
+    return payload
