@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "scan_results_from_sarif"
+  ],
+  "cwd": "/tmp/ranex-102-proof-bc8ms2me/subject",
+  "digests": {
+    "outcome": "sha256:e5f183f875a773b402e1ee4782aff78832b054e3f47e5f153701c9f011fb3a6f",
+    "packet": "sha256:94153cba67ccf16b50a52dfb9d723424e4c3c33a204cb05dfadcba53b604564b"
+  },
+  "exit_code": 0,
+  "expectation": "arm6-path-determinism",
+  "notes": "message prose varied; outcome_digest stable",
+  "status": "VERIFIED"
+}

@@ -17,9 +17,15 @@ before `evaluate()`, second Ed25519 signature in the verdict; reader
 `UNAPPROVED` without it. `verdict.py` / `KERNEL_DIGEST` unmoved. Receipt:
 `tools/dogfood/audits/2026-09-26-approver-authentication/` (11/11 VERIFIED).
 
+**Closed this lane (#102 / SLICE-100 / ADR-069):** delegated review SARIF —
+packet at `governance/review-packet.json`, #97 admission with captain
+rulings (anchor re-derive, prose-free fingerprints, findings
+advisory-only). Receipts:
+`tools/dogfood/audits/2026-09-27-delegated-review/` (six arms VERIFIED ×3).
+
 **Experiments:** DIRECT 012 READY (#135, 24 VERIFIED / 2 GAP); Python ADP
 fracture remediation NOT-READY (#136, F-AD3/F-AD7 HOLDs). Queue: #108,
-#109, #102, #112, #115, #119, #105, #90; #88 parked (SLICE-085).
+#109, #112, #115, #119, #105, #90; #88 parked (SLICE-085).
 
 Suite: standing DIRECT 003 host-drift family on main unchanged by this
 ship (documented at eeee52d30 / post-#133).
