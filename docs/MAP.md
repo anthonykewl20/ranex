@@ -1848,7 +1848,7 @@ verdict — and deleting them would lose the reasoning.
 |---|---|---|
 | `RISK-01` | **Only the deterministic half of the thesis is true by construction.** The producer-unalterable scorer is built for the bound command (ADR-006 accepted; `RISK-06` closed with the same-uid controller standing limit) and `RISK-07` leaves approval unauthenticated, so `1.1.0`'s truth risk remains alongside the question of whether anyone will pay | Confinement landing, then a buyer paying for it |
 | `RISK-02` | **Timing.** The provability nightmare (§1.1 level four) may be three to five years early. No one has been sued at scale over AI-written code. Founders do not buy diligence insurance in advance. Right and early is operationally identical to wrong | Evidence of present-tense pain, or a wedge that pays before the nightmare arrives |
-| `RISK-03` | **Position.** A lemons market is fixed by a signal a hostile outsider can read. Ranex is a local CLI, and a certificate you issue to yourself is worth nothing. The cryptographic substrate for an outward record exists; the position does not | A decision about who the verifier is, which likely overturns local-first (§7.2) |
+| `RISK-03` | **Partially closed (ADR-067).** A witnessed verdict is an outward record a hostile outsider can re-verify from the UUID alone against the pinned log key. Unwitnessed publication remains a local certificate |
 | `RISK-04` | **The buyer is post-disillusionment.** Someone who still believes a prompt produces an app does not want gates — they want the magic, and competitors sell it. The buyer is the person who already burned weeks and thousands and now distrusts the loop. Real, growing, and smaller than the believer market | Contact with actual buyers |
 | `RISK-05` | **"Software factory" and "enterprise" both carry cost.** The first is a discredited term to experienced engineers (§4.2); the second quietly promises output quality, which §1.2 forbids claiming | An owner decision on naming |
 
@@ -1935,7 +1935,7 @@ is best.
 | `RISK-16` | arc42 is CC BY-SA 4.0; adopting the template as an adaptation in a public repository carries ShareAlike |
 | `RISK-17` | **Adopting more of TOGAF than §4.5's four parts recreates the 561-file failure.** This is not a hypothetical: the pre-reset tree was already TOGAF-shaped and produced zero product code. The ADM's overhead is amortised across an enterprise; there is one implementer here. Any proposal to add an ADM phase, a capability level, a maturity score or a compliance grade should be read as this risk materialising |
 | `RISK-18` | **This map is not yet conformant to ISO/IEC/IEEE 42010.** It has stakeholder, concerns, viewpoints and correspondences; model kinds are absent and two viewpoints govern no view (§14.3) |
-| `RISK-19` | **The journal does not detect rollback or truncation.** `ranex journal verify` recomputes an extant chain, but an internally consistent earlier snapshot verifies; the deferred external checkpoint is the named remedy (§9) |
+| `RISK-19` | **Closed-with-witness (ADR-067).** `ranex journal verify` alone still accepts a self-consistent rewrite; `journal verify --against-verdict --witnessed` refuses when the local verdict digest differs from the Rekor-anchored witness. Unwitnessed verdicts retain the prior residual |
 | `RISK-20` | **Current gate evaluation does not prove test-before-code precedence.** Task merge verifies candidate ancestry, but no path verifies signed commit history or that test bodies predate implementation; apparent red-then-green precedence remains forgeable |
 | `RISK-21` | **Concern completeness is internal consistency, not completeness.** The sole stakeholder is also architect; a blind spot cannot break the concern↔requirement relation. The operator raised skill and tool-server poisoning earlier, but it is not among `C-01`–`C-04` |
 | `RISK-22` | **Mutation testing validates the operator's model of defects, not that model's validity.** It measures repeatability and does not replace a reviewer who challenges the defect model |
@@ -2196,7 +2196,7 @@ that cannot name its evidence or its absence is not in the ledger.
 | Evidence authenticity | SLICE-002; Ed25519 verified against a committed keyring (`tests/security/test_evidence_trust_root.py`, `tests/security/test_slice002_trust_root_reopened.py`) | the controller subprocess remains same-uid trusted infrastructure (`RISK-06` standing limit, ADR-023) |
 | Claim↔command binding | SLICE-003; `tests/security/test_slice003_command_binding.py`; six audits failed to break the binding itself | six false-PASS routes *around* it were one root cause, closed by SLICE-004 |
 | Hermetic observation | `cmd_run` materialises committed blobs, builds the observed environment from an allowlist, and resolves a pinned or approved provisioned toolchain; `tests/security/test_slice004_hermetic_observation.py` | the non-confined controller is same-UID infrastructure; unsupported tree/object shapes refuse rather than run |
-| Append-only hash-chained journal | `tests/integration/test_journal.py`, `tests/e2e/test_journal_verify_cli.py`; SQLite triggers forbid update and delete | rollback/truncation undetected (`RISK-19`); `evidence.json` is not append-only (`RISK-11`) |
+| Append-only hash-chained journal | `tests/integration/test_journal.py`, `tests/e2e/test_journal_verify_cli.py`; SQLite triggers forbid update and delete | rollback/truncation closed-with-witness (`RISK-19` / ADR-067); `evidence.json` is not append-only (`RISK-11`) |
 | Path confinement, dirty-tree refusal | `tests/security/test_repository_confinement.py`, `tests/security/test_executable_path_confinement.py` | `HOME` inherited by Ranex's own git queries (`RISK-13`) |
 | Refusal reporting | refused records are reported as refused, never as honest absence; `tests/contract/test_verdict_presentation.py` and gate CLI tests | no owner-facing translator |
 | Docs-discipline self-gauge | `tests/contract/test_docs_discipline.py` | the BOM checker is structural, not semantic (§5.5) |
@@ -2279,15 +2279,13 @@ read locally. Cached 2026-08-02/03, and each entry is prior art for a named gap:
 | Cached source | What it is prior art for |
 |---|---|
 | `in-toto@3.1.0` (pinned release) | signed attestation layouts — the evidence-admission and independence-record rows |
-| `github.com/google/trillian@master` | append-only Merkle trees — the journal's rollback/truncation gap (`RISK-19`) |
-| `github.com/sigstore/rekor@main` | a transparency log in production — the outward-facing record (`RISK-03`) |
+| `github.com/google/trillian@0362d55869965067c9ffa276a78d18e95a596ca3` | append-only Merkle trees — the journal's rollback/truncation gap (`RISK-19`); vendored under ADR-067 |
+| `github.com/sigstore/rekor@904bbccce4df5e63c30209d7b7a00d9dda5400d6` | a transparency log in production — the outward-facing record (`RISK-03`); vendored under ADR-067 |
+| `github.com/transparency-dev/merkle@fbbcd741c3d1c69d8498487baa8edc9e5824847c` | RFC 6962 inclusion proofs — the witness verifier under ADR-067 |
 
-**The pinning caveat, stated because this repository's own rules state it:**
-`trillian@master` and `rekor@main` are cached at *branch* refs, which ADR-003 and
-`tests/contract/test_docs_discipline.py` reject as citations. They are readable
-now; before either enters an ADR it must be re-fetched at a 40-hex commit or a
-dotted-numeric release tag and vendored with origin and licence. `in-toto@3.1.0`
-already satisfies the pin.
+**Pinning:** the three rows above are 40-hex commits, re-fetched 2026-09-27 and
+vendored with NOTICE under `docs/adr/prior-art/ADR-067/`. `in-toto@3.1.0`
+already satisfied the pin.
 
 **The adoption form — copy, improve, own; never depend.** Owner directive,
 2026-08-03: adopted code is copied into `src/ranex/`, improved, and maintained

@@ -13,7 +13,13 @@ from ranex.foundation.verdict_signing import PAYLOAD_TYPE, SIGNED_FIELDS, sign_v
 
 
 def publish_verdict(path: Path, record: Mapping[str, Any], *, root: Path,
-                    signer_id: str, private_key: str) -> None:
+                    signer_id: str, private_key: str) -> bytes:
+    """Publish the signed envelope; return the exact bytes written.
+
+    The returned bytes are what an external witness must digest and wrap — the
+    same canonical form on disk — so a caller never re-serialises.
+    """
+
     if set(record) != {*SIGNED_FIELDS, "record_digest"}:
         raise ValueError("verdict publication must contain the exact Record fields")
     content = {field: record[field] for field in SIGNED_FIELDS}
@@ -24,4 +30,6 @@ def publish_verdict(path: Path, record: Mapping[str, Any], *, root: Path,
     envelope = {"payload_type": PAYLOAD_TYPE, "record": dict(record), "signatures": [
         {"signer_id": signer_id, "signature": sign_verdict(content, private_key)}
     ]}
-    atomic_writer.write_atomic(path, canonical_json_bytes(envelope), root=root)
+    payload = canonical_json_bytes(envelope)
+    atomic_writer.write_atomic(path, payload, root=root)
+    return payload

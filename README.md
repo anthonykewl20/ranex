@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** [SLICE-096 — the architecture-freeze claim](docs/slices/SLICE-096-architecture-freeze-claim.md) — ADP's first family (ADR-065, proposed; implementation-only per DIRECT 014).
+**Active slice:** [SLICE-096 — the architecture-freeze claim](docs/slices/SLICE-096-architecture-freeze-claim.md) — ADP's first family (ADR-065 proposed; blocked pending approval).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -243,6 +243,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-098 — External verdict witness](docs/slices/done/SLICE-098-external-verdict-witness.md): DSSE-wrapped verdicts anchored in Rekor; `gate evaluate --witness` and `journal verify --witnessed` (ADR-067 / #108).
 
 - [SLICE-095 — The BASE freeze and the promotion gate](docs/slices/done/SLICE-095-base-freeze-promotion-gate.md): the durable measurement instrument (ADR-064) — a committed, digest-bound `base-freeze-v1.json` of kernel identity, pinned subjects and measured reference metrics, plus a `promotion evaluate` gate that refuses any improvement claim not citing a freeze id with paired MARGINAL deltas on the freeze's own axes; τ may only ever be derived from the freeze, never a constant.
 

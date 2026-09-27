@@ -138,6 +138,12 @@ from ranex.governed_execution.repair_envelope import (
 from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
 from ranex.governed_execution.verdict_publication import publish_verdict
 from ranex.governed_execution.verdict_reader import ReadState, read_verdict_unbound
+from ranex.governed_execution.witness import (
+    DEFAULT_LOG_PUBLIC_KEY,
+    verify_witness,
+    witness_path_for,
+    witness_verdict,
+)
 from ranex.observability import TRACE_VARIABLES, stage_begin, stage_end
 from ranex.observability import schema as trace_schema
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
@@ -1018,6 +1024,13 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             raise ValueError(
                 f"{VERDICT_SIGNING_KEY_VARIABLE} and {VERDICT_DIR_VARIABLE} must be configured together"
             )
+        witness = bool(getattr(args, "witness", False))
+        if witness and (verdict_key_path is None or verdict_dir_value is None):
+            raise ValueError(
+                f"--witness requires {VERDICT_SIGNING_KEY_VARIABLE} and "
+                f"{VERDICT_DIR_VARIABLE}: a verdict that is never published "
+                "cannot be anchored in a transparency log"
+            )
         if verdict_key_path is not None and verdict_dir_value is not None:
             trust_keyring = load_trust_keyring_text(
                 keyring_source.decode("utf-8"), keyring_path
@@ -1028,13 +1041,30 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             if public_key_for(private_key) != trust_keyring.verdict_signer_public_key:
                 raise ValueError("verdict signing key does not match the committed verdict signer")
             verdict_dir = resolve_within_repository(root, verdict_dir_value)
-            publish_verdict(
-                verdict_dir / f"{result.subject_digest.removeprefix('sha256:')}.json",
+            verdict_path = (
+                verdict_dir / f"{result.subject_digest.removeprefix('sha256:')}.json"
+            )
+            published = publish_verdict(
+                verdict_path,
                 projected,
                 root=governed_root,
                 signer_id=trust_keyring.verdict_signer_id,
                 private_key=private_key,
             )
+            if witness:
+                # A failed submission must not leave an unwitnessed verdict on
+                # disk: the flag's contract is "never silently unwitnessed".
+                try:
+                    witness_verdict(
+                        verdict_path=verdict_path,
+                        verdict_bytes=published,
+                        private_key=private_key,
+                        public_key=trust_keyring.verdict_signer_public_key,
+                        root=governed_root,
+                    )
+                except ValueError:
+                    verdict_path.unlink(missing_ok=True)
+                    raise
             # SLICE-092 (C1): compose the repair envelope at this, the
             # ADR-019/020 projection boundary — the one place causes and
             # junit detail can meet without either touching the kernel or
@@ -1291,6 +1321,23 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
                 root, against_verdict, args
             )
             anchor_source = "signed-verdict"
+        witnessed = bool(getattr(args, "witnessed", False))
+        if witnessed:
+            if against_verdict is None:
+                raise ValueError(
+                    "--witnessed requires --against-verdict: the witness binds "
+                    "a published verdict, not a bare journal head"
+                )
+            verdict_file = resolve_within_repository(root, against_verdict)
+            log_key = resolve_within_repository(
+                root,
+                getattr(args, "log_public_key", None) or DEFAULT_LOG_PUBLIC_KEY,
+            )
+            verify_witness(
+                verdict_path=verdict_file,
+                witness_path=witness_path_for(verdict_file),
+                log_public_key_path=log_key,
+            )
         if expected_head is not None and re.fullmatch(r"sha256:[0-9a-f]{64}", expected_head) is None:
             raise ValueError("--expected-head must be a canonical sha256 digest")
         verified = Journal(journal_path).verify(expected_head=expected_head)
@@ -1312,7 +1359,11 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         anchor = (
             f"matched({anchor_source})" if expected_head is not None else "UNVERIFIED"
         )
-        print(f"PASS  journal={journal_path}  chain=verified  external-anchor={anchor}")
+        witness_note = "  witness=verified" if witnessed else ""
+        print(
+            f"PASS  journal={journal_path}  chain=verified  "
+            f"external-anchor={anchor}{witness_note}"
+        )
         return EXIT_PASS
     # Sad path 3's demand (issue #36): the refusal names WHICH row broke the
     # chain — seq plus ordinal — so the operator inspects the edited row, not
@@ -4929,6 +4980,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ev.add_argument("--approver", required=True, help="identity approving")
     ev.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
+    ev.add_argument(
+        "--witness",
+        action="store_true",
+        help="anchor the published verdict in a Rekor transparency log (ADR-067)",
+    )
     ev.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     ev.set_defaults(func=cmd_gate_evaluate)
 
@@ -4945,6 +5001,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify.add_argument(
         "--producers", default=DEFAULT_PRODUCERS, help="producer keyring for --against-verdict"
+    )
+    verify.add_argument(
+        "--witnessed",
+        action="store_true",
+        help="require the verdict's Rekor witness (ADR-067); needs --against-verdict",
+    )
+    verify.add_argument(
+        "--log-public-key",
+        default=DEFAULT_LOG_PUBLIC_KEY,
+        help="pinned transparency-log public key (trust root)",
     )
     verify.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     verify.set_defaults(func=cmd_journal_verify)

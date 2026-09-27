@@ -140,6 +140,19 @@ uv run --frozen ranex gate evaluate HEAD --external-repository /path/to/repo \
 uv run --frozen ranex journal verify --external-repository /path/to/repo
 ```
 
+### External witness (ADR-067)
+
+With `RANEX_VERDICT_SIGNING_KEY` and `RANEX_VERDICT_DIR` set, `gate evaluate
+--witness` wraps the published verdict in a DSSE envelope and submits it to
+Rekor (`https://rekor.sigstore.dev`, or `RANEX_WITNESS_URL`). Failure is exit 2
+and removes the verdict — never silently unwitnessed. Verify with:
+
+```
+uv run --frozen ranex journal verify --against-verdict governance/verdicts/<subject>.json --witnessed
+```
+
+The pinned log public key is `governance/rekor_public_key.pem`.
+
 Use the exact command bound in the target's catalog, including any results
 artifact flag. `suite freeze` accepts the same target selector and retains its
 existing `--artifact`, `--output` and expected-skip rules. `keygen` accepts the
