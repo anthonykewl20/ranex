@@ -5,20 +5,21 @@
 SLICE-097 / #107 (authenticated approver) closed.
 
 **ADP / architecture freeze (promoted):**
-- ADR-065 **accepted**; `governance/architecture-freeze.json` pins
-  ranex's ten-subpackage graph + root `__init__` (digest
-  `sha256:e7325bdc592efb301cfca4d267984d2b9eea6f3b87887ba33a1f8693525515f8`).
-- `landing` gate carries claim `architecture`; self-host argv is
-  `python3 -m ranex.foundation.arch_scan`.
+- ADR-065 **accepted**. Freeze `governance/architecture-freeze.json`
+  (`approved_by: ADR-065`), digest pin
+  `sha256:d463e3c97475c1971758415b07d072469385e33700081656d9d632acc3a58f72`,
+  manifesto `governance/arch/scan-manifest.json` (file-level scopes under
+  declared modules), landing claim `architecture` via `ranex-arch check …`.
+- BASE `ranex promotion evaluate` unchanged (arch wiring ≠ BASE promotion).
 
 **#107 / RISK-07 closed:** catalogued `role: approver`, CLI possession
 before `evaluate()`, second Ed25519 signature in the verdict; reader
 `UNAPPROVED` without it. `verdict.py` / `KERNEL_DIGEST` unmoved. Receipt:
 `tools/dogfood/audits/2026-09-26-approver-authentication/` (11/11 VERIFIED).
 
-**Experiments:** DIRECT 012 READY (#135); Python ADP fracture remediation
-NOT-READY (#136). Queue: #108, #109, #102, #112, #115, #119, #105, #90;
-#88 parked (SLICE-085).
+**Experiments:** DIRECT 012 READY (#135, 24 VERIFIED / 2 GAP); Python ADP
+fracture remediation NOT-READY (#136, F-AD3/F-AD7 HOLDs). Queue: #108,
+#109, #102, #112, #115, #119, #105, #90; #88 parked (SLICE-085).
 
-Suite: standing host-drift red family on main unchanged by this ship
-(documented at eeee52d30 / post-#133); refreeze is IDs-only and outcome-blind.
+Suite: standing DIRECT 003 host-drift family on main unchanged by this
+ship (documented at eeee52d30 / post-#133).
