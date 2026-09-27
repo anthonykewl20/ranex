@@ -382,6 +382,14 @@ repeats are byte-identical, which is the anti-flake rule made checkable.
 Wall-clock and captured output are retained in `selftest-commands.json`,
 where variation is permitted and never changes a status.
 
+## Minimization ladder proof — issue #112
+
+`tools/dogfood/minimization_ladder_proof.py` resolves the adapted ladder
+against `fastapi/full-stack-fastapi-template@cd83fc1` with ×3 repeats:
+
+    uv run --frozen python tools/dogfood/minimization_ladder_proof.py \
+        --out tools/dogfood/audits/2026-09-27-minimization-ladder --repeats 3
+
 ## Delegated review proof — issue #102's packet / admission arms
 
 `tools/dogfood/delegated_review_proof.py` runs the #102 real-data arms

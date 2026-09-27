@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "sha1(git-blob)"
+  ],
+  "cwd": "/tmp/ranex-112",
+  "digests": {
+    "blob": "0af61d583fbd42e8900fce9183d68167eb3d93e6",
+    "expected": "0af61d583fbd42e8900fce9183d68167eb3d93e6"
+  },
+  "exit_code": 0,
+  "expectation": "arm5-prior-art-blob",
+  "notes": "Vendored: docs/adr/prior-art/ADR-070/ponytail.md",
+  "status": "VERIFIED"
+}

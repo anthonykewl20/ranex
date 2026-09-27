@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "parse governance/handbook.json"
+  ],
+  "cwd": "/tmp/ranex-112",
+  "digests": {
+    "handbook": "sha256:1f103f36c2a3a2ff3e7ace7875316a7ecfdc88b6194692d9ff52e5296b6f3860"
+  },
+  "exit_code": 0,
+  "expectation": "arm3-ladder-amendments",
+  "notes": "{\"approved_deps\": true, \"red_first\": true, \"no_ask_user\": true, \"no_gauge\": true, \"guardrails\": true}",
+  "status": "VERIFIED"
+}
