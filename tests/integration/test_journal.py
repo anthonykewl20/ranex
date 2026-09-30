@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
+import _task_history
 import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
@@ -68,6 +69,7 @@ def git(repo: Path, *args: str) -> str:
 def invoke(repo: Path, argv: list[str]) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
+        _task_history.configure(monkeypatch, repo, argv)
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
         )
@@ -100,8 +102,9 @@ class MergeJournalScenario:
             f"producers:\n  worker: {worker_public}\n  owner: {approver_public}\n",
             encoding="utf-8",
         )
+        _task_history.register(repo)
         (repo / ".gitignore").write_text(
-            "governance/evidence.json\ngovernance/journal.sqlite3\n",
+            "governance/evidence.json\ngovernance/journal.sqlite3*\ngovernance/observations.sqlite3*\n",
             encoding="utf-8",
         )
         (repo / "base.txt").write_text("base\n", encoding="utf-8")
@@ -152,14 +155,11 @@ class MergeJournalScenario:
             "confinement_profile_digest": "sha256:" + "d" * 64,
             "envelope_type": "ranex-evidence-envelope-v1",
             "gate_id": "landing",
-            "catalog_digest": "sha256:" + "e" * 64,
+            "catalog_digest": catalog_digest_for(CATALOG),
         }
-        (self.repo / "governance" / "evidence.json").write_text(
-            json.dumps(
-                [{**evidence, "signature": sign_evidence(evidence, self.worker_private)}]
-            ),
-            encoding="utf-8",
-        )
+        _task_history.record(self.repo, [
+            {**evidence, "signature": sign_evidence(evidence, self.worker_private)}
+        ])
         candidate_value = TaskCandidate(task_id, "landing", subject, ())
         Journal(self.journal_path).append(candidate_value)
         envelope = {
@@ -241,15 +241,14 @@ class MergeJournalScenario:
             "confinement_profile_digest": "sha256:" + "d" * 64,
             "envelope_type": "ranex-evidence-envelope-v1",
             "gate_id": "landing",
-            "catalog_digest": "sha256:" + "e" * 64,
+            "catalog_digest": catalog_digest_for(CATALOG),
         }
         evidence_document = {
             **evidence,
             "signature": sign_evidence(evidence, self.worker_private),
         }
-        evidence_bytes = json.dumps([evidence_document]).encode()
-        (worktree / "governance" / "evidence.json").write_bytes(evidence_bytes)
-        (self.repo / "governance" / "evidence.json").write_bytes(evidence_bytes)
+        _task_history.record(worktree, [evidence_document])
+        _task_history.record(self.repo, [evidence_document])
         assert invoke(
             self.repo,
             [
@@ -334,7 +333,14 @@ def run_concurrent_merges(
         results[index] = subprocess.run(
             [sys.executable, "-m", "ranex.cli.main", *attempts[index].args()],
             cwd=repo,
-            env=environment,
+            env=environment | {"RANEX_HISTORY_CHECKPOINT": str(
+                _task_history.checkpoint(next(
+                    Path(str(entry["worktree"]))
+                    for entry in reversed(Journal(repo / "governance/journal.sqlite3").entries())
+                    if entry.get("type") == "task-dispatch"
+                    and entry.get("task_id") == attempts[index].task_id
+                ))
+            )},
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -940,9 +946,7 @@ def test_sad_path_19_different_tasks_competing_for_ref_journal_one_winner_and_lo
     scenario = MergeJournalScenario.create(tmp_path)
     first = scenario.dispatch_judge("different-task-race-1")
     second = scenario.dispatch_judge("different-task-race-2")
-    (scenario.repo / "governance" / "evidence.json").write_text(
-        json.dumps([first.evidence_document, second.evidence_document]), encoding="utf-8"
-    )
+    _task_history.record(scenario.repo, [first.evidence_document, second.evidence_document])
     assert first.task_id != second.task_id
     assert first.candidate != second.candidate
     assert first.approval != second.approval
@@ -1103,6 +1107,7 @@ def test_sad_path_1_cas_race_refuses_exactly_once_and_keeps_the_winner(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
         )
         monkeypatch.setattr("ranex.cli.main.git", racing_git)
+        _task_history.configure(monkeypatch, repo, merge_args(candidate, approval))
         exit_code = main(merge_args(candidate, approval))
 
     assert exit_code != 0

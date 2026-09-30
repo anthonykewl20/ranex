@@ -94,6 +94,10 @@ from dataclasses import dataclass, field  # noqa: E402
 
 import _history  # noqa: E402
 
+from ranex.governed_execution.adapters.persistence.sqlite.observations import (
+    observations_path_for,  # noqa: E402
+)
+
 
 @dataclass
 class HistoryService:
@@ -104,7 +108,7 @@ class HistoryService:
     checkpoints: dict[str, Path] = field(default_factory=dict)
 
     def establish(self, name: str = "evidence.json") -> Path:
-        identity = str((self.repository / name).parent.resolve())
+        identity = str(observations_path_for(self.repository / name).resolve())
         if identity not in self.checkpoints:
             checkpoint = self.key_path.parent / f"history-{len(self.checkpoints)}.json"
             _history.establish(self.repository, name, checkpoint, self.private, self.public)

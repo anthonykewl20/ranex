@@ -369,15 +369,14 @@ def test_public_dynamic_run_binds_output_result_and_evidence_twice(
 ) -> None:
     observations = []
     for index in (1, 2):
-        evidence = f".local/ranex-e2e/slice072-{index}/evidence.json"
+        evidence = f".local/ranex-e2e/slice072-{index}.json"
         completed = _run(journey, evidence)
         assert completed.returncode == 0, completed.stdout + completed.stderr
         result, raw_result = _runtime_result(completed.stderr)
         record = _evidence(journey.repository, evidence)
         assert record["confinement_result_digest"] == hashlib.sha256(raw_result).hexdigest()
         if index == 1:
-            tampered = f".local/ranex-e2e/tampered-{index}/evidence.json"
-            (journey.repository / tampered).parent.mkdir(parents=True)
+            tampered = f"{evidence}.tampered"
             changed = json.loads(
                 (journey.repository / evidence).read_text(encoding="utf-8")
             )
