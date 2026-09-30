@@ -117,3 +117,9 @@ protocol failures remain failures. The offline negative arm still executes.
 Cold-start host qualification receives the already registered service history
 environment. Root fixture/catalog/probe controls: 86 passed. Actual sealed
 rerun and final full-suite qualification remain pending.
+
+A later pinned security run exposed a stale oversized-artifact assertion:
+it demanded a full limit-plus-one read even when the new regular-file size
+check rejects before reading. The contract now asserts its named maximum
+bound, retaining the actual refusal requirement. The same oversized public
+reader case passes; the pinned run is retained as red evidence.

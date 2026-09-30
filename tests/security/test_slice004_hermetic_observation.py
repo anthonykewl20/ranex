@@ -337,7 +337,7 @@ def test_results_artifact_reads_at_most_limit_plus_one_bytes(
     with pytest.raises(ValueError, match="50 MB"):
         suite_results.parse_results_artifact(artifact, suite_manifest())
 
-    assert bytes_read == suite_results.MAX_RESULTS_BYTES + 1
+    assert bytes_read <= suite_results.MAX_RESULTS_BYTES + 1
 
 
 def test_hermetic_execution_refuses_a_non_regular_executable(
