@@ -1,0 +1,7 @@
+{
+  "hostname": "desk-tony",
+  "machine": "x86_64",
+  "python": "3.14.7",
+  "release": "7.0.0-34-generic",
+  "system": "Linux"
+}

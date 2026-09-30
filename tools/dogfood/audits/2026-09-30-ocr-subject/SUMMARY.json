@@ -1,0 +1,19 @@
+{
+  "completed_at": "2026-09-30T07:02:12Z",
+  "findings_advisory": true,
+  "host": "desk-tony",
+  "issue": 105,
+  "kernel_digest_moved": false,
+  "ocr_sha256": "9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+  "ocr_tag": "v1.12.9",
+  "repeats": 3,
+  "required_claims_include_ocr": false,
+  "statuses": {
+    "arm0-v3-entrypoint-admission": "VERIFIED",
+    "arm1-offline-key-unset": "UNVERIFIED",
+    "arm2-offline-key-set-strict-local": "UNVERIFIED",
+    "arm3-ocr-delegate-advisory": "UNVERIFIED",
+    "arm4-live-probe-pr": "UNVERIFIED",
+    "arm5-repeats-identical-fail-digests": "UNVERIFIED"
+  }
+}

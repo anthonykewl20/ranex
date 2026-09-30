@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "parse_runtime_manifest",
+    "honest-ocr-closure"
+  ],
+  "cwd": "/tmp/ocr-pin",
+  "digests": {
+    "closure_attempt": "sha256:603899d598dfe59a1c56d9b4b3b82f5957b2c3a18e92deff81963118121bcc9c",
+    "ocr_sha256": "sha256:9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+    "refusal_reason": "sha256:9ae4e885df23f890b87da041832dc740bea08da739a5df66bf5565bf00fea4d0",
+    "release_pin": "9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8"
+  },
+  "exit_code": 0,
+  "expectation": "arm0-v3-entrypoint-admission",
+  "notes": "pin=v1.12.9 floor=14b84f08a3af7f042d702c721f21f7952d841970 asset=opencodereview-linux-amd64 elf=ET_EXEC pt_interp=None static_v2=ADMITTED v3_reasons=['loader or entrypoint binding'] repeats=3 findings stay ADVISORY (never required_claims).",
+  "status": "VERIFIED",
+  "wall_ms": 0
+}
