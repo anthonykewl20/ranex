@@ -2,9 +2,10 @@
 import hashlib
 from pathlib import Path
 
+from _history import mint_service, register_service
+
 from ranex.foundation.signing import public_key_for
 from ranex.governed_execution.adapters.persistence.history import bootstrap_history, record_anchored
-from tests._history import mint_service, register_service
 
 
 def register(repo):

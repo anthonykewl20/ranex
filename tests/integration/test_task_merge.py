@@ -6,6 +6,7 @@ import subprocess
 import zlib
 from pathlib import Path
 
+import _task_history
 import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
@@ -15,7 +16,6 @@ from ranex.foundation.canonical import command_digest
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.task import TaskCandidate, TaskMergeIntent
-from tests import _task_history
 
 
 def git(repo: Path, *args: str) -> str:

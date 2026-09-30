@@ -13,6 +13,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+import _task_history
 import pytest
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
@@ -27,7 +28,6 @@ from ranex.foundation.canonical import (
 from ranex.foundation.signing import _decode, _encode, generate_keypair, sign_evidence
 from ranex.foundation.suite_results import validate_suite_results
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
-from tests import _task_history
 
 TARGET_MAIN = "refs/heads/main"
 TARGET_RELEASE = "refs/heads/release"
