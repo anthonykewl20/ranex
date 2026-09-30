@@ -463,6 +463,9 @@ def emit_worker_sarif(
                     }
                 },
                 "properties": {"packet_digest": digest},
+                # A resolved anchor proves this specific subject file was read.
+                # Packet declarations and caller scope never manufacture coverage.
+                "artifacts": [{"location": {"uri": path}}] if anchor is not None else [],
                 "results": [
                     {
                         "ruleId": category,

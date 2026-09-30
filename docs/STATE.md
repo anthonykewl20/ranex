@@ -24,7 +24,10 @@ refusal executes. Context declarations and their observed differences remain
 reported in retained evidence.
 
 A fresh actual CLI check found the deterministic delegated worker omits its
-required read-file coverage witness (#213). This repair remains IN PROGRESS.
+required read-file coverage witness (#213). Its repair declares only the
+resolved read file; unread scope and forged excerpts still block. Two new
+real CLI test identities require actual refreeze/load. Eleven candidate CLI
+artifacts pass official OASIS SARIF schema validation; model efficacy is UNVERIFIED.
 Pinned CI typing corrections now pass pyrefly 1.2.0 with zero errors,
 Ruff is clean, and 56 approval/provisioning/kernel checks passed.
 These later source amendments require final committed-tree verification.

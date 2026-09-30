@@ -209,3 +209,17 @@ The deterministic delegated-review worker reads its anchor file but omits the
 explicit artifact coverage required by ingestion. Its own valid advisory
 output is therefore blocked. This wiring correction and its regressions
 remain open; no final production acceptance is claimed.
+
+### R61 — delegated worker coverage (#213)
+
+The deterministic CLI worker now declares coverage only when its anchor resolves
+in the actual subject file. It never obtains coverage from packet declarations
+or caller scope. Two real CLI regressions were red before the fix: one-file
+scope now qualifies its advisory finding, while a second unread required file
+remains missing. Forged line numbers and absent excerpts still refuse.
+The complete worker module passed 34 tests. Eleven actual CLI SARIF artifacts
+from an independently installed candidate passed the official OASIS 2.1.0
+schema; clean raw Ruff output remains correctly blocked without its discovery
+adapter. This is deterministic interface qualification, not model accuracy.
+Two new test identities require an actual committed-tree refreeze/load before
+final full-suite and publication acceptance.

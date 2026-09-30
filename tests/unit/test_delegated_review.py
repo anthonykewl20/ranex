@@ -413,3 +413,36 @@ def test_required_review_validates_subject_packet_before_reduction(tmp_path, sta
         scan_results_from_sarif(raw, manifest, subject_root=tmp_path, require_review=True)
     with pytest.raises(ValueError):
         observed_findings(raw, tmp_path, require_review=True)
+
+
+@pytest.mark.parametrize("scope,missing", [(["mod.py"], []), (["mod.py", "unread.py"], ["unread.py"])])
+def test_worker_cli_witnesses_only_the_file_it_actually_reads(
+    tmp_path: Path, scope: list[str], missing: list[str],
+) -> None:
+    """Real worker output qualifies one path without claiming an unread second path."""
+    (tmp_path / "mod.py").write_text("target = True\n", encoding="utf-8")
+    (tmp_path / "unread.py").write_text("unreviewed = True\n", encoding="utf-8")
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/review-packet.json").write_bytes(canonical_json_bytes(_packet()))
+    artifact = tmp_path / "worker.sarif"
+    completed = subprocess.run(
+        [sys.executable, "-m", "ranex.foundation.delegated_review", "--root", str(tmp_path),
+         "--output-format", "sarif", "--output-file", str(artifact), "--path", "mod.py",
+         "--excerpt", "target = True", "--category", "r", "--level", "warning"],
+        capture_output=True, text=True, timeout=10, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    raw = artifact.read_bytes()
+    assert json.loads(raw)["runs"][0].get("artifacts") == [{"location": {"uri": "mod.py"}}]
+    manifest = {"scope": scope, "rules": ["r"], "blocking_levels": ["error"], "accepted": {}}
+    summary = scan_results_from_sarif(raw, manifest, subject_root=tmp_path, require_review=True)
+    assert summary["counts"]["failed"] == 0
+    assert summary["non_passed"] == []
+    assert summary["missing"] == missing
+    forged = json.loads(raw)
+    region = forged["runs"][0]["results"][0]["locations"][0]["physicalLocation"]["region"]
+    region.update(startLine=99, endLine=99, snippet={"text": "absent excerpt"})
+    with pytest.raises(ValueError, match="unresolvable"):
+        scan_results_from_sarif(
+            canonical_json_bytes(forged), manifest, subject_root=tmp_path, require_review=True,
+        )
