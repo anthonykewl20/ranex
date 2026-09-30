@@ -1,0 +1,19 @@
+{
+  "asset": "opencodereview-linux-amd64",
+  "checksums_url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.9/sha256sum.txt",
+  "commit_floor": "14b84f08a3af7f042d702c721f21f7952d841970",
+  "elf": {
+    "e_type": "ET_EXEC",
+    "pt_interp": null,
+    "sha256": "sha256:9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+    "size": 56254626
+  },
+  "observed_sha256": "9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+  "sha256": "9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+  "static_v2": "ADMITTED",
+  "tag": "v1.12.9",
+  "tool": "alibaba/open-code-review",
+  "url": "https://github.com/alibaba/open-code-review/releases/download/v1.12.9/opencodereview-linux-amd64",
+  "v3_admission": "REFUSED",
+  "v3_refusal": "loader or entrypoint binding"
+}

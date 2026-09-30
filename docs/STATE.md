@@ -1,28 +1,25 @@
 # State
 
 **Updated:** 2026-09-30
-**Active slice:** none — SLICE-102 / #119 (acceptance task loop) closed on
-this branch; #115 gate-calibration and #88 / SLICE-085 closed on main.
+**Active slice:** none — ADR-065 accepted; SLICE-096–101 closed;
+#88 / SLICE-085 archived; #115/#119 closed on main.
 
-**#119 / ADR-061 task authority closed:** `specification approve-task` /
-`build-task` / `reapprove-task` / `land-task` and top-level `prove --task`
-compose A/B/C grants, journal CAS, evaluate() and the #118 live observer.
-Three persisted OBSERVED-MISMATCH misses revoke; land requires the exact
-PASS candidate and unchanged target head. Receipts:
-`tools/dogfood/audits/2026-09-30-acceptance-task-loop/` (#95 vocabulary,
-3× deterministic repeats).
+**#105 / OCR-as-subject closed (honest refusal):** pinned
+`alibaba/open-code-review` `v1.12.9` linux-amd64
+(`sha256:9105c708…`) is static `ET_EXEC` (no `PT_INTERP`). Runtime v3
+entrypoint admission refuses honest null-interp binding (Arm 0
+VERIFIED ×3). static-v2 admits the same bytes (contrast only). Arms
+1–4 UNVERIFIED per issue protocol. Receipts:
+`tools/dogfood/audits/2026-09-30-ocr-subject/`. Findings stay
+ADVISORY / never `required_claims`. `KERNEL_DIGEST` unmoved.
 
-**#115 / MAP §8.4 gate certificates:** marker, landing, handbook-delegate
-receipts under `tools/dogfood/audits/2026-09-30-gate-calibration/`;
-`bom.yaml` `calibrated` distinct from `built`.
+**ADP / architecture freeze (promoted):**
+- ADR-065 **accepted**; `governance/architecture-freeze.json` pins
+  ranex's ten-subpackage graph + root `__init__`.
+- `landing` gate carries claim `architecture`.
 
-**ADP / architecture freeze (promoted):** ADR-065 accepted;
-`landing` carries claim `architecture`.
+Recent closed: #107–#109, #112, #102, #88, #115, #119, #105.
+Queue: #90.
 
-**Still closed:** #107–#109, #112, #102, #118, #88 (live App observed;
-production soak UNVERIFIED).
-
-Queue: #105, #90 where still open.
-
-Suite: standing host-drift / fixture red family on main unchanged by this
-ship; refreeze is IDs-only and outcome-blind.
+Suite: standing host-drift / fixture red family on main unchanged by
+this ship; refreeze is IDs-only and outcome-blind.
