@@ -27,7 +27,6 @@ from ranex.governed_execution.verdict_reader import ReadState
 def clean_env() -> dict[str, str]:
     return {
         "PATH": os.path.dirname(sys.executable) + os.pathsep + os.defpath,
-        "PYTHONPATH": "src",
         "LC_ALL": "C",
     }
 
@@ -162,21 +161,31 @@ def test_the_cli_publishes_from_a_verified_verdict(tmp_path: Path) -> None:
         )
         result = subprocess.run(
             [
-                "python", "-m", "ranex.cli.main",
+                str(Path(sys.executable).with_name("ranex")),
                 "github", "check", "publish",
                 "--head-sha", head,
                 "--installation", "1",
                 "--repo", "owner/name",
                 "--repository", str(clone),
                 "--approver", "operator",
+                "--history-checkpoint", str(_github_fake.checkpoint_for(clone)),
             ],
-            capture_output=True, text=True, check=False, env=environment,
+            capture_output=True, text=True, check=False, env=environment, cwd=tmp_path,
+        )
+        # The same signed publication cannot authorize current context without
+        # the separately retained history checkpoint.
+        unanchored = subprocess.run(
+            result.args[:-2],
+            capture_output=True, text=True, check=False, env=environment, cwd=tmp_path,
         )
 
+    assert unanchored.returncode == 1, unanchored.stderr
+    assert "conclusion=failure" in unanchored.stdout
     assert result.returncode == 0, result.stderr
     assert "PUBLISHED  ranex/acceptance" in result.stdout
     assert "conclusion=success" in result.stdout
-    assert len(fake.check_requests) == 1
+    assert len(fake.check_requests) == 2
+    assert fake.check_requests[1]["body"]["conclusion"] == "failure"
     assert fake.check_requests[0]["body"]["conclusion"] == "success"
     assert fake.check_requests[0]["body"]["head_sha"] == head
 
