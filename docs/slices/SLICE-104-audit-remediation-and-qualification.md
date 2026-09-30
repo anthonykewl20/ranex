@@ -3,7 +3,7 @@
 **Status:** open
 
 Tracking issue: #186. Defect issues: #151–#185,
-#187–#209. No final-commit full-suite PASS claimed.
+#187–#211. No final-commit full-suite PASS claimed.
 
 This change repairs the executable paths identified by the code audit:
 admission retains record identity through qualification; task judge and
@@ -152,3 +152,14 @@ unprovisioned public freezes each executed nine regression cases with zero
 skips and run_exit=0. Independent descriptor/layout controls found no further
 concrete defect. Root trace checks: 17 passed, one standing host skip.
 Full committed-tree freeze and qualification remain pending.
+
+### Actual intermediate full manifest registration
+
+Full sealed freeze on 0ac0ac6: 2764 passed, 149 skipped, one failure for the
+three new prerequisite test IDs. The actual generated 2914-ID/158-declaration
+manifest was loaded through load_manifest before this intermediate commit.
+Its receipt remains qualified_green=false and run_exit=1. Complete XML is
+retained. Twenty-two undeclared skips exposed PATH-only resolver discovery
+(#210) and missing marker console fixture routing (#211). These fixture blind
+spots are being repaired to execute their real controls; no skip declarations
+were added to hide them. Final full qualification and golden update remain open.

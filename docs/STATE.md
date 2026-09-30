@@ -3,7 +3,7 @@
 **Updated:** 2026-10-01
 **Active slice:** docs/slices/SLICE-104-audit-remediation-and-qualification.md
 
-Defects tracked in GitHub #151–#185 and #187–#209; #186 tracks the five
+Defects tracked in GitHub #151–#185 and #187–#211; #186 tracks the five
 scanner/review/gate paths and production qualification.
 
 Implementation is in an isolated audit remediation worktree. Admission,
@@ -36,3 +36,7 @@ shared foundation utilities restore the unchanged policy (101 focused passed).
 
 ADP / architecture freeze: ADR-065 accepted; landing retains its architecture
 claim. The verdict kernel remains unchanged.
+
+First full freeze at 0ac0ac6: 2764 passed, 149 skipped, 1 known ID-drift
+failure. Its actual 2914-ID manifest loaded; qualification remains RED.
+Undeclared skips exposed resolver/marker fixture blind spots (#210–#211).
