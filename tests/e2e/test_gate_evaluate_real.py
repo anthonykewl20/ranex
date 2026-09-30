@@ -235,7 +235,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
     assert approver_match, f"keygen printed no public key: {approver_generated.stdout!r}"
     keyring = subject / "governance" / "producers.yaml"
     _approver.register_approver(keyring, "reviewer", approver_match.group(1))
-    from tests._history import mint_service, register_service
+    from _history import mint_service, register_service
     _, service_public, service_path = mint_service(base)
     register_service(keyring, service_public)
     registered = git(subject, "add", "governance/producers.yaml")

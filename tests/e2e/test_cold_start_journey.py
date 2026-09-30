@@ -318,7 +318,7 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
     assert minted_service[0] == 0, minted_service[2]
     service_public = _approver_public_key(minted_service[1])
     assert service_public, minted_service[1]
-    from tests._history import register_service
+    from _history import register_service
     register_service(operator.clone / "governance/producers.yaml", service_public)
     git(operator.clone, "add", "governance/producers.yaml")
     committed = git(

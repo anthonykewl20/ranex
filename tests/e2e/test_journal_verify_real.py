@@ -190,7 +190,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> JournalJourney:
     _approver.register_approver(
         subject / "governance" / "producers.yaml", "reviewer", match.group(1)
     )
-    from tests._history import mint_service, register_service
+    from _history import mint_service, register_service
     _, service_public, service_path = mint_service(base)
     register_service(subject / "governance/producers.yaml", service_public)
     committed = subprocess.run(
