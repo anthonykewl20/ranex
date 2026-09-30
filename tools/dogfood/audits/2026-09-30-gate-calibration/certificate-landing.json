@@ -1,0 +1,173 @@
+{
+  "base_freeze": {
+    "digest": "sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a",
+    "freeze_id": "base-freeze-v1",
+    "note": "Cited, not re-derived. MAP \u00a78.4 AIAG percentage thresholds remain unverified; this certificate invents none.",
+    "path": "governance/calibration/base-freeze-v1.json",
+    "reference_metrics_present": [
+      "ranex-handbook",
+      "six"
+    ]
+  },
+  "bound_argv": [
+    "/usr/bin/python3",
+    "-c",
+    "import ast,importlib.util,sys,traceback,xml.etree.ElementTree as ET\nfrom pathlib import Path\nroot=Path('.')\nsrc=(root/'test_unit.py').read_text()\nnames=[n.name for n in ast.parse(src).body if isinstance(n,ast.FunctionDef) and n.name.startswith('test_')]\nspec=importlib.util.spec_from_file_location('app', root/'app.py')\napp=importlib.util.module_from_spec(spec); spec.loader.exec_module(app)\nchecks={'test_value': lambda: app.VALUE==1, 'test_value_positive': lambda: app.VALUE>0}\nsuite=ET.Element('testsuite', name='pytest', tests=str(len(names)), failures='0', errors='0', skipped='0')\nprops=ET.SubElement(suite,'properties')\nET.SubElement(props,'property',name='ranex.pytest_observer',value='1')\nfails=0\nfor name in names:\n  cid=f'test_unit.py::{name}'\n  case=ET.SubElement(suite,'testcase',classname='test_unit',name=name,time='0')\n  try:\n    assert checks[name]()\n  except Exception as exc:\n    fails+=1\n    fail=ET.SubElement(case,'failure',message=str(exc))\n    fail.text=''.join(traceback.format_exception(exc))\nsuite.set('failures', str(fails))\nPath('governance').mkdir(exist_ok=True)\nts=ET.Element('testsuites', name='pytest tests'); ts.append(suite)\nET.ElementTree(ts).write('governance/suite_results.xml', encoding='utf-8', xml_declaration=True)\nprint(f'{len(names)-fails} passed, {fails} failed of {len(names)}')\nsys.exit(1 if fails else 0)\n",
+    "-o",
+    "xfail_strict=true",
+    "-p",
+    "ranex.foundation.pytest_xpass",
+    "--junitxml=governance/suite_results.xml"
+  ],
+  "bound_argv_digest": "sha256:8868600759441e109f46f1ac1b386d7f4f60feb78f26583ad8824e439388b593",
+  "date": "2026-09-30",
+  "firing_count": {
+    "driver_negative_refusals": 6,
+    "journal_independent": {
+      "determinable": true,
+      "fires": 2,
+      "passes": 1,
+      "positions": [
+        1,
+        2,
+        3
+      ],
+      "rows": 3,
+      "source": "/tmp/ranex-115-landing-4bx3waez/repo/governance/journal.sqlite3",
+      "verdict_digests": [
+        "sha256:e9c3eae19b7330180a5c24558350398a812092e78a5d2df35ce7bd928a5552e0",
+        "sha256:15d6dcd7605ac6e6203b3c0ad3fcb7262ce781239c73378cff74c8f9a0938d3b",
+        "sha256:ecd371933de7eec1102507a4a9f635e38b6685d2297384a8a761b3d988f6c224"
+      ]
+    }
+  },
+  "gate_id": "landing",
+  "host": {
+    "cwd": "/tmp/ranex-115",
+    "hostname": "desk-tony",
+    "machine": "x86_64",
+    "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
+    "python": "3.14.7",
+    "ranex": "/tmp/ranex-115/.venv/bin/ranex",
+    "user": "soultransit"
+  },
+  "known_defect": {
+    "caught": true,
+    "defects_caught": 2,
+    "deleted_frozen_test_caught": true,
+    "names": [
+      "deleted-frozen-test",
+      "source-break"
+    ],
+    "source_break_caught": true
+  },
+  "recall": {
+    "armed": true,
+    "demonstrated_here": false,
+    "detail": "Recall demonstration is in recall-false-pass.json"
+  },
+  "repeatability": {
+    "distinct_count": 1,
+    "identical": true,
+    "repeats": 3,
+    "status": "VERIFIED",
+    "verdict_digests": [
+      "sha256:ad29daabecc52a72cac7c285e8b786df9867cfd597156cccc4e95d9ecc9496ba",
+      "sha256:ad29daabecc52a72cac7c285e8b786df9867cfd597156cccc4e95d9ecc9496ba",
+      "sha256:ad29daabecc52a72cac7c285e8b786df9867cfd597156cccc4e95d9ecc9496ba"
+    ]
+  },
+  "repeats": 3,
+  "reproducibility": {
+    "detail": "No second host available on this run; same-host \u00d7N repeatability is recorded. Cross-host / cross-operator reproducibility remains UNVERIFIED.",
+    "second_host": null,
+    "second_operator": null,
+    "status": "UNVERIFIED"
+  },
+  "schema": "ranex-gate-certificate-v1",
+  "status": "VERIFIED",
+  "trials": [
+    {
+      "broken_accepted": false,
+      "deleted_accepted": false,
+      "deleted_frozen_test": {
+        "exit": 1,
+        "run_exit": 0,
+        "run_stdout_head": "1 passed, 0 failed of 1\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:ae4eeacd4949871a37bce0014214fb1b4d0aad4675119683d32a1afa4733f152\n",
+        "stdout_head": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      tests-executed: missing test ID(s): test_unit.py::test_value_positive\n      subject=sha256:ae4eeacd4949871a37bce0014214fb1b4d0aad4675119683d32a1afa4733f152\n",
+        "verdict": "FAIL"
+      },
+      "positive": {
+        "exit": 0,
+        "run_exit": 0,
+        "run_stdout_head": "2 passed, 0 failed of 2\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:d82e4dfd89baecf49a233e968696b38df74251a18a6d15bbfc66353402f78848\n",
+        "stdout_head": "PASS  gate=landing  subject=sha256:d82e4dfd89baecf49a233e968696b38df74251a18a6d15bbfc66353402f78848\n",
+        "verdict": "PASS"
+      },
+      "positive_digest": "sha256:ad29daabecc52a72cac7c285e8b786df9867cfd597156cccc4e95d9ecc9496ba",
+      "positive_ok": true,
+      "source_break": {
+        "exit": 1,
+        "run_exit": 1,
+        "run_stdout_head": "0 passed, 2 failed of 2\nRECORDED  claim=tests-executed  producer=worker  exit=1\n          subject=sha256:8dbb90f26f7a9eab26d881b9ecf4d9937837354009a563a1e8e9fc1967bc742a\n",
+        "stdout_head": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      tests-executed: blocking suite outcome(s): test_unit.py::test_value (failed), test_unit.py::test_value_positive (failed)\n      subject=sha256:8dbb90f26f7a9eab26d881b9ecf4d9937837354009a563a1e8e9fc1967bc742a\n",
+        "verdict": "FAIL"
+      }
+    },
+    {
+      "broken_accepted": false,
+      "deleted_accepted": false,
+      "deleted_frozen_test": {
+        "exit": 1,
+        "run_exit": 0,
+        "run_stdout_head": "1 passed, 0 failed of 1\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:ae4eeacd4949871a37bce0014214fb1b4d0aad4675119683d32a1afa4733f152\n",
+        "stdout_head": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      tests-executed: missing test ID(s): test_unit.py::test_value_positive\n      subject=sha256:ae4eeacd4949871a37bce0014214fb1b4d0aad4675119683d32a1afa4733f152\n",
+        "verdict": "FAIL"
+      },
+      "positive": {
+        "exit": 0,
+        "run_exit": 0,
+        "run_stdout_head": "2 passed, 0 failed of 2\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:d82e4dfd89baecf49a233e968696b38df74251a18a6d15bbfc66353402f78848\n",
+        "stdout_head": "PASS  gate=landing  subject=sha256:d82e4dfd89baecf49a233e968696b38df74251a18a6d15bbfc66353402f78848\n",
+        "verdict": "PASS"
+      },
+      "positive_digest": "sha256:ad29daabecc52a72cac7c285e8b786df9867cfd597156cccc4e95d9ecc9496ba",
+      "positive_ok": true,
+      "source_break": {
+        "exit": 1,
+        "run_exit": 1,
+        "run_stdout_head": "0 passed, 2 failed of 2\nRECORDED  claim=tests-executed  producer=worker  exit=1\n          subject=sha256:8dbb90f26f7a9eab26d881b9ecf4d9937837354009a563a1e8e9fc1967bc742a\n",
+        "stdout_head": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      tests-executed: blocking suite outcome(s): test_unit.py::test_value (failed), test_unit.py::test_value_positive (failed)\n      subject=sha256:8dbb90f26f7a9eab26d881b9ecf4d9937837354009a563a1e8e9fc1967bc742a\n",
+        "verdict": "FAIL"
+      }
+    },
+    {
+      "broken_accepted": false,
+      "deleted_accepted": false,
+      "deleted_frozen_test": {
+        "exit": 1,
+        "run_exit": 0,
+        "run_stdout_head": "1 passed, 0 failed of 1\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:ae4eeacd4949871a37bce0014214fb1b4d0aad4675119683d32a1afa4733f152\n",
+        "stdout_head": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      tests-executed: missing test ID(s): test_unit.py::test_value_positive\n      subject=sha256:ae4eeacd4949871a37bce0014214fb1b4d0aad4675119683d32a1afa4733f152\n",
+        "verdict": "FAIL"
+      },
+      "positive": {
+        "exit": 0,
+        "run_exit": 0,
+        "run_stdout_head": "2 passed, 0 failed of 2\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:d82e4dfd89baecf49a233e968696b38df74251a18a6d15bbfc66353402f78848\n",
+        "stdout_head": "PASS  gate=landing  subject=sha256:d82e4dfd89baecf49a233e968696b38df74251a18a6d15bbfc66353402f78848\n",
+        "verdict": "PASS"
+      },
+      "positive_digest": "sha256:ad29daabecc52a72cac7c285e8b786df9867cfd597156cccc4e95d9ecc9496ba",
+      "positive_ok": true,
+      "source_break": {
+        "exit": 1,
+        "run_exit": 1,
+        "run_stdout_head": "0 passed, 2 failed of 2\nRECORDED  claim=tests-executed  producer=worker  exit=1\n          subject=sha256:8dbb90f26f7a9eab26d881b9ecf4d9937837354009a563a1e8e9fc1967bc742a\n",
+        "stdout_head": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      tests-executed: blocking suite outcome(s): test_unit.py::test_value (failed), test_unit.py::test_value_positive (failed)\n      subject=sha256:8dbb90f26f7a9eab26d881b9ecf4d9937837354009a563a1e8e9fc1967bc742a\n",
+        "verdict": "FAIL"
+      }
+    }
+  ],
+  "wall_clock_s": 10.858
+}

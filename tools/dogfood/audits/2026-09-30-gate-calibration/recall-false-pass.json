@@ -1,0 +1,85 @@
+{
+  "as_expected": true,
+  "base_freeze": {
+    "digest": "sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a",
+    "freeze_id": "base-freeze-v1",
+    "note": "Cited, not re-derived. MAP \u00a78.4 AIAG percentage thresholds remain unverified; this certificate invents none.",
+    "path": "governance/calibration/base-freeze-v1.json",
+    "reference_metrics_present": [
+      "ranex-handbook",
+      "six"
+    ]
+  },
+  "control": "a-blunted-gauge-is-caught-as-false-pass",
+  "date": "2026-09-30",
+  "expectation": "a gate whose bound command cannot fail is reported FALSE-PASS, and the recall window names every evaluation it approved",
+  "expected_outcome": "FALSE-PASS",
+  "firing_count": {
+    "journal_independent": {
+      "determinable": true,
+      "fires": 0,
+      "passes": 5,
+      "positions": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "rows": 5,
+      "source": "/tmp/ranex-115-recall-rq7dc59z/repo/governance/journal.sqlite3",
+      "verdict_digests": [
+        "sha256:019958945e90593bc003ca691737a28f8af581da39627ace51dcf4ace94d0ff3",
+        "sha256:e32b3fbe7c9e3166a602fe1bcfeb9e8e2794ba199997aca2335acdb4580255f0",
+        "sha256:4a37ce3e0993a6fdabacd18060eab0c5b31ec2b337ec864dc9a942a823087df9",
+        "sha256:93e6c91e5505890295c201546e398e61a1f743a76dc357c55013cea64950bb01",
+        "sha256:7c2a15dbb9acc2a0cbb5caea8029369c4c7db28ae8f31a3ed13f630699f32e19"
+      ]
+    }
+  },
+  "host": {
+    "cwd": "/tmp/ranex-115",
+    "hostname": "desk-tony",
+    "machine": "x86_64",
+    "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
+    "python": "3.14.7",
+    "ranex": "/tmp/ranex-115/.venv/bin/ranex",
+    "user": "soultransit"
+  },
+  "negative": {
+    "digests": [
+      "sha256:1fe3bf123998186da0c8907ef502c53564ef6dcae99f250e510ec478b8c68c67",
+      "sha256:1fe3bf123998186da0c8907ef502c53564ef6dcae99f250e510ec478b8c68c67",
+      "sha256:1fe3bf123998186da0c8907ef502c53564ef6dcae99f250e510ec478b8c68c67"
+    ],
+    "identical": true,
+    "ok": [
+      true,
+      true,
+      true
+    ],
+    "runs": 3
+  },
+  "note": "Deliberate blunt scanner (always exit 0). FALSE-PASS is the alarm proof, not a product defect. Restore = not loading this scanner as a production gauge.",
+  "reason": "the negative control was ACCEPTED in 3/3 repeats; this check cannot block what it exists to refuse",
+  "recall": {
+    "detail": "3 evaluation(s) were approved after this control's last good journal head and are recalled",
+    "determinable": true,
+    "suspect_count": 3,
+    "suspect_from": 2,
+    "suspect_positions": [
+      3,
+      4,
+      5
+    ],
+    "suspect_verdict_digests": [
+      "sha256:4a37ce3e0993a6fdabacd18060eab0c5b31ec2b337ec864dc9a942a823087df9",
+      "sha256:93e6c91e5505890295c201546e398e61a1f743a76dc357c55013cea64950bb01",
+      "sha256:7c2a15dbb9acc2a0cbb5caea8029369c4c7db28ae8f31a3ed13f630699f32e19"
+    ]
+  },
+  "repeats": 3,
+  "schema": "ranex-gate-recall-v1",
+  "status": "FALSE-PASS",
+  "wall_clock_s": 4.854
+}
