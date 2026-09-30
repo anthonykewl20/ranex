@@ -1,23 +1,28 @@
 # State
 
 **Updated:** 2026-09-30
-**Active slice:** none — #115 gate calibration certificates shipped;
-#88 / SLICE-085 closed with retained live App evidence (no production
-sign-off).
+**Active slice:** none — SLICE-102 / #119 (acceptance task loop) closed on
+this branch; #115 gate-calibration and #88 / SLICE-085 closed on main.
 
-**#115 / MAP §8.4 closed for relied-on gates:** certificates under
-`tools/dogfood/audits/2026-09-30-gate-calibration/` for the marker gate,
-landing suite gate, and handbook-governed delegate path. Known-defect catch,
-journal firing counts, Gauge R&R repeatability (×3 byte-identical), and recall
-FALSE-PASS with a named suspect window are measured. `bom.yaml` carries
-`calibrated` distinct from `built`, naming those receipts. BASE freeze cited:
-`governance/calibration/base-freeze-v1.json`.
+**#119 / ADR-061 task authority closed:** `specification approve-task` /
+`build-task` / `reapprove-task` / `land-task` and top-level `prove --task`
+compose A/B/C grants, journal CAS, evaluate() and the #118 live observer.
+Three persisted OBSERVED-MISMATCH misses revoke; land requires the exact
+PASS candidate and unchanged target head. Receipts:
+`tools/dogfood/audits/2026-09-30-acceptance-task-loop/` (#95 vocabulary,
+3× deterministic repeats).
 
-**Production use licensed only for what those certificates cover on this host.**
-No general zero-bug or market claim.
+**#115 / MAP §8.4 gate certificates:** marker, landing, handbook-delegate
+receipts under `tools/dogfood/audits/2026-09-30-gate-calibration/`;
+`bom.yaml` `calibrated` distinct from `built`.
 
-**UNVERIFIED:** cross-host/operator Gauge R&R; AIAG % thresholds; full-repo
-landing under the lab certificate; live App soak/rotation/backup (#88);
-standing host-drift / E-C17 / fixture red family on main.
+**ADP / architecture freeze (promoted):** ADR-065 accepted;
+`landing` carries claim `architecture`.
 
-Recent closed: #107–#109, #112, #102, #88. Queue: #119, #105, #90.
+**Still closed:** #107–#109, #112, #102, #118, #88 (live App observed;
+production soak UNVERIFIED).
+
+Queue: #105, #90 where still open.
+
+Suite: standing host-drift / fixture red family on main unchanged by this
+ship; refreeze is IDs-only and outcome-blind.

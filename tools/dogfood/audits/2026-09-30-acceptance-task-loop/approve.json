@@ -1,0 +1,37 @@
+{
+  "expectation": "approve",
+  "argv": [
+    "/tmp/ranex-119/.venv/bin/python3",
+    "-m",
+    "ranex.cli.main",
+    "specification",
+    "approve-task",
+    "--external-repository",
+    "/tmp/ranex-119-dogfood/final/subject",
+    "--bundle",
+    "/tmp/ranex-119-dogfood/final/task-bundle",
+    "--manifest-digest",
+    "sha256:4ea88415fcc507b3293a008018823413e1d6d5f405d1553ae52a80f446d48a9b",
+    "--worker-profile",
+    "acceptance/worker.json",
+    "--state",
+    "/tmp/ranex-119-dogfood/final/state"
+  ],
+  "cwd": "/tmp/ranex-119",
+  "exit_code": 0,
+  "expected_exit": 0,
+  "stdout_sha256": "8da7f8d1f0f7dee5122d50fd46408379ea107083845762928cab207742625716",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "wall_clock_ms": 481,
+  "host": {
+    "kernel": "7.0.0-34-generic",
+    "docker": "29.8.1",
+    "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7"
+  },
+  "facts": {
+    "wall_clock_ms": 481
+  },
+  "status": "VERIFIED",
+  "stdout": "{\"base_commit\":\"3be3a6cce8c5b195d0fab47bae1aa07cca2200ac\",\"c_digest\":\"sha256:c1f45750e5eb18c11ef4d6b76a67776f7a8604359e7a7aee9266bae1f5a9f8f1\",\"status\":\"APPROVED\",\"task\":\"/tmp/ranex-119-dogfood/final/state\"}\n",
+  "stderr": ""
+}

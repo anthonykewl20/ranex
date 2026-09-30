@@ -1,0 +1,29 @@
+{
+  "expectation": "rebuild",
+  "argv": [
+    "/tmp/ranex-119/.venv/bin/python3",
+    "-m",
+    "ranex.cli.main",
+    "specification",
+    "build-task",
+    "--task",
+    "/tmp/ranex-119-dogfood/final/state"
+  ],
+  "cwd": "/tmp/ranex-119",
+  "exit_code": 0,
+  "expected_exit": 0,
+  "stdout_sha256": "9b9b114691e3f983e3aed80b680ea9eb888c3186c12c11b0b3aa34a90ef736ef",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "wall_clock_ms": 862,
+  "host": {
+    "kernel": "7.0.0-34-generic",
+    "docker": "29.8.1",
+    "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7"
+  },
+  "facts": {
+    "wall_clock_ms": 862
+  },
+  "status": "VERIFIED",
+  "stdout": "{\"candidate\":\"ff48726c7287ac32993fb4bc2cdb7df7a163370d\",\"receipt\":\"/tmp/ranex-119-dogfood/final/state/build-8fbdc8a655a24205ab050e3073ca7cdd/receipt.json\",\"status\":\"BUILT\"}\n",
+  "stderr": ""
+}

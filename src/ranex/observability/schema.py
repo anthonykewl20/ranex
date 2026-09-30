@@ -79,6 +79,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "keygen",
     "markers",
     "antislop",
+    "prove",
     "task.dispatch",
     "task.judge",
     "task.merge",
@@ -101,7 +102,20 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "github.ruleset",
 )
 
-_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
+_SPECIFICATION_ACTIONS: tuple[str, ...] = (
+    "draft",
+    "advance",
+    "questions",
+    "status",
+    "approve",
+    "freeze-probes",
+    "check-probes",
+    "observe-http",
+    "approve-task",
+    "build-task",
+    "reapprove-task",
+    "land-task",
+)
 
 STAGES: frozenset[str] = frozenset(
     {

@@ -936,3 +936,52 @@ RANEX_LIVE_HTTP_EXPERIMENT=1 uv run --frozen pytest -q \
 Execution errors and calibration failures exit 2. Receipts and per-trial raw
 commands/responses remain under the external output directory. These are live
 observations, not approval, an admitted kernel verdict, or permission to merge.
+
+## Approved live acceptance task loop
+
+Compose A/B/C approval, capability grants, journal CAS, the deterministic
+evaluator and `observe-http` into one durable task. The worker profile is a
+closed `docker-worker-v1` JSON object frozen beside the HTTP profile:
+
+| Field | Requirement |
+|---|---|
+| `version` | `docker-worker-v1` |
+| `image` | Installed immutable Docker image ID, `sha256:` plus 64 hex digits |
+| `argv` | Literal command array with an absolute executable as its first item |
+| `product_roots` | Existing relative directories, disjoint from frozen roots |
+| `timeout_seconds` | Integer from 1 through 1800 |
+| `network` | Explicit boolean; true authorizes broad worker network access |
+| `environment` | Names of operator-provided variables for the worker only |
+
+Use `specification approve-task` with `--external-repository`, `--bundle`,
+`--manifest-digest`, `--worker-profile` and a new external `--state` directory.
+`RANEX_SIGNING_KEY` must identify the operator's private key; the command issues
+existing C authority and stores its public identity, not the operator key.
+The target is the source repository's current attached branch and committed tip.
+
+`specification build-task --task PATH` runs the approved worker in a fresh
+container. The verified subject is read-only; only declared product directories
+are writable. Image-declared volumes are masked with bounded read-only tmpfs.
+
+`ranex prove --task PATH` observes the committed candidate, calibrates against
+named product defects and publishes the existing signed verdict format. Exit 0
+is PASS, exit 1 is an observed MISS, and exit 2 is refusal/execution/calibration
+error. After three observed misses, the existing grant is revoked.
+
+`specification reapprove-task` uses the approval options with `--task` instead
+of `--state`. It requires the original operator, a strictly newer map revision
+and a newly frozen bundle. Old journal entries and revisions remain.
+
+`specification land-task --task PATH` requires the latest completed proof for
+the exact candidate, verifies its retained receipt and requires an unchanged
+target base. It fast-forwards with Git's expected-old ref update.
+
+```sh
+uv run --frozen python tools/dogfood/acceptance_task_proof.py \
+  --output /outside/repo/new-experiment
+
+RANEX_LIVE_TASK_EXPERIMENT=1 uv run --frozen pytest -q \
+  tests/integration/test_acceptance_task_cli.py tests/e2e/test_acceptance_task_real.py
+```
+
+Raw receipts: `tools/dogfood/audits/2026-09-30-acceptance-task-loop/`.
