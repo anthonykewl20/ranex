@@ -103,7 +103,10 @@ class _Subject:
         self.checkpoint = root.parent / "history.json"
         _history.register_service(root / "producers.yaml", self.service_public)
         (root / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n", encoding="utf-8")
-        shutil.copytree(PROJECT / "src" / "ranex", root / "src" / "ranex")
+        shutil.copytree(
+            PROJECT / "src" / "ranex", root / "src" / "ranex",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+        )
         _commit_repo(root)
         _history.establish(root, "evidence.json", self.checkpoint, self.service_private, self.service_public)
 
@@ -127,6 +130,7 @@ class _Subject:
         argv: list[str],
         extra_env: dict[str, str] | None = None,
         pass_fds: tuple[int, ...] = (),
+        input_text: str | None = None,
     ) -> subprocess.CompletedProcess[str]:
         env = self.base_env()
         env.update(extra_env or {})
@@ -139,6 +143,7 @@ class _Subject:
             check=False,
             timeout=300,
             pass_fds=pass_fds,
+            input=input_text,
         )
 
     def reset_outputs(self) -> None:
@@ -746,3 +751,147 @@ def test_task_assignment_wrapper_survives_a_real_governed_run(tmp_path: Path) ->
                           "--evidence", "evidence.json"])
     assert judged.returncode == 0, judged.stderr
     assert judged.stdout.startswith("PASS")
+
+
+@pytest.mark.parametrize("concurrent", [False, True])
+def test_nested_governed_runs_preserve_each_callers_standard_streams(tmp_path, concurrent):
+    """Real self-contained nested observations preserve pipes and stream ownership."""
+    outer = _Subject(tmp_path / "outer")
+    support = outer.root / "tests"
+    (support / "contract").mkdir(parents=True)
+    shutil.copyfile(PROJECT / "tests/_history.py", support / "_history.py")
+    shutil.copyfile(Path(__file__), support / "contract/test_trace_invariance.py")
+    worker = r"""
+import concurrent.futures, json, os, pathlib, subprocess, sys
+import cryptography, pytest, yaml
+assert sys.prefix == sys.argv[2], (sys.prefix, sys.argv[2])
+assert all(pathlib.Path(module.__file__).is_file() for module in (cryptography, pytest, yaml))
+sys.path[:0] = [str(pathlib.Path.cwd() / 'tests'), str(pathlib.Path.cwd() / 'tests/contract')]
+from test_trace_invariance import _Subject
+base = pathlib.Path(os.environ['TMPDIR']) / 'nested-streams'
+code = "import sys; data=sys.stdin.readline().strip(); print('OUT:'+data); print('ERR:'+data,file=sys.stderr); sys.exit(0 if data==sys.argv[1] else 37)"
+def prepare(token):
+    subject = _Subject(base / token / 'subject')
+    command = ['/usr/bin/python3', '-c', code, token]
+    (subject.root / 'gates.yaml').write_text('gates:\n  - gate_id: landing\n    rule_id: TESTS_EXECUTED\n    blocking: true\n    required_claims:\n      - claim_id: tests-executed\n        command: ' + json.dumps(command) + '\n')
+    subprocess.run(['git', '-C', str(subject.root), 'add', 'gates.yaml'], check=True)
+    subprocess.run(['git', '-C', str(subject.root), 'commit', '-qm', 'bind exact nested stream probe'], check=True)
+    return subject, command, token
+prepared = [prepare(token) for token in ['left', 'right']]
+def execute(item):
+    subject, command, token = item
+    result = subject.cli(['run', '--claim', 'tests-executed', '--producer', 'worker', '--producers', 'producers.yaml', '--gate-catalog', 'gates.yaml', '--evidence', 'evidence.json', '--', *command], input_text=token+'\n')
+    assert result.returncode == 0, (result.returncode, result.stdout, result.stderr)
+    assert result.stdout.splitlines()[0] == 'OUT:'+token, result.stdout
+    assert result.stderr == 'ERR:'+token+'\n', result.stderr
+    assert 'OUT:'+('right' if token == 'left' else 'left') not in result.stdout
+    assert 'RECORDED  claim=tests-executed' in result.stdout
+    return token
+if sys.argv[1] == 'concurrent':
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(execute, prepared)) == ['left', 'right']
+else:
+    assert [execute(item) for item in prepared] == ['left', 'right']
+print('NESTED_STREAMS_OK')
+"""
+    (outer.root / "nested_probe.py").write_text(worker)
+    # Keep the installed interpreter's argv[0] so its own dependencies remain
+    # available; the observed env launcher is still an external executable.
+    command = ["/usr/bin/env", sys.executable, "nested_probe.py",
+               "concurrent" if concurrent else "sequential", sys.prefix]
+    (outer.root / "gates.yaml").write_text(
+        "gates:\n  - gate_id: landing\n    rule_id: TESTS_EXECUTED\n"
+        "    blocking: true\n    required_claims:\n      - claim_id: tests-executed\n"
+        f"        command: {json.dumps(command)}\n"
+    )
+    subprocess.run(["git", "-C", str(outer.root), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(outer.root), "commit", "-qm", "bound real nested stdio probe"], check=True)
+    result = outer.cli(["run", "--claim", "tests-executed", "--producer", "worker",
+                        "--producers", "producers.yaml", "--gate-catalog", "gates.yaml",
+                        "--evidence", "evidence.json", "--", *command])
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.splitlines()[0] == "NESTED_STREAMS_OK", result.stdout
+    assert result.stderr == ""
+
+
+@pytest.mark.parametrize("failure_at", ["pipe", "spawn"])
+def test_guardian_closes_received_stream_descriptors_when_startup_fails(tmp_path, monkeypatch, failure_at):
+    """Received SCM_RIGHTS duplicates remain owned even before a child starts."""
+    import errno
+    import socket
+    import tempfile
+
+    from ranex.cli import process_supervisor as supervisor
+
+    short_root = tempfile.TemporaryDirectory(prefix="r56-fd-")
+    root = Path(short_root.name)
+    (root / "tmp").mkdir()
+    senders = tuple(os.open("/dev/null", os.O_RDWR) for _ in range(5))
+    left, right = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    before = len(tuple(Path("/proc/self/fd").iterdir()))
+    supervisor._send(right, {}, senders)
+    _, descriptors = supervisor._receive(left)
+    assert set(descriptors).isdisjoint(senders)
+    original_close = os.close
+    closed_counts = dict.fromkeys(descriptors, 0)
+
+    def close_owned(descriptor):
+        if descriptor in closed_counts:
+            closed_counts[descriptor] += 1
+        original_close(descriptor)
+
+    monkeypatch.setattr(supervisor.os, "close", close_owned)
+
+    def refuse(*args, **kwargs):
+        raise OSError(errno.EMFILE, "owned startup failure")
+
+    if failure_at == "pipe":
+        monkeypatch.setattr(supervisor.os, "pipe2", refuse)
+    else:
+        monkeypatch.setattr(supervisor.subprocess, "Popen", refuse)
+    try:
+        with pytest.raises(OSError, match="owned startup failure"):
+            supervisor._guardian_execute(
+                None, -1, descriptors[0], descriptors[0],
+                {"environment": {}, "argv": ["/usr/bin/true"], "cwd": str(root)},
+                descriptors, root,
+            )
+        for descriptor in descriptors:
+            with pytest.raises(OSError) as closed:
+                os.fstat(descriptor)
+            assert closed.value.errno == errno.EBADF
+        assert set(closed_counts.values()) == {1}
+        for descriptor in senders:
+            os.fstat(descriptor)
+        assert len(tuple(Path("/proc/self/fd").iterdir())) == before
+    finally:
+        left.close()
+        right.close()
+        for descriptor in (*descriptors, *senders):
+            try:
+                original_close(descriptor)
+            except OSError:
+                pass
+        short_root.cleanup()
+
+
+@pytest.mark.parametrize("unsafe_deps", ["empty", "file", "symlink", "dangling"])
+def test_optional_nested_dependencies_preserve_canonical_layout_refusals(tmp_path, unsafe_deps):
+    from ranex.cli.subject import SubjectError, _enclosing_subject_root
+
+    enclosing = tmp_path / "ranex-subject-layout"
+    repository = enclosing / "tree"
+    for path in (repository, enclosing / "home", enclosing / "tmp"):
+        path.mkdir(parents=True, exist_ok=True)
+    deps = enclosing / "deps"
+    if unsafe_deps == "empty":
+        deps.mkdir()
+    elif unsafe_deps == "file":
+        deps.write_text("not a dependency directory")
+    else:
+        destination = tmp_path / "external-deps"
+        if unsafe_deps == "symlink":
+            (destination / "env").mkdir(parents=True)
+        deps.symlink_to(destination, target_is_directory=True)
+    with pytest.raises(SubjectError, match="layout does not match"):
+        _enclosing_subject_root(repository)

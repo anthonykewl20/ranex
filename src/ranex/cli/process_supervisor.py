@@ -674,23 +674,24 @@ def _guardian_execute(
     descriptors: tuple[int, ...],
     root: Path,
 ) -> bool:
-    if len(descriptors) != 2:
+    if len(descriptors) != 5:
         for descriptor in descriptors:
             os.close(descriptor)
-        raise ProcessSupervisorError("RUN requires executable and start-gate descriptors")
-    executable, gate = descriptors
-    block_read, block_write = os.pipe2(os.O_CLOEXEC)
-    status_read, status_write = os.pipe2(os.O_CLOEXEC)
-    raw_read, raw_write = os.pipe2(os.O_CLOEXEC)
-    config_read, config_path = tempfile.mkstemp(
-        prefix=".ranex-relay-config-", dir=root / "tmp"
-    )
-    os.unlink(config_path)
-    config_write = -1
+        raise ProcessSupervisorError("RUN requires executable, start-gate and standard-stream descriptors")
+    executable, gate, stdin, stdout, stderr = descriptors
+    block_read = block_write = status_read = status_write = raw_read = raw_write = -1
+    config_read = config_write = -1
     process: subprocess.Popen[bytes] | None = None
     pidfd: int | None = None
     broker: _NestedBroker | None = None
     try:
+        block_read, block_write = os.pipe2(os.O_CLOEXEC)
+        status_read, status_write = os.pipe2(os.O_CLOEXEC)
+        raw_read, raw_write = os.pipe2(os.O_CLOEXEC)
+        config_read, config_path = tempfile.mkstemp(
+            prefix=".ranex-relay-config-", dir=root / "tmp"
+        )
+        os.unlink(config_path)
         supplied_environment = message.get("environment")
         if not isinstance(supplied_environment, dict) or not all(
             isinstance(name, str) and isinstance(value, str)
@@ -734,6 +735,9 @@ def _guardian_execute(
         process = subprocess.Popen(
             argv,
             executable=f"/proc/self/fd/{bwrap}",
+            stdin=stdin,
+            stdout=stdout,
+            stderr=stderr,
             pass_fds=(
                 bwrap,
                 python,
@@ -748,9 +752,11 @@ def _guardian_execute(
             env={"HOME": "/", "LANG": "C.UTF-8", "PATH": "/usr/bin:/bin"},
             process_group=0,
         )
-        for descriptor in (block_read, status_write, gate, raw_write, executable, config_read):
+        for descriptor in (block_read, status_write, gate, raw_write, executable, config_read,
+                           stdin, stdout, stderr):
             os.close(descriptor)
         block_read = status_write = gate = raw_write = executable = config_read = -1
+        stdin = stdout = stderr = -1
         identity, status_data = _read_first_status(status_read, lifeline, process.pid)
         expected_identity = {"child-pid", "mnt-namespace", "pid-namespace"}
         if message.get("deny_network") is True:
@@ -873,6 +879,9 @@ def _guardian_execute(
         for descriptor in (
             executable,
             gate,
+            stdin,
+            stdout,
+            stderr,
             block_read,
             block_write,
             status_read,
@@ -1168,7 +1177,7 @@ class KillSafeSupervisor:
                     "environment": dict(environment),
                     "kind": "RUN",
                 },
-                (executable, gate_read),
+                (executable, gate_read, 0, 1, 2),
             )
         finally:
             os.close(gate_read)

@@ -140,3 +140,15 @@ paths at creation and cannot rebind with cwd. All six optional reader entrypoint
 refuse different contexts. Seven mismatch/cwd cases were red before the fix;
 matching normalized paths remain accepted. Root context/cache/architecture/kernel
 checks: 81 passed. No canonical summary or interpretation binding changed.
+
+### R56 — nested session standard streams (#207)
+
+RUN transfers caller stdin/stdout/stderr alongside executable and start-gate
+descriptors. Guardian Popen binds those streams per session, without global
+redirection, and closes received ownership on spawn or startup refusal.
+Self-contained nested observations may omit dependency provisioning; existing
+incomplete or symlinked layouts still refuse. Actual provisioned and
+unprovisioned public freezes each executed nine regression cases with zero
+skips and run_exit=0. Independent descriptor/layout controls found no further
+concrete defect. Root trace checks: 17 passed, one standing host skip.
+Full committed-tree freeze and qualification remain pending.

@@ -29,7 +29,8 @@ Their fixes and real scanner controls require final committed-tree qualification
 The b3b9ccc full run: 2691 passed, 37 skipped, 6 failed. Sealed nested
 fixtures and manifest drift remain open. The actual seven-control sealed
 fixture rerun is green: 6 passed, 1 skipped, run_exit=0. Nested standard
-streams (#207) and optional reader context (#209) are being qualified.
+streams (#207) and optional reader context (#209) have regression fixes;
+full manifest freeze and final committed-tree qualification remain pending.
 The frozen architecture exposed two forbidden diagnostic imports (#206);
 shared foundation utilities restore the unchanged policy (101 focused passed).
 
