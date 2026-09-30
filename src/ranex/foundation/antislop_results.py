@@ -152,7 +152,7 @@ def antislop_expectations_digest(manifest: Mapping[str, object]) -> str:
     validated = validate_antislop_expectations(dict(manifest))
     material = {
         "schema": "ranex-antislop-expectations-binding-v3",
-        "ingestion_core": "strict-interpreted-structure-v1",
+        "ingestion_core": "strict-interpreted-structure-v2-unique-rules",
         "expectations": validated,
         "required_structural_id": ANTISLOP_STRUCTURAL_ID,
     }

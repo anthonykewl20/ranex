@@ -23,7 +23,7 @@ from ranex.foundation.scan_results import observed_findings, scan_results_from_s
 @pytest.mark.parametrize('mutation', [
     'tool', 'driver', 'name', 'name-type', 'rules-type', 'rule-type', 'rule-id',
     'configuration-type', 'level', 'level-type', 'rules-null', 'invocations-null', 'message', 'message-type',
-    'message-markdown-only',
+    'message-markdown-only', 'duplicate-rule-id', 'duplicate-rule-id-conflicting-level',
 ])
 def test_malformed_core_refuses_across_actual_artifacts(tmp_path, family, freeze, mutation):
     (tmp_path / 'test_mod.py').write_text('def test_value():\n    assert operation() == 2\n')
@@ -61,6 +61,12 @@ def test_malformed_core_refuses_across_actual_artifacts(tmp_path, family, freeze
         driver['rules'][0]['defaultConfiguration'] = {'level': 'fatal'}
     elif mutation == 'level-type':
         driver['rules'][0]['defaultConfiguration'] = {'level': []}
+    elif mutation in {'duplicate-rule-id', 'duplicate-rule-id-conflicting-level'}:
+        duplicate = dict(driver['rules'][0])
+        if mutation == 'duplicate-rule-id-conflicting-level':
+            driver['rules'][0]['defaultConfiguration'] = {'level': 'error'}
+            duplicate['defaultConfiguration'] = {'level': 'none'}
+        driver['rules'].append(duplicate)
     elif mutation == 'invocations-null':
         run['invocations'] = None
     elif mutation == 'message':
@@ -103,3 +109,35 @@ def test_valid_message_forms_and_properties_extensions_preserve_severity(tmp_pat
         'scope': ['mod.py'], 'rules': ['security'], 'accepted': {}, 'blocking_levels': ['error'],
     }, subject_root=tmp_path)
     assert summary['counts']['failed'] == 2
+
+
+@pytest.mark.parametrize('family,legacy_digest', [
+    ('generic', 'sha256:c94d376a7184b1d8427310b4f8c582caf2b4bef1139dda818120aab4814decc3'),
+    ('review', 'sha256:d5a9eee128e46c131eff2fa0f35376375011a0fb2b1085e6d2eab38cf4ace614'),
+    ('antislop', 'sha256:cc81edbf605f24849664da356c46f6b15a690b0b7d984609d75394370469bcf1'),
+])
+def test_pre_unique_rule_validation_summary_cannot_satisfy_current_claim(family, legacy_digest):
+    """Retained clean summaries from the ambiguous-rule profile must be rerun."""
+    from ranex.foundation.antislop_results import antislop_expectations_digest, antislop_expected_ids
+    from ranex.foundation.scan_results import scan_manifest_digest, scan_expected_ids
+    from ranex.governed_execution.domain.verdict import Claim, Evidence, Gate, evaluate
+
+    if family == 'antislop':
+        manifest = {'scope': ['mod.py'], 'tests': {'mod.py::test_value': 1}}
+        digest = antislop_expectations_digest(manifest)
+        expected = antislop_expected_ids(manifest)
+    else:
+        manifest = {'scope': ['mod.py'], 'rules': ['security'],
+                    'blocking_levels': ['error'], 'accepted': {}}
+        digest = scan_manifest_digest(manifest, require_review=family == 'review')
+        expected = scan_expected_ids(manifest)
+    summary = {'manifest_digest': legacy_digest,
+               'counts': {'passed': len(expected), 'skipped': 0, 'failed': 0,
+                          'errors': 0, 'xfailed': 0, 'xpassed': 0},
+               'non_passed': [], 'missing': [], 'extra_count': 0,
+               'outcome_digest': 'sha256:' + 'c' * 64}
+    command, subject = 'sha256:' + 'b' * 64, 'sha256:' + 'a' * 64
+    claim = Claim('scan', command, True, digest, expected, {})
+    evidence = Evidence('scan', subject, 'producer', 'scanner', command, '/scanner', 0, summary)
+    assert evaluate(Gate('g', 'r', (claim,), True), (evidence,),
+                    subject_digest=subject, approver_id='owner').verdict == 'FAIL'

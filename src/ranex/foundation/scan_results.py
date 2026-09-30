@@ -171,7 +171,7 @@ def scan_manifest_digest(
             "review_category": "rule-id-then-properties-category-v1",
             "review_packet": "trusted-required-dispatch-v2",
             "review_required": require_review,
-            "ingestion_core": "strict-interpreted-structure-v1",
+            "ingestion_core": "strict-interpreted-structure-v2-unique-rules",
             "coverage": "explicit-witness-required-v1",
             "generic_identity": "subject-region-v1",
         },
@@ -217,12 +217,16 @@ def _validated_driver(run: Mapping[str, Any]) -> Mapping[str, Any]:
         rules = driver["rules"]
         if not isinstance(rules, list):
             raise ValueError("SARIF tool.driver.rules must be a list")
+        identifiers: set[str] = set()
         for rule in rules:
             if not isinstance(rule, Mapping):
                 raise ValueError("SARIF rule descriptors must be objects")
             identifier = rule.get("id")
             if not isinstance(identifier, str) or not identifier:
                 raise ValueError("SARIF rule descriptors require a non-empty id")
+            if identifier in identifiers:
+                raise ValueError(f"SARIF rule descriptors carry duplicate id: {identifier!r}")
+            identifiers.add(identifier)
             if "defaultConfiguration" in rule:
                 configuration = rule["defaultConfiguration"]
                 if not isinstance(configuration, Mapping):
