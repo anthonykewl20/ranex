@@ -716,7 +716,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     committed = git(subject, "commit", "-q", "-m", "register lifecycle RED producer")
     assert committed.returncode == 0, committed.stderr
 
-    service.establish()
+    service.establish("governance/evidence.json")
     fetched = ranex(
         subject,
         ["deps", "fetch", "--repository", ".", "--store", str(store)],
@@ -750,7 +750,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
 
     env = {name: value for name, value in os.environ.items() if name not in _STRIPPED_ENV}
     env.update({"PYTHONPATH": str(subject / "src"), "RANEX_SIGNING_KEY": str(key)})
-    env.update(service.environment())
+    env.update(service.environment("governance/evidence.json"))
     evidence = subject / "governance" / "evidence.json"
     stdout_log = tmp_path / "kernel.stdout"
     stderr_log = tmp_path / "kernel.stderr"

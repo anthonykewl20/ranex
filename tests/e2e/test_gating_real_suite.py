@@ -284,7 +284,7 @@ def ranex(
     }
     env["PYTHONPATH"] = str(repo / "src")
     if repo != REAL_REPO:
-        env.update(_approver.history_for(repo).environment())
+        env.update(_approver.history_for(repo).environment("governance/evidence.json"))
     env.pop("RANEX_SIGNING_KEY", None)
     env.pop(_approver.APPROVER_ENV, None)
     if key_path is not None:
@@ -578,7 +578,7 @@ def test_stage_01_clone_the_real_repository(session: Session) -> None:
     git(clone, "add", "governance/producers.yaml")
     committed = git(clone, "commit", "-q", "-m", "register the e2e producer")
     assert committed.returncode == 0, committed.stderr
-    service.establish()
+    service.establish("governance/evidence.json")
     session.clone = clone
     session.key_path = key_path
     session.reach("clone")
@@ -861,7 +861,7 @@ def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
         "honestly — the tail of the suite's own output says which tests:\n"
         f"{suite_tail(out, err)}"
     )
-    record_live_host_qualification(session.clone, session.key_path, history_environment=_approver.history_for(session.clone).environment())
+    record_live_host_qualification(session.clone, session.key_path, history_environment=_approver.history_for(session.clone).environment("governance/evidence.json"))
     code, out, _ = ranex(
         session.clone, evaluate_argv(), approver_path=session.approver_key_path
     )
@@ -1168,7 +1168,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     assert actual_failures == {}
     assert baseline_results["missing"] == []
 
-    record_live_host_qualification(repository, session.key_path, history_environment=_approver.history_for(repository).environment())
+    record_live_host_qualification(repository, session.key_path, history_environment=_approver.history_for(repository).environment("governance/evidence.json"))
     baseline_verdict, baseline_output, _ = ranex(
         repository, evaluate_argv(), approver_path=session.approver_key_path
     )
@@ -1198,7 +1198,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
             {*baseline_results["missing"], missing_id}
         )
 
-        record_live_host_qualification(repository, session.key_path, history_environment=_approver.history_for(repository).environment())
+        record_live_host_qualification(repository, session.key_path, history_environment=_approver.history_for(repository).environment("governance/evidence.json"))
         verdict_code, verdict_output, _ = ranex(
             repository, evaluate_argv(), approver_path=session.approver_key_path
         )

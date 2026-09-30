@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -71,7 +72,7 @@ def materialize(base: Path, *, commit: str = BASE_COMMIT) -> RealSubject:
     subject = RealSubject(
         repository=repository,
         home=home,
-        python=REAL_REPO / ".venv" / "bin" / "python3",
+        python=Path(sys.executable),
     )
     subprocess.run(
         ["git", "clone", "--quiet", str(REAL_REPO), str(repository)],
@@ -82,13 +83,22 @@ def materialize(base: Path, *, commit: str = BASE_COMMIT) -> RealSubject:
     return subject
 
 
+def suite_command(subject: RealSubject) -> list[str]:
+    """Use the active installed pytest entrypoint, preserving candidate imports."""
+    executable = subject.python.with_name("pytest")
+    assert executable.is_file(), "the active test environment must provide pytest"
+    return [str(executable), "-q", FOCUSED_TEST]
+
+
 def run_focused(subject: RealSubject) -> subprocess.CompletedProcess[str]:
+    suite_environment = environment(subject)
+    suite_environment["PYTHONPATH"] = str(subject.repository / "src")
     return subprocess.run(
-        [str(subject.python), "-m", "pytest", "-q", FOCUSED_TEST],
+        suite_command(subject),
         cwd=subject.repository,
         capture_output=True,
         text=True,
         check=False,
-        env=environment(subject),
+        env=suite_environment,
         timeout=120,
     )

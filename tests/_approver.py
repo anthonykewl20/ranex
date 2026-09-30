@@ -104,11 +104,12 @@ class HistoryService:
     checkpoints: dict[str, Path] = field(default_factory=dict)
 
     def establish(self, name: str = "evidence.json") -> Path:
-        if name not in self.checkpoints:
+        identity = str((self.repository / name).parent.resolve())
+        if identity not in self.checkpoints:
             checkpoint = self.key_path.parent / f"history-{len(self.checkpoints)}.json"
             _history.establish(self.repository, name, checkpoint, self.private, self.public)
-            self.checkpoints[name] = checkpoint
-        return self.checkpoints[name]
+            self.checkpoints[identity] = checkpoint
+        return self.checkpoints[identity]
 
     def environment(self, name: str = "evidence.json") -> dict[str, str]:
         return {"RANEX_VERDICT_SIGNING_KEY": str(self.key_path),

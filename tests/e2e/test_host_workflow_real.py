@@ -44,7 +44,7 @@ def _environment(key: Path | None = None) -> dict[str, str]:
     if key is not None:
         for repository in _HISTORY_REPOSITORIES:
             if _HISTORY_KEYS[repository] == key:
-                environment.update(_approver.history_for(repository).environment())
+                environment.update(_approver.history_for(repository).environment("governance/evidence.json"))
                 break
     return environment
 
@@ -59,6 +59,9 @@ def _module(
     # Source-run governance follows the CLI's checkout (ADR-009), so cwd
     # alone cannot select the provisioned clone's launcher and trust roots.
     environment = {**_environment(key), "PYTHONPATH": str(repository / "src")} if env is None else env
+    if repository in _HISTORY_REPOSITORIES and "--evidence" in arguments:
+        name = arguments[arguments.index("--evidence") + 1]
+        environment.update(_approver.history_for(repository).environment(name))
     return subprocess.run(
         [sys.executable, "-m", module, *arguments],
         cwd=repository,
@@ -115,7 +118,7 @@ def _clone_governed_repository(path: Path, key: Path, producer: str) -> None:
     _require_git(path, "rm", "-q", "governance/deps.yaml")
     _require_git(path, "add", "governance/producers.yaml")
     _require_git(path, "commit", "-qm", f"test: register {producer} for host workflow")
-    service.establish()
+    service.establish("governance/evidence.json")
     _HISTORY_REPOSITORIES.add(path)
     _HISTORY_KEYS[path] = key
 
@@ -479,6 +482,8 @@ def test_named_host_drift_refuses_from_a_different_delegated_scope(
         "/ranex/runtime/data/worker.py",
     ]
     command = f"cd {shlex.quote(str(drift_repository.path))} && exec {shlex.join(run_argv)}"
+    drift_environment = _environment(drift_repository.key)
+    drift_environment.update(_approver.history_for(drift_repository.path).environment(evidence))
     nested = subprocess.run(
         [
             "/usr/bin/systemd-run",
@@ -496,7 +501,7 @@ def test_named_host_drift_refuses_from_a_different_delegated_scope(
             command,
         ],
         cwd=drift_repository.path,
-        env=_environment(drift_repository.key),
+        env=drift_environment,
         capture_output=True,
         text=True,
         check=False,

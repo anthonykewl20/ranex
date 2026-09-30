@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 from pathlib import Path
 
 from _provider_neutral_subject import (
     BASE_COMMIT,
-    FOCUSED_TEST,
     PATCH_COMMIT,
     assert_nested_hermetic_boundary,
     environment,
@@ -16,6 +16,7 @@ from _provider_neutral_subject import (
     materialize,
     nested_hermetic_boundary,
     run_focused,
+    suite_command,
 )
 
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -48,7 +49,7 @@ def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
         return
     subject = materialize(tmp_path)
     assert git(subject, "rev-parse", f"{PATCH_COMMIT}^") == BASE_COMMIT
-    suite = [str(subject.python), "-m", "pytest", "-q", FOCUSED_TEST]
+    suite = suite_command(subject)
     red = run_focused(subject)
     assert red.returncode == 1
     assert "failed" in red.stdout
@@ -80,7 +81,7 @@ def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
         "--timeout",
         "120",
         "--suite",
-        " ".join(suite),
+        shlex.join(suite),
         "--claim",
         "provider-neutral-real-e2e",
         "--outcome",

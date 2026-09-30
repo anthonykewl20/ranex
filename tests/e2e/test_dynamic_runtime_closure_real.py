@@ -57,15 +57,19 @@ def _env(repository: Path, key: Path | None = None) -> dict[str, str]:
     if key is not None:
         value["RANEX_SIGNING_KEY"] = str(key)
     if repository in _HISTORY_REPOSITORIES:
-        value.update(_approver.history_for(repository).environment())
+        value.update(_approver.history_for(repository).environment("governance/evidence.json"))
     return value
 
 
 def _module(repository: Path, module: str, *arguments: str, key: Path | None = None):
+    environment = _env(repository, key)
+    if repository in _HISTORY_REPOSITORIES and "--evidence" in arguments:
+        name = arguments[arguments.index("--evidence") + 1]
+        environment.update(_approver.history_for(repository).environment(name))
     return subprocess.run(
         [sys.executable, "-m", module, *arguments],
         cwd=repository,
-        env=_env(repository, key),
+        env=environment,
         capture_output=True,
         text=True,
         check=False,
@@ -125,7 +129,7 @@ def _register_owner(repository: Path, key: Path) -> None:
     _git(repository, "rm", "-q", "governance/deps.yaml")
     _git(repository, "add", "governance/producers.yaml")
     _git(repository, "commit", "-qm", "test: register slice072 fixture owner")
-    service.establish()
+    service.establish("governance/evidence.json")
     _HISTORY_REPOSITORIES.add(repository)
 
 
@@ -365,14 +369,15 @@ def test_public_dynamic_run_binds_output_result_and_evidence_twice(
 ) -> None:
     observations = []
     for index in (1, 2):
-        evidence = f".local/ranex-e2e/slice072-{index}.json"
+        evidence = f".local/ranex-e2e/slice072-{index}/evidence.json"
         completed = _run(journey, evidence)
         assert completed.returncode == 0, completed.stdout + completed.stderr
         result, raw_result = _runtime_result(completed.stderr)
         record = _evidence(journey.repository, evidence)
         assert record["confinement_result_digest"] == hashlib.sha256(raw_result).hexdigest()
         if index == 1:
-            tampered = f"{evidence}.tampered"
+            tampered = f".local/ranex-e2e/tampered-{index}/evidence.json"
+            (journey.repository / tampered).parent.mkdir(parents=True)
             changed = json.loads(
                 (journey.repository / evidence).read_text(encoding="utf-8")
             )
