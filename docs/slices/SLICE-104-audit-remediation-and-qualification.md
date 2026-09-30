@@ -3,7 +3,7 @@
 **Status:** open
 
 Tracking issue: #186. Defect issues: #151–#185,
-#187–#205. No final-commit full-suite PASS claimed.
+#187–#209. No final-commit full-suite PASS claimed.
 
 This change repairs the executable paths identified by the code audit:
 admission retains record identity through qualification; task judge and
@@ -123,3 +123,10 @@ it demanded a full limit-plus-one read even when the new regular-file size
 check rejects before reading. The contract now asserts its named maximum
 bound, retaining the actual refusal requirement. The same oversized public
 reader case passes; the pinned run is retained as red evidence.
+
+Real sealed fixture qualification at base 4c5e3ed plus its owned committed
+fixture trust: the exact seven previously failing controls executed with
+6 passed, 1 skipped in 57.57 seconds; public freeze recorded run_exit=0.
+This selected run does not establish full manifest acceptance. The root
+unit/contract run was 1620 passed, 8 skipped, 1 known stale-manifest failure
+for the three new prerequisite test IDs. Those IDs require actual refreeze.
