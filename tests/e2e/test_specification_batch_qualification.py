@@ -2249,7 +2249,9 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     finally:
         git(governed, "update-ref", "refs/heads/main", BASE_COMMIT, moved)
 
-    rogue = sandbox / "rogue-worktree"
+    # A preexisting worktree at an approved flow destination is a real
+    # ownership collision; unrelated worktrees are deliberately permitted.
+    rogue = sandbox / "a-before-b"
     assert run(
         "git", "-C", str(governed), "worktree", "add", "--quiet", "--detach", str(rogue), BASE_COMMIT
     ).returncode == 0

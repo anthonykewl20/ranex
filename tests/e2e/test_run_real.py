@@ -710,11 +710,13 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     assert public, f"keygen printed no public key: {generated.stdout!r}"
     keyring = subject / "governance" / "producers.yaml"
     _prereqs.register_worker_key(keyring, producer, public.group(1))
+    service = _approver.register_history_service(subject, keyring, tmp_path)
     committed = git(subject, "add", "governance/producers.yaml")
     assert committed.returncode == 0, committed.stderr
     committed = git(subject, "commit", "-q", "-m", "register lifecycle RED producer")
     assert committed.returncode == 0, committed.stderr
 
+    service.establish()
     fetched = ranex(
         subject,
         ["deps", "fetch", "--repository", ".", "--store", str(store)],
@@ -748,6 +750,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
 
     env = {name: value for name, value in os.environ.items() if name not in _STRIPPED_ENV}
     env.update({"PYTHONPATH": str(subject / "src"), "RANEX_SIGNING_KEY": str(key)})
+    env.update(service.environment())
     evidence = subject / "governance" / "evidence.json"
     stdout_log = tmp_path / "kernel.stdout"
     stderr_log = tmp_path / "kernel.stderr"
