@@ -1736,7 +1736,16 @@ The same discipline exists in pharmaceutical work as **method validation** — a
 assay must be validated for specificity, accuracy, precision and robustness
 *before* any result from it is trusted. The test is tested before the drug is.
 
-**Four consequences for Ranex, none of them currently satisfied:**
+**Four consequences for Ranex** (certificates under `tools/dogfood/audits/2026-09-30-gate-calibration/`, issue #115):
+
+1. Known-defect detection — **satisfied** for the marker gate, the landing suite gate, and the handbook-governed delegate completeness check (per-gate certificates).
+2. Firing rate recorded — **satisfied**; each certificate recomputes fires from `journal.sqlite3` independently of the driver tally where a journal exists.
+3. Recall armed — **satisfied**; `recall-false-pass.json` is a deliberate FALSE-PASS with a named suspect window of journal positions and verdict digests.
+4. Built vs calibrated — **satisfied**; `governance/bom.yaml` carries a `calibrated` field distinct from `status: built`, and a non-null value must name a resolvable receipt.
+
+Cross-host Gauge R&R reproducibility and AIAG % thresholds remain **UNVERIFIED**. The historical wording follows for context; the certificates are the authority:
+
+**Four consequences for Ranex (historical statement, superseded by the certificates above):**
 
 1. **`mutmut` is not a code-quality tool. It is a repeatability signal for the
    operator's defect model** — deliberately
@@ -2252,7 +2261,7 @@ solves this, or would building it be invention?
 |---|---|---|
 | The translator (§5.1) | absent; `C-04` unserved (`RISK-12`) | none — a read-only projection of *this* record is novel, and by §4.3 it may never be a model that decides anything |
 | Outward-facing record | absent; deferred with §11.1 (`RISK-03`) | **Mature.** Certificate transparency is the solved form of this exact problem; see §15.3 |
-| Calibration consumption, negative controls | §8.4 names four consequences; none satisfied | negative controls are standard assay practice (§8.4); the machinery is small and unbuilt |
+| Calibration consumption, negative controls | §8.4 four consequences certified for marker/landing/handbook-delegate (#115); cross-host R&R UNVERIFIED | negative controls + recall receipts under `tools/dogfood/audits/2026-09-30-gate-calibration/` |
 
 **The system-level verdict.** Every row in §15.1 is a component fact. The
 kernel substrate, serial task path, prototypes, and non-publishable batch
