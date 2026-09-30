@@ -70,6 +70,7 @@ CLI_DISPATCH_GROUPS = (
     "keygen",
     "markers",
     "antislop",
+    "prove",
     "task.dispatch",
     "task.judge",
     "task.merge",
@@ -92,7 +93,20 @@ CLI_DISPATCH_GROUPS = (
     "github.ruleset",
 )
 
-SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
+SPECIFICATION_ACTIONS = (
+    "draft",
+    "advance",
+    "questions",
+    "status",
+    "approve",
+    "freeze-probes",
+    "check-probes",
+    "observe-http",
+    "approve-task",
+    "build-task",
+    "reapprove-task",
+    "land-task",
+)
 
 EXPECTED_STAGES = (
     {

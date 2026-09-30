@@ -1,0 +1,205 @@
+{
+  "repeats": 3,
+  "byte_identical_fields": [
+    "product_sha256",
+    "controller_sha256",
+    "cases"
+  ],
+  "runs": [
+    {
+      "repeat": 1,
+      "status": "EXPERIMENT-MATCH",
+      "product_sha256": "a0ce4a07244e6ca0ad79ff120dab8cecaaeed5bcd1dd04d6b62a2f8a65a7aa6b",
+      "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7",
+      "candidate": "ff48726c7287ac32993fb4bc2cdb7df7a163370d",
+      "cases": [
+        {
+          "expectation": "approve",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "build",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-1",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-2",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-3",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-4",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "reapprove",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "rebuild",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "reprove",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "stale-candidate",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "moved-target",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "land",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "land-again",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-help-deterministic",
+          "status": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "status": "EXPERIMENT-MATCH",
+      "product_sha256": "a0ce4a07244e6ca0ad79ff120dab8cecaaeed5bcd1dd04d6b62a2f8a65a7aa6b",
+      "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7",
+      "candidate": "8f7a2d981214c09d617b3153a8eab8d85fa612f7",
+      "cases": [
+        {
+          "expectation": "approve",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "build",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-1",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-2",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-3",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-4",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "reapprove",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "rebuild",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "reprove",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "stale-candidate",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "moved-target",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "land",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "land-again",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-help-deterministic",
+          "status": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "repeat": 3,
+      "status": "EXPERIMENT-MATCH",
+      "product_sha256": "a0ce4a07244e6ca0ad79ff120dab8cecaaeed5bcd1dd04d6b62a2f8a65a7aa6b",
+      "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7",
+      "candidate": "7d6955bd7977e4e793cd209f100e2e0a64c21f83",
+      "cases": [
+        {
+          "expectation": "approve",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "build",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-1",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-2",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-3",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-4",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "reapprove",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "rebuild",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "reprove",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "stale-candidate",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "moved-target",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "land",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "land-again",
+          "status": "VERIFIED"
+        },
+        {
+          "expectation": "prove-help-deterministic",
+          "status": "VERIFIED"
+        }
+      ]
+    }
+  ]
+}

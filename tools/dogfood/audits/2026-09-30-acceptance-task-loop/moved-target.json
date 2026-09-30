@@ -1,0 +1,30 @@
+{
+  "expectation": "moved-target",
+  "argv": [
+    "/tmp/ranex-119/.venv/bin/python3",
+    "-m",
+    "ranex.cli.main",
+    "specification",
+    "land-task",
+    "--task",
+    "/tmp/ranex-119-dogfood/final/state"
+  ],
+  "cwd": "/tmp/ranex-119",
+  "exit_code": 2,
+  "expected_exit": 2,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "5c9ecdbc4d915cf4fd93887ed07f29c584b9fc8ebc3299d0d3ed8b9350b7df0b",
+  "wall_clock_ms": 297,
+  "host": {
+    "kernel": "7.0.0-34-generic",
+    "docker": "29.8.1",
+    "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7"
+  },
+  "facts": {
+    "wall_clock_ms": 297,
+    "refusal": "E-TASK-TARGET-MOVED"
+  },
+  "status": "VERIFIED",
+  "stdout": "",
+  "stderr": "E-TASK-REFUSED: E-TASK-TARGET-MOVED: approve and prove the new integration base\n"
+}

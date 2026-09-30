@@ -382,6 +382,19 @@ repeats are byte-identical, which is the anti-flake rule made checkable.
 Wall-clock and captured output are retained in `selftest-commands.json`,
 where variation is permitted and never changes a status.
 
+## Gate calibration certificates — issue #115 (MAP §8.4)
+
+Production certificates for the marker gate, landing suite gate, and
+handbook-governed delegate path. Known-defect catch, journal firing counts,
+Gauge R&R repeatability (×3), and recall FALSE-PASS with a named suspect window:
+
+    uv run --frozen python tools/dogfood/gate_calibration_proof.py \
+        --out tools/dogfood/audits/2026-09-30-gate-calibration --repeats 3
+
+Cites `governance/calibration/base-freeze-v1.json`. Cross-host reproducibility
+is UNVERIFIED when no second host is available. `bom.yaml` `calibrated` rows
+name these receipts.
+
 ## Minimization ladder proof — issue #112
 
 `tools/dogfood/minimization_ladder_proof.py` resolves the adapted ladder
