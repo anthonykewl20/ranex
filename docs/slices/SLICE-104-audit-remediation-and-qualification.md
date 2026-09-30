@@ -173,3 +173,15 @@ artifacts remain named prerequisites; malformed pins, drift or writability
 fail rather than selecting another executable. Actual public sealed freeze:
 19 passed, zero skips, run_exit=0. Root existing and new controls: 19 passed.
 No new skip declarations were added. One new ID needs actual refreeze.
+
+### R60 — marker fixture qualification (#211)
+
+The sealed dependency environment deliberately omits the kernel console.
+Marker fixtures now retain the installed-console path and otherwise copy the
+actual six-module scanner closure into owned read-only storage outside their
+observed repository. A fixed isolated inline launcher and explicit library
+root bind that executable into the catalog. The candidate's counterfeit
+package cannot supply the scanner. All four original controls execute,
+including the refusal of an in-tree script. Actual public sealed freeze:
+five passed, zero skips, run_exit=0; root installed controls: five passed.
+No new skip declarations were added. One new ID needs actual refreeze.

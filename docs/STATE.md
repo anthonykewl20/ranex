@@ -39,4 +39,6 @@ claim. The verdict kernel remains unchanged.
 
 First full freeze at 0ac0ac6: 2764 passed, 149 skipped, 1 known ID-drift
 failure. Its actual 2914-ID manifest loaded; qualification remains RED.
-Undeclared skips exposed resolver/marker fixture blind spots (#210–#211).
+Resolver/marker blind spots (#210–#211) now execute in sealed controls:
+19 resolver cases and 5 marker cases passed, with zero skips.
+The next actual full freeze must register both new IDs and qualify green.
