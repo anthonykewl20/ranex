@@ -39,6 +39,8 @@ from pathlib import Path
 
 import pytest
 
+import _approver
+
 from ranex.cli.main import main
 from ranex.foundation.signing import generate_keypair
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -222,8 +224,9 @@ def make_repo(
     key_path.write_text(private_key + "\n")
     key_path.chmod(0o600)
 
+    _approver.register_history_service(repo, governance / "producers.yaml", key_path.parent)
     (repo / ".gitignore").write_text(
-        "governance/evidence.json\ngovernance/journal.sqlite3\n"
+        "governance/evidence.json\ngovernance/journal.sqlite3*\ngovernance/observations.sqlite3*\n"
     )
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     if not commit_pins:
@@ -232,6 +235,7 @@ def make_repo(
             check=True,
         )
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True)
+    _approver.history_for(repo).establish("governance/evidence.json")
     return DepsRepo(
         repo,
         key_path,
@@ -244,6 +248,7 @@ def invoke(
     repo: DepsRepo, argv: list[str], monkeypatch: pytest.MonkeyPatch, *, sign: bool = False
 ) -> int:
     monkeypatch.chdir(repo.root)
+    _approver.history_for(repo.root).configure(monkeypatch, "governance/evidence.json")
     monkeypatch.setattr(
         "ranex.cli.main.governed_repository_root", lambda: repo.root.resolve()
     )

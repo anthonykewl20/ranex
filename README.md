@@ -83,6 +83,10 @@ frozen expected test IDs and rejection of missing results. Scan evidence
 reduces any SARIF 2.1.0 reporter against a frozen scope and accepted-findings
 map; `ranex markers` is the kernel's own scanner for `ranex:` deliberate-
 shortcut markers — a cut corner may be taken, but it may not be silent.
+Claims that require a delegated review bind the
+`delegated-review-sarif-2.1.0` reporter; it requires the materialized review
+packet and matching packet metadata in every explicit declaration. Generic
+SARIF claims retain the `sarif-2.1.0` reporter.
 
 After you have committed the policy, public keyring and frozen test manifest,
 provisioned dependencies and configured the signing key, the core loop is:

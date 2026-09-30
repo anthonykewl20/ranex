@@ -3,7 +3,7 @@
 **Updated:** 2026-09-30
 **Active slice:** docs/slices/SLICE-104-audit-remediation-and-qualification.md
 
-Defects tracked in GitHub #151–#185 and #187–#197; #186 tracks the five
+Defects tracked in GitHub #151–#185 and #187–#201; #186 tracks the five
 scanner/review/gate paths and production qualification.
 
 Implementation is in an isolated audit remediation worktree. Admission,
@@ -14,6 +14,9 @@ benchmark receipt wiring have targeted regression fixes.
 Verification remains IN PROGRESS. No issue is closed and no final-commit
 full-suite PASS is claimed. The original audit found 2306 passed, 90
 skipped, 12 failed and 26 errors, including historical fixture drift.
+The first valid remediation full-suite run was also red: 2471 passed,
+37 skipped, 98 failed and 25 errors. Its commit predates the subsequent
+history-fixture, SARIF and task-journal repairs; final qualification is pending.
 
 Scanner qualification: 11 real CLI artifacts passed official SARIF 2.1.0
 schema validation. Schema validity does not certify semantic completeness

@@ -145,6 +145,9 @@ def invoke(
             _approver.strip_approvers(monkeypatch)
         else:
             monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
+        if argv[0] != "keygen":
+            evidence = argv[argv.index("--evidence") + 1] if "--evidence" in argv else "governance/evidence.json"
+            _approver.history_for(repo).configure(monkeypatch, evidence)
         return main(argv)
 
 
@@ -160,6 +163,7 @@ def write_keyring(repo: Path, approver_public: str, **producers: str) -> None:
     # RISK-07: the committed keyring carries the catalogued approver beside
     # the producers, or no evaluation of this tree can name one.
     _approver.register_approver(keyring, "reviewer", approver_public)
+    _approver.register_history_service(repo, keyring, repo.parent)
 
 
 def subject_digest(repo: Path, ref: str = "HEAD") -> str:
@@ -241,10 +245,8 @@ def record(
 def write_evidence(
     repo: Path, records: list[dict[str, object]], name: str = "evidence.json"
 ) -> Path:
-    path = repo / name
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(records, indent=2) + "\n", encoding="utf-8")
-    return path
+    _approver.history_for(repo).write(records, name)
+    return repo / name
 
 
 def run_cmd(
@@ -630,6 +632,7 @@ def test_unreadable_evidence_is_loud_not_absent(
 
     vault = repo / "vault"
     vault.mkdir()
+    _approver.history_for(repo).establish("vault/evidence.json")
     valid = signed(
         record(
             claim="tests-executed",
@@ -677,6 +680,7 @@ def test_run_refuses_before_running_when_evidence_is_corrupt(
     write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     commit_all(repo)
 
+    _approver.history_for(repo).establish("evidence.json")
     (repo / "evidence.json").write_text("[{ truncated", encoding="utf-8")
 
     marker = repo / "ran.txt"
@@ -881,6 +885,8 @@ def test_evidence_exemption_never_covers_a_tracked_file(
     write_keyring(repo, keys.approver_public, worker=keys.public["worker"])
     (repo / "payload.json").write_text("[]\n", encoding="utf-8")
     commit_all(repo)
+
+    _approver.history_for(repo).establish("payload.json")
 
     # Tracked, committed, and now different from HEAD — dirty by any reading,
     # and exactly what `run` promises never to bind a subject digest to.

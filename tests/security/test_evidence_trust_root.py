@@ -149,6 +149,9 @@ def invoke(
             _approver.strip_approvers(monkeypatch)
         else:
             monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
+        if argv[0] != "keygen":
+            evidence = argv[argv.index("--evidence") + 1] if "--evidence" in argv else "governance/evidence.json"
+            _approver.history_for(repo).configure(monkeypatch, evidence)
         return main(argv)
 
 
@@ -164,6 +167,7 @@ def write_keyring(repo: Path, approver_public: str, **producers: str) -> None:
     # RISK-07: the committed keyring carries the catalogued approver beside
     # the producers, or no evaluation of this tree can name one.
     _approver.register_approver(keyring, "reviewer", approver_public)
+    _approver.register_history_service(repo, keyring, repo.parent)
 
 
 def git_output(repo: Path, *args: str) -> str:
@@ -225,9 +229,7 @@ def record(
 
 
 def write_evidence(repo: Path, records: list[dict[str, object]]) -> None:
-    (repo / "evidence.json").write_text(
-        json.dumps(records, indent=2) + "\n", encoding="utf-8"
-    )
+    _approver.history_for(repo).write(records, "evidence.json")
 
 
 def run_cmd(
@@ -547,10 +549,15 @@ def test_rejection_without_a_claim_id_is_not_reported_as_absence(
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
-    assert code == EXIT_FAIL, output
-    assert "REFUSED" in output, (
-        "the tampered record must be reported as refused: " + output
-    )
+    # The retained history rejects an unnamed observation before admission;
+    # admission's narrower malformed-record contract remains independently checked.
+    from ranex.governed_execution.domain.admission import admit
+
+    rejection, = admit([tampered], {"worker": keys.public["worker"]}).rejections
+    assert rejection.claim_id is None
+    assert code == EXIT_USAGE, output
+    assert "E-OBSERVATION-CHAIN" in output and "names no claim_id/producer_id" in output
+    assert not any(line.startswith(("PASS  ", "FAIL  ")) for line in output.splitlines())
 
     absence_lines = [
         line for line in output.splitlines()

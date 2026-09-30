@@ -3,7 +3,7 @@
 **Status:** open
 
 Tracking issue: #186. Defect issues: #151–#185,
-#187–#197. No final-commit full-suite PASS claimed.
+#187–#201. No final-commit full-suite PASS claimed.
 
 This change repairs the executable paths identified by the code audit:
 admission retains record identity through qualification; task judge and
@@ -53,3 +53,16 @@ The pinned static and native build closures were remeasured from actual
 compiler-opened inputs, independently rebuilt twice and matched byte for byte.
 Public launcher build/install/qualify passed for this isolated candidate only;
 newer user checkout changes have not been included or qualified.
+
+The shared SARIF reader validates the core fields the gate interprets before
+reduction. Mandatory delegated-review claims use a dedicated reporter binding
+and reject absent or substituted packets. This is a bounded ingestion profile,
+not a claim of complete SARIF conformance or model-review effectiveness.
+
+Task-journal receipts preserve their separate authority under verdict v3:
+they carry no repository-history checkpoint and cannot authorize a current
+repository gate. Task landing still evaluates current gate evidence.
+
+The first valid remediation full-suite run at d49891e was red: 2471 passed,
+37 skipped, 98 failed and 25 errors. Subsequent fixes and fixture ceremonies
+require a new committed-tree run; targeted passes do not replace that result.
