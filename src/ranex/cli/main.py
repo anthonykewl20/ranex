@@ -3767,7 +3767,7 @@ def _scan_freeze_reader(
     depth = len(artifact_relative.parts) - 1
 
     def read(path: Path) -> object:
-        raw = read_results_artifact(path)
+        raw = read_results_artifact(artifact_relative, subject_root=path.parents[depth])
         return observed_findings(
             raw, path.parents[depth], require_review=reporter == REVIEW_REPORTER
         )
@@ -3830,7 +3830,7 @@ def _antislop_freeze_reader(artifact_relative: Path) -> Callable[[Path], object]
         from ranex.foundation.suite_results import read_results_artifact
 
         census, findings, witnessed = _parse(
-            read_results_artifact(path), path.parents[depth]
+            read_results_artifact(artifact_relative, subject_root=path.parents[depth]), path.parents[depth]
         )
         return {
             "census": census,

@@ -41,6 +41,7 @@ from ranex.foundation.scan_results import (
     _findings,
     _reduce_scan_findings,
     _sarif_packet_digest,
+    _subject_file_bytes,
     _subject_relative,
     _validate_sarif_core,
     validate_scan_manifest,
@@ -186,11 +187,12 @@ def resolve_anchor(subject_root: Path, path: str, excerpt: str) -> tuple[int, in
 
     if not isinstance(excerpt, str) or not excerpt.strip():
         return None
-    subject_file = subject_root / path
     try:
-        raw = subject_file.read_text(encoding="utf-8")
-    except OSError:
-        return None
+        raw = _subject_file_bytes(subject_root, path).decode("utf-8")
+    except ValueError as exc:
+        if isinstance(exc.__cause__, FileNotFoundError):
+            return None
+        raise
     needle = _normalise_excerpt(excerpt)
     if not needle:
         return None
@@ -372,8 +374,7 @@ def _rewrite_with_rederived_regions(
                 region["endLine"] = end
             snippet = region.setdefault("snippet", {})
             if isinstance(snippet, dict):
-                subject_file = subject_root / path
-                lines = subject_file.read_text(encoding="utf-8").splitlines(keepends=True)
+                lines = _subject_file_bytes(subject_root, path).decode("utf-8").splitlines(keepends=True)
                 region_text = "".join(lines[start - 1 : end]).rstrip("\n")
                 snippet["text"] = region_text
     return rewritten
@@ -473,8 +474,7 @@ def emit_worker_sarif(
 ) -> bytes:
     """Deterministic worker: packet in → SARIF out (no model, for proofs)."""
 
-    packet_path = root / "governance" / "review-packet.json"
-    payload = json.loads(packet_path.read_text(encoding="utf-8"))
+    payload = json.loads(_subject_file_bytes(root, "governance/review-packet.json").decode("utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("governance/review-packet.json must be an object")
     digest = packet_digest(validate_packet(payload))

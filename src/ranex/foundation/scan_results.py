@@ -56,7 +56,11 @@ from typing import Any, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
-from ranex.foundation.suite_results import validate_suite_results
+from ranex.foundation.suite_results import (
+    probe_results_artifact,
+    read_results_artifact,
+    validate_suite_results,
+)
 
 REVIEW_REPORTER = "delegated-review-sarif-2.1.0"
 SCAN_REPORTERS = frozenset({"sarif-2.1.0", REVIEW_REPORTER})
@@ -171,7 +175,7 @@ def scan_manifest_digest(
             "review_category": "rule-id-then-properties-category-v1",
             "review_packet": "trusted-required-dispatch-v2",
             "review_required": require_review,
-            "ingestion_core": "strict-interpreted-structure-v2-unique-rules",
+            "ingestion_core": "strict-interpreted-structure-v3-confined-subject-reads",
             "coverage": "explicit-witness-required-v1",
             "generic_identity": "subject-region-v1",
         },
@@ -309,7 +313,7 @@ def _subject_relative(uri: object, subject_root: Path) -> str:
     candidate = Path(raw)
     if candidate.is_absolute():
         try:
-            relative = candidate.resolve().relative_to(subject_root.resolve())
+            relative = candidate.absolute().relative_to(subject_root.absolute())
         except ValueError as exc:
             raise ValueError(
                 f"SARIF result names {uri!r}, which is outside the materialised subject"
@@ -319,6 +323,24 @@ def _subject_relative(uri: object, subject_root: Path) -> str:
         if any(part == ".." for part in relative.parts):
             raise ValueError(f"SARIF result names an escaping path: {uri!r}")
     return relative.as_posix()
+
+
+def _subject_file_bytes(subject_root: Path, path: str) -> bytes:
+    """Bounded bytes from a regular subject file, with no symlink traversal."""
+
+    return read_results_artifact(path, subject_root=subject_root)
+
+
+def _subject_file_present(subject_root: Path, path: str) -> bool:
+    """Only absence is missing; unsafe or oversized scope files refuse."""
+
+    try:
+        probe_results_artifact(path, subject_root=subject_root)
+    except ValueError as exc:
+        if isinstance(exc.__cause__, FileNotFoundError):
+            return False
+        raise
+    return True
 
 
 def _region_bytes(
@@ -331,9 +353,8 @@ def _region_bytes(
     there, is a claim about a line that was never read.
     """
 
-    subject_file = subject_root / path
     try:
-        raw = subject_file.read_bytes()
+        raw = _subject_file_bytes(subject_root, path)
     except OSError as exc:
         raise ValueError(
             f"SARIF result names {path!r}, which the materialised subject does not carry"
@@ -401,7 +422,9 @@ def _findings(
                 location = artifact.get("location")
                 if not isinstance(location, dict):
                     raise ValueError("SARIF artifact coverage requires a location object")
-                witnessed.add(_subject_relative(location.get("uri"), subject_root))
+                path = _subject_relative(location.get("uri"), subject_root)
+                _subject_file_present(subject_root, path)
+                witnessed.add(path)
 
         levels = _driver_levels(run)
         results = run.get("results", [])
@@ -478,14 +501,18 @@ def _materialised_packet_digest(subject_root: Path) -> str | None:
     (ordinary scanner SARIF); presence means substitution is detectable.
     """
 
-    packet_path = subject_root / "governance" / "review-packet.json"
-    if not packet_path.is_file():
-        return None
+    packet_path = "governance/review-packet.json"
+    try:
+        raw = _subject_file_bytes(subject_root, packet_path)
+    except ValueError as exc:
+        if isinstance(exc.__cause__, FileNotFoundError):
+            return None
+        raise
     # Lazy: delegated_review imports this module's region helpers.
     from ranex.foundation.delegated_review import packet_digest, validate_packet
 
     try:
-        payload = json.loads(packet_path.read_text(encoding="utf-8"))
+        payload = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(
             f"refusing delegated-review packet at {packet_path}: {exc}"
@@ -589,11 +616,10 @@ def _reduce_scan_findings(
         if path in outcomes:
             outcomes[path] = "failed"
 
-    subject = subject_root.resolve()
     missing = sorted(
         path
         for path in scope
-        if not (subject / path).is_file() or (witnessed is not None and path not in witnessed)
+        if not _subject_file_present(subject_root, path) or (witnessed is not None and path not in witnessed)
     )
     expected = set(scan_expected_ids(validated))
     observed = set(outcomes)
@@ -628,10 +654,10 @@ def parse_scan_artifact(
 ) -> dict[str, object]:
     """Read a present SARIF artifact no larger than 50 MiB and summarise it."""
 
-    from ranex.foundation.suite_results import read_results_artifact
-
+    relative = Path(path).absolute().relative_to(subject_root.absolute())
     return scan_results_from_sarif(
-        read_results_artifact(path), manifest, subject_root=subject_root, require_review=require_review
+        _subject_file_bytes(subject_root, str(relative)), manifest,
+        subject_root=subject_root, require_review=require_review
     )
 
 

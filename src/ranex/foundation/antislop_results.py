@@ -55,6 +55,8 @@ from ranex.foundation.scan_results import (
     _SARIF_VERSION,
     SARIF_LEVELS,
     _region_bytes,
+    _subject_file_bytes,
+    _subject_file_present,
     _subject_relative,
     _validate_sarif_core,
     fingerprint,
@@ -152,7 +154,7 @@ def antislop_expectations_digest(manifest: Mapping[str, object]) -> str:
     validated = validate_antislop_expectations(dict(manifest))
     material = {
         "schema": "ranex-antislop-expectations-binding-v3",
-        "ingestion_core": "strict-interpreted-structure-v2-unique-rules",
+        "ingestion_core": "strict-interpreted-structure-v3-confined-subject-reads",
         "expectations": validated,
         "required_structural_id": ANTISLOP_STRUCTURAL_ID,
     }
@@ -231,7 +233,9 @@ def _parse(
                 location = artifact.get("location") if isinstance(artifact, dict) else None
                 if not isinstance(location, dict):
                     raise ValueError("SARIF artifacts entries must carry a location")
-                witnessed.add(_subject_relative(location.get("uri"), subject_root))
+                path = _subject_relative(location.get("uri"), subject_root)
+                _subject_file_present(subject_root, path)
+                witnessed.add(path)
 
         results = run.get("results", [])
         if not isinstance(results, list):
@@ -347,12 +351,11 @@ def antislop_results_from_sarif(
         if path in outcomes:
             outcomes[path] = "failed"
 
-    subject = subject_root.resolve()
     missing = sorted(
         {
             path
             for path in scope
-            if not (subject / path).is_file() or (witnessed is not None and path not in witnessed)
+            if not _subject_file_present(subject_root, path) or (witnessed is not None and path not in witnessed)
         }
         | {test_id for test_id in frozen_tests if test_id not in census}
     )
@@ -429,8 +432,7 @@ def parse_antislop_artifact(
 ) -> dict[str, object]:
     """Read a present antislop artifact no larger than 50 MiB and summarise."""
 
-    from ranex.foundation.suite_results import read_results_artifact
-
+    relative = Path(path).absolute().relative_to(subject_root.absolute())
     return antislop_results_from_sarif(
-        read_results_artifact(path), manifest, subject_root=subject_root
+        _subject_file_bytes(subject_root, str(relative)), manifest, subject_root=subject_root
     )

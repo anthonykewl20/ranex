@@ -8,7 +8,8 @@ import os
 import re
 import stat
 import xml.etree.ElementTree as ET
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, TypedDict, cast
 
@@ -421,8 +422,16 @@ def parse_results_artifact(
     )
 
 
-def read_results_artifact(path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES) -> bytes:
-    """Read one regular, non-symlink artifact through a single bounded fd."""
+@contextmanager
+def _regular_artifact_descriptor(
+    path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES,
+    subject_root: Path | None = None,
+) -> Iterator[int]:
+    """Open a bounded regular artifact; optionally confine every path component.
+
+    With ``subject_root``, ``path`` is relative to that directory. Descriptor
+    traversal refuses parent and leaf symlinks without creating directories.
+    """
 
     artifact = Path(path)
     if type(maximum_bytes) is not int or maximum_bytes <= 0:
@@ -439,18 +448,61 @@ def read_results_artifact(path: str | Path, *, maximum_bytes: int = MAX_RESULTS_
             raise ValueError(f"results artifact is absent: {artifact}") from exc
 
     descriptor: int | None = None
+    directory: int | None = None
     try:
-        descriptor = os.open(artifact, flags)
+        if subject_root is None:
+            descriptor = os.open(artifact, flags)
+        else:
+            if (artifact.is_absolute() or not artifact.parts
+                or any(part == ".." for part in artifact.parts)):
+                raise ValueError("subject artifact must be a confined relative path")
+            directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+            directory = os.open(subject_root, directory_flags)
+            for part in artifact.parts[:-1]:
+                child = os.open(part, directory_flags, dir_fd=directory)
+                os.close(directory)
+                directory = child
+            descriptor = os.open(artifact.name, flags, dir_fd=directory)
     except FileNotFoundError as exc:
         raise ValueError(f"results artifact is absent: {artifact}") from exc
     except OSError as exc:
         raise ValueError(f"cannot open results artifact {artifact}: {exc}") from exc
+    finally:
+        if directory is not None:
+            os.close(directory)
 
     try:
         identity = os.fstat(descriptor)
         if not stat.S_ISREG(identity.st_mode):
             raise ValueError(f"results artifact is not a regular file: {artifact}")
 
+        if identity.st_size > maximum_bytes:
+            limit = "50 MB" if maximum_bytes == MAX_RESULTS_BYTES else f"{maximum_bytes} byte"
+            raise ValueError(f"results artifact exceeds the {limit} limit")
+        yield descriptor
+    except OSError as exc:
+        raise ValueError(f"cannot read results artifact {artifact}: {exc}") from exc
+    finally:
+        os.close(descriptor)
+
+
+def probe_results_artifact(
+    path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES,
+    subject_root: Path | None = None,
+) -> None:
+    """Check confined regular-file identity and size without reading contents."""
+
+    with _regular_artifact_descriptor(path, maximum_bytes=maximum_bytes, subject_root=subject_root):
+        pass
+
+
+def read_results_artifact(
+    path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES,
+    subject_root: Path | None = None,
+) -> bytes:
+    """Read bounded bytes using the same file checks as metadata-only probes."""
+
+    with _regular_artifact_descriptor(path, maximum_bytes=maximum_bytes, subject_root=subject_root) as descriptor:
         remaining = maximum_bytes + 1
         chunks: list[bytes] = []
         while remaining:
@@ -464,7 +516,3 @@ def read_results_artifact(path: str | Path, *, maximum_bytes: int = MAX_RESULTS_
             limit = "50 MB" if maximum_bytes == MAX_RESULTS_BYTES else f"{maximum_bytes} byte"
             raise ValueError(f"results artifact exceeds the {limit} limit")
         return raw
-    except OSError as exc:
-        raise ValueError(f"cannot read results artifact {artifact}: {exc}") from exc
-    finally:
-        os.close(descriptor)

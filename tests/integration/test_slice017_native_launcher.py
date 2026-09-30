@@ -140,8 +140,9 @@ RESPONSE_LIMIT = 65_536
 # and the approvers map threaded to the verdict readers. No confinement,
 # launcher or strict-local call site is touched. This pin is the merge of all five.
 # Audit remediation: authenticated history, serialized task merge, explicit
-# review reporters and paired runtime output exemptions; native routing retained.
-MAIN_PY_SHA256 = "daf7a8e93be4ccf9df6fd98d07e56ffbf9dbf809e7bf458f77c6c06df3665006"
+# review reporters, confined scanner artifact reads and paired runtime output
+# exemptions; native routing retained.
+MAIN_PY_SHA256 = "d2d50b300e1d904f7acf18f50701e99478560f199c143dc58550ccda7d219322"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

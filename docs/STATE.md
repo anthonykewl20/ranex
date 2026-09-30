@@ -1,9 +1,9 @@
 # State
 
-**Updated:** 2026-09-30
+**Updated:** 2026-10-01
 **Active slice:** docs/slices/SLICE-104-audit-remediation-and-qualification.md
 
-Defects tracked in GitHub #151–#185 and #187–#201; #186 tracks the five
+Defects tracked in GitHub #151–#185 and #187–#204; #186 tracks the five
 scanner/review/gate paths and production qualification.
 
 Implementation is in an isolated audit remediation worktree. Admission,
@@ -22,6 +22,10 @@ Scanner qualification: 11 real CLI artifacts passed official SARIF 2.1.0
 schema validation. Schema validity does not certify semantic completeness
 or delegated model review accuracy. The isolated candidate passed public native build/install/qualify.
 Full-suite and model review effectiveness remain UNVERIFIED.
+
+Independent review found duplicate-rule severity downgrade (#202), unsafe
+subject reads (#203), and missing scanner coverage qualification (#204).
+Their fixes and real scanner controls require final committed-tree qualification.
 
 ADP / architecture freeze: ADR-065 accepted; landing retains its architecture
 claim. The verdict kernel remains unchanged.

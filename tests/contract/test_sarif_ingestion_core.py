@@ -115,9 +115,12 @@ def test_valid_message_forms_and_properties_extensions_preserve_severity(tmp_pat
     ('generic', 'sha256:c94d376a7184b1d8427310b4f8c582caf2b4bef1139dda818120aab4814decc3'),
     ('review', 'sha256:d5a9eee128e46c131eff2fa0f35376375011a0fb2b1085e6d2eab38cf4ace614'),
     ('antislop', 'sha256:cc81edbf605f24849664da356c46f6b15a690b0b7d984609d75394370469bcf1'),
+    ('generic', 'sha256:21b77bf2cec80aea094a55431d4d63c4e4b8e63c7c830a0c001decb06e7fa37d'),
+    ('review', 'sha256:b3f3c948bf6ff88fb0a775fa3340945e94eaedf55e56154083335c0c4158545b'),
+    ('antislop', 'sha256:bfccfc01c6e76c9202b188616c338b076e54ce3840d09d442a2a41da4652bfbf'),
 ])
 def test_pre_unique_rule_validation_summary_cannot_satisfy_current_claim(family, legacy_digest):
-    """Retained clean summaries from the ambiguous-rule profile must be rerun."""
+    """Retained summaries from ambiguous-rule or unconfined-read profiles must be rerun."""
     from ranex.foundation.antislop_results import (
         antislop_expectations_digest,
         antislop_expected_ids,

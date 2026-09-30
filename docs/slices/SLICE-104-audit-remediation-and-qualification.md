@@ -3,7 +3,7 @@
 **Status:** open
 
 Tracking issue: #186. Defect issues: #151–#185,
-#187–#201. No final-commit full-suite PASS claimed.
+#187–#204. No final-commit full-suite PASS claimed.
 
 This change repairs the executable paths identified by the code audit:
 admission retains record identity through qualification; task judge and
@@ -66,3 +66,9 @@ repository gate. Task landing still evaluates current gate evidence.
 The first valid remediation full-suite run at d49891e was red: 2471 passed,
 37 skipped, 98 failed and 25 errors. Subsequent fixes and fixture ceremonies
 require a new committed-tree run; targeted passes do not replace that result.
+
+Duplicate rule identifiers refuse before severity reduction (#202). Subject
+regions, packets and artifacts share bounded regular-file reads confined by
+directory descriptors (#203); metadata-only coverage probes avoid rereading
+file contents. Missing scanner coverage remains a production qualification
+blocker (#204), reproduced through authenticated public commands with real Ruff.
