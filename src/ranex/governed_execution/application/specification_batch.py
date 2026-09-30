@@ -23,9 +23,9 @@ from pathlib import Path
 from typing import Any, NoReturn, cast
 
 from ranex.cli.repository import git, uncommitted_paths
-from ranex.execution.log_redaction import collect_redaction_literals, redact_text
-from ranex.execution.retained_logs import truncate_tail
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
+from ranex.foundation.log_redaction import collect_redaction_literals, redact_text
+from ranex.foundation.retained_logs import truncate_tail
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,

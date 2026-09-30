@@ -80,3 +80,13 @@ The next full run at b3b9ccc finished with 2691 passed, 37 skipped and 6 failed.
 Sealed nested fixture assumptions, captured output and manifest drift are still
 being investigated. Repeated per-finding source reads also need improvement
 (#205); the review reducer read 400 MiB for 100 findings in a 1 MiB file.
+
+### R55 — frozen architecture layering (#206)
+
+The real architecture scan reported forbidden governed_execution → execution
+imports in batch failure diagnostics. Shared log redaction and retention now
+live in foundation; execution retains compatibility exports. No freeze edges
+were widened. A shipped-tree scanner regression was red with both findings and
+is green. Logging, architecture, unchanged kernel and the formerly failing
+host qualification gate case passed 101 focused checks. Final full-suite
+qualification and refreeze remain pending.

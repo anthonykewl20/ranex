@@ -3,7 +3,7 @@
 **Updated:** 2026-10-01
 **Active slice:** docs/slices/SLICE-104-audit-remediation-and-qualification.md
 
-Defects tracked in GitHub #151–#185 and #187–#205; #186 tracks the five
+Defects tracked in GitHub #151–#185 and #187–#208; #186 tracks the five
 scanner/review/gate paths and production qualification.
 
 Implementation is in an isolated audit remediation worktree. Admission,
@@ -28,6 +28,8 @@ subject reads (#203), and missing scanner coverage qualification (#204).
 Their fixes and real scanner controls require final committed-tree qualification.
 The b3b9ccc full run: 2691 passed, 37 skipped, 6 failed. Sealed nested
 fixtures, captured output and manifest drift remain under investigation.
+The frozen architecture exposed two forbidden diagnostic imports (#206);
+shared foundation utilities restore the unchanged policy (101 focused passed).
 
 ADP / architecture freeze: ADR-065 accepted; landing retains its architecture
 claim. The verdict kernel remains unchanged.

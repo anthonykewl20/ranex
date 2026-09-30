@@ -539,3 +539,14 @@ def test_mixed_relative_import_exposes_a_forbidden_cycle_return_edge(
         },
     )
     assert findings(scan(tmp_path, raw)) == []
+
+
+def test_shipped_repository_obeys_its_pinned_architecture_graph() -> None:
+    root = Path(__file__).resolve().parents[2]
+    relative = "governance/architecture-freeze.json"
+    raw = (root / relative).read_bytes()
+    output = arch_sarif_bytes(
+        root, raw, freeze_relative=relative,
+        expected_digest=freeze_digest_of_bytes(raw),
+    )
+    assert findings(output) == []

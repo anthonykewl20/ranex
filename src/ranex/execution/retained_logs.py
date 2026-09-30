@@ -1,236 +1,53 @@
-"""Durable, redacted retention of execution-stream logs."""
+"""Compatibility exports for the shared foundation logging utilities."""
 
-from __future__ import annotations
-
-import hashlib
-from collections.abc import Mapping, Sequence
-from pathlib import Path
-
-from ranex.execution.log_redaction import redact_text
-from ranex.foundation.atomic_writer import write_atomic
-from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
-
-DEFAULT_LOG_MAX_BYTES: int = 262_144
-MIN_LOG_MAX_BYTES: int = 4_096
-MAX_LOG_MAX_BYTES: int = 8_388_608
-EMPTY_STREAM_SHA256: str = "sha256:" + hashlib.sha256(b"").hexdigest()
-
-
-def log_dir_for_outcome(outcome: Path) -> Path:
-    """Return the sidecar directory reserved for an outcome's retained logs."""
-
-    return outcome.with_name(outcome.name + ".logs")
-
-
-def instruction_record(
-    prompt: str, *, handbook_chapters: Sequence[str] = ()
-) -> dict[str, object]:
-    """The instruction a delegated worker is handed, carried verbatim.
-
-    ``prompt`` is the exact argv string passed to the harness — since ADR-062
-    (#100) that is the operator's words with any injected handbook chapters
-    already composed into them, so the digest covers the chapters by covering
-    the composed string. ``handbook_chapters`` remains the composition point
-    for a mechanism that hands chapters alongside the prompt instead of
-    inside it; it is empty today.
-    """
-
-    return {"handbook_chapters": list(handbook_chapters), "prompt": prompt}
-
-
-def instruction_bytes(
-    prompt: str, *, handbook_chapters: Sequence[str] = ()
-) -> bytes:
-    """Canonical bytes of the instruction record handed to the worker."""
-
-    return canonical_json_bytes(
-        instruction_record(prompt, handbook_chapters=handbook_chapters)
-    )
-
-
-def instruction_digest(
-    prompt: str, *, handbook_chapters: Sequence[str] = ()
-) -> str:
-    """sha256 over the canonical instruction bytes actually handed over.
-
-    Computed before redaction: the digest names what the worker received,
-    while the retained ``instruction`` stream holds the redacted form of the
-    same bytes under the ADR-043 rules. The two agree exactly when nothing
-    was redacted or truncated.
-    """
-
-    return "sha256:" + canonical_sha256(
-        instruction_record(prompt, handbook_chapters=handbook_chapters)
-    )
-
-
-def validate_max_bytes(value: int) -> int:
-    """Validate the retained-log byte cap."""
-
-    if MIN_LOG_MAX_BYTES <= value <= MAX_LOG_MAX_BYTES:
-        return value
-    raise ValueError("--log-max-bytes must be between 4096 and 8388608 bytes")
-
-
-def decode_stream(data: bytes | str | None) -> str:
-    """Decode a captured process stream without losing malformed-byte evidence."""
-
-    if data is None:
-        return ""
-    if isinstance(data, str):
-        return data
-    return data.decode("utf-8", errors="replace")
-
-
-def truncate_tail(text: str, max_bytes: int) -> tuple[str, bool, int, int]:
-    """Retain a UTF-8-safe tail, prefixed with an exact final-size marker."""
-
-    encoded = text.encode("utf-8")
-    original_bytes = len(encoded)
-    if original_bytes <= max_bytes:
-        return text, False, original_bytes, original_bytes
-    if max_bytes <= 0:
-        return "", True, 0, original_bytes
-
-    marker_lengths = _marker_lengths(original_bytes, max_bytes)
-    retained_candidates: list[tuple[bytes, bytes]] = []
-    for reservation in {
-        marker_length + extra_bytes
-        for marker_length in marker_lengths
-        for extra_bytes in range(4)
-    }:
-        if reservation > max_bytes:
-            continue
-        retained_tail = _utf8_tail(encoded, max_bytes - reservation)
-        for marker_length in marker_lengths:
-            retained_bytes = marker_length + len(retained_tail)
-            marker = _truncation_marker(original_bytes, retained_bytes)
-            if len(marker) == marker_length and retained_bytes <= max_bytes:
-                retained_candidates.append((marker, retained_tail))
-
-    if not retained_candidates:
-        return "", True, 0, original_bytes
-
-    marker, retained_tail = max(
-        retained_candidates,
-        key=lambda candidate: len(candidate[0]) + len(candidate[1]),
-    )
-    retained_bytes = len(marker) + len(retained_tail)
-    retained_text = marker.decode("ascii") + retained_tail.decode("utf-8")
-    return retained_text, True, retained_bytes, original_bytes
-
-
-def persist_stream(
-    directory: Path,
-    name: str,
-    text: str,
-    *,
-    literals: Sequence[tuple[str, str]],
-    max_bytes: int,
-) -> dict[str, object]:
-    """Redact, retain, and atomically publish one named execution stream."""
-
-    redacted, redactions = redact_text(text, literals)
-    retained_text, truncated, retained_bytes, original_bytes = truncate_tail(redacted, max_bytes)
-    data = retained_text.encode("utf-8")
-    directory.mkdir(parents=True, exist_ok=True)
-    filename = f"{name}.log"
-    write_atomic(directory / filename, data, root=directory)
-    return {
-        "file": filename,
-        "bytes": retained_bytes,
-        "sha256": "sha256:" + hashlib.sha256(data).hexdigest(),
-        "original_bytes": original_bytes,
-        "truncated": truncated,
-        "redactions": redactions,
-    }
-
-
-def persist_envelope(directory: Path, envelope_bytes: bytes) -> dict[str, object]:
-    """Atomically retain the repair envelope beside the execution streams.
-
-    SLICE-092. The record is the ADR-043 stream shape (file, bytes, sha256
-    of the bytes exactly as retained — the caller redacts before calling,
-    so the digest is a promise about what a reader will see).
-    """
-
-    directory.mkdir(parents=True, exist_ok=True)
-    write_atomic(
-        directory / "repair-envelope.json", envelope_bytes, root=directory
-    )
-    return {
-        "file": "repair-envelope.json",
-        "bytes": len(envelope_bytes),
-        "sha256": "sha256:" + hashlib.sha256(envelope_bytes).hexdigest(),
-    }
-
-
-def write_log_manifest(
-    directory: Path,
-    streams: Mapping[str, Mapping[str, object]],
-    policy: Mapping[str, object],
-    *,
-    instruction_digest: str | None = None,
-    handbook: Mapping[str, object] | None = None,
-    envelope: Mapping[str, object] | None = None,
-) -> None:
-    """Atomically publish the canonical manifest for retained execution streams.
-
-    Three additive fields, all omitted when not in play (fanout parent, host
-    workflow): ``instruction_digest`` names what the delegated worker was
-    told — sha256 over the canonical bytes of the composed instruction —
-    beside the streams of what it produced (#111); ``handbook`` records the
-    ADR-062 handbook resolution — resolution digest, chapter ids, and
-    matched/unmatched counts — when a delegate packet carried kernel-handbook
-    chapters; ``envelope`` records the SLICE-092 retained repair envelope's
-    stream record when the run retained one. None appears in any evidence
-    envelope or verdict.
-    """
-
-    manifest: dict[str, object] = {
-        "version": 1,
-        "policy": dict(policy),
-        "streams": dict(streams),
-    }
-    if instruction_digest is not None:
-        manifest["instruction_digest"] = instruction_digest
-    if handbook is not None:
-        manifest["handbook"] = dict(handbook)
-    if envelope is not None:
-        manifest["envelope"] = dict(envelope)
-    write_atomic(
-        directory / "manifest.json",
-        canonical_json_bytes(manifest) + b"\n",
-        root=directory,
-    )
-
-
-def _truncation_marker(original_bytes: int, retained_bytes: int) -> bytes:
-    """Format the ASCII marker whose values describe the final retained file."""
-
-    dropped_bytes = original_bytes - retained_bytes
-    return (
-        f"[ranex truncated: policy=tail dropped={dropped_bytes} retained={retained_bytes} "
-        f"original={original_bytes}]\n"
-    ).encode("ascii")
-
-
-def _utf8_tail(data: bytes, max_bytes: int) -> bytes:
-    """Return at most ``max_bytes`` from the tail at a UTF-8 character boundary."""
-
-    if max_bytes <= 0:
-        return b""
-    return data[-max_bytes:].decode("utf-8", errors="ignore").encode("utf-8")
-
-
-def _marker_lengths(original_bytes: int, max_bytes: int) -> set[int]:
-    """Return all marker lengths possible from the relevant decimal digit widths."""
-
-    fixed_bytes = len(_truncation_marker(0, 0)) - 3
-    original_digits = len(str(original_bytes))
-    retained_digits = len(str(min(original_bytes, max_bytes)))
-    return {
-        fixed_bytes + dropped_digits + retained_digits_value + original_digits
-        for dropped_digits in range(1, original_digits + 1)
-        for retained_digits_value in range(1, retained_digits + 1)
-    }
+from ranex.foundation.retained_logs import (
+    DEFAULT_LOG_MAX_BYTES as DEFAULT_LOG_MAX_BYTES,
+)
+from ranex.foundation.retained_logs import (
+    EMPTY_STREAM_SHA256 as EMPTY_STREAM_SHA256,
+)
+from ranex.foundation.retained_logs import (
+    MAX_LOG_MAX_BYTES as MAX_LOG_MAX_BYTES,
+)
+from ranex.foundation.retained_logs import (
+    MIN_LOG_MAX_BYTES as MIN_LOG_MAX_BYTES,
+)
+from ranex.foundation.retained_logs import (
+    _marker_lengths as _marker_lengths,
+)
+from ranex.foundation.retained_logs import (
+    _truncation_marker as _truncation_marker,
+)
+from ranex.foundation.retained_logs import (
+    _utf8_tail as _utf8_tail,
+)
+from ranex.foundation.retained_logs import (
+    decode_stream as decode_stream,
+)
+from ranex.foundation.retained_logs import (
+    instruction_bytes as instruction_bytes,
+)
+from ranex.foundation.retained_logs import (
+    instruction_digest as instruction_digest,
+)
+from ranex.foundation.retained_logs import (
+    instruction_record as instruction_record,
+)
+from ranex.foundation.retained_logs import (
+    log_dir_for_outcome as log_dir_for_outcome,
+)
+from ranex.foundation.retained_logs import (
+    persist_envelope as persist_envelope,
+)
+from ranex.foundation.retained_logs import (
+    persist_stream as persist_stream,
+)
+from ranex.foundation.retained_logs import (
+    truncate_tail as truncate_tail,
+)
+from ranex.foundation.retained_logs import (
+    validate_max_bytes as validate_max_bytes,
+)
+from ranex.foundation.retained_logs import (
+    write_log_manifest as write_log_manifest,
+)
