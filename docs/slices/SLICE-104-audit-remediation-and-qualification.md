@@ -223,3 +223,22 @@ schema; clean raw Ruff output remains correctly blocked without its discovery
 adapter. This is deterministic interface qualification, not model accuracy.
 Two new test identities require an actual committed-tree refreeze/load before
 final full-suite and publication acceptance.
+
+### Complete committed-candidate sealed qualification
+
+Full sealed freeze on 95bc61c: 2791 passed, 127 skipped in 482.99 seconds.
+The generated 2918-ID/158-declaration manifest loaded before integration; the
+golden is the actual normalized FROZEN line with run_exit=0. Complete XML
+agrees with every identity and both new worker controls passed. Production
+skip cross-check is empty in both directions, with zero undeclared skips.
+All declarations are unchanged from the prior ceremony. This includes the
+CI typing corrections and R61 coverage correction. Final outer committed-tree
+suite, independent review, CI and publication still require acceptance.
+
+Coverage describes regular files present after the approved command runs,
+including generated files; it does not assert every file existed at HEAD.
+Generic finding fingerprints bind whole line regions. Actual Ruff 0.16.2
+reports scalar columns after supplementary Unicode characters without naming
+columnKind; schema validation does not catch this upstream default-coordinate
+mismatch. Ranex's whole-line reduction still blocks the real F401 finding,
+but this evidence does not establish full column-coordinate interoperability.
