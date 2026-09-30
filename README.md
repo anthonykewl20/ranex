@@ -300,6 +300,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 - [SLICE-086 — Automatic signed-evidence evaluation](docs/slices/done/SLICE-086-automatic-evidence-evaluation.md): `github listen --evaluate-evidence` judges fresh evidence without executing PR code.
 
+- [SLICE-085 — GitHub App production registration](docs/slices/done/SLICE-085-github-app-production-registration.md): `github register|status|ruleset`; live App `ranex-gate` auth/install/pin observed; production soak remains UNVERIFIED (#88).
+
 <details>
 <summary>Implementation history</summary>
 

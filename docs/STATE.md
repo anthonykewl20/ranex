@@ -2,12 +2,7 @@
 
 **Updated:** 2026-09-30
 **Active slice:** none — SLICE-102 / #119 (acceptance task loop) closed on
-this branch; SLICE-085 / #88 remains blocked.
-
-**ADP / architecture freeze (promoted):**
-- ADR-065 **accepted**; `governance/architecture-freeze.json` pins
-  ranex's ten-subpackage graph + root `__init__`.
-- `landing` gate carries claim `architecture`.
+this branch; #115 gate-calibration and #88 / SLICE-085 closed on main.
 
 **#119 / ADR-061 task authority closed:** `specification approve-task` /
 `build-task` / `reapprove-task` / `land-task` and top-level `prove --task`
@@ -17,11 +12,17 @@ PASS candidate and unchanged target head. Receipts:
 `tools/dogfood/audits/2026-09-30-acceptance-task-loop/` (#95 vocabulary,
 3× deterministic repeats).
 
-**Still closed on main:** #107 authenticated approver; #108 Rekor witness;
-#109 observation log; #112 minimization ladder; #102 delegated review;
-#118 calibrated live HTTP observer.
+**#115 / MAP §8.4 gate certificates:** marker, landing, handbook-delegate
+receipts under `tools/dogfood/audits/2026-09-30-gate-calibration/`;
+`bom.yaml` `calibrated` distinct from `built`.
 
-Queue remains #115, #105, #90; #88 parked.
+**ADP / architecture freeze (promoted):** ADR-065 accepted;
+`landing` carries claim `architecture`.
+
+**Still closed:** #107–#109, #112, #102, #118, #88 (live App observed;
+production soak UNVERIFIED).
+
+Queue: #105, #90 where still open.
 
 Suite: standing host-drift / fixture red family on main unchanged by this
 ship; refreeze is IDs-only and outcome-blind.
