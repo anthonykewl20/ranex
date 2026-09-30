@@ -396,10 +396,12 @@ def load_reconciled_records(
     reconciliation = reconcile(log, records)
     for record in records:
         if not reconciliation.in_chain(record):
+            claim = record.get("claim_id") if isinstance(record, dict) else None
+            producer = record.get("producer_id") if isinstance(record, dict) else None
             raise ValueError(
                 f"{OBSERVATION_CHAIN_ERROR}: evidence record "
-                f"claim={record.get('claim_id')!r} "
-                f"producer={record.get('producer_id')!r} is absent from "
+                f"claim={claim!r} "
+                f"producer={producer!r} is absent from "
                 "the observation log; refuse rather than judge invented history"
             )
     return list(reconciliation.records), reconciliation.removed
