@@ -161,6 +161,15 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> JournalJourney:
         check=False,
     )
     assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+    for name, value in (
+        ("user.name", "journal-family journey"),
+        ("user.email", "journal-family@example.invalid"),
+    ):
+        configured = subprocess.run(
+            ["git", "-C", str(subject), "config", name, value],
+            capture_output=True, text=True, check=False,
+        )
+        assert configured.returncode == 0, configured.stderr
 
     # RISK-07: the journey's own approver — minted with the same keygen the
     # operator uses, registered as the clone's committed approver principal

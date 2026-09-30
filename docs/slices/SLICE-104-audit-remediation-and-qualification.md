@@ -104,3 +104,16 @@ finding; this is not a constant-time review engine. Targeted root controls:
 111 passed. The broader root run found one stale handbook surface location
 after moving the log implementation; its allow-list now follows that same
 implementation, with engine importers and authority boundaries unchanged.
+
+### R57 — sealed fixture authority and prerequisites (#208)
+
+Fixture approver registration now uses the actual typed catalog consumer,
+preserves existing active/retired keys and rejects role changes or key aliases.
+Journal fixtures set local Git identities before committing authority. Committed
+producer/service assertions resolve actual committed fixture identities instead
+of assuming operator names. Four live Rekor arms consume a named HTTPS
+connectivity prerequisite; HTTP refusals remain reachable and later witness
+protocol failures remain failures. The offline negative arm still executes.
+Cold-start host qualification receives the already registered service history
+environment. Root fixture/catalog/probe controls: 86 passed. Actual sealed
+rerun and final full-suite qualification remain pending.

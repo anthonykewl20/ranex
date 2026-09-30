@@ -549,7 +549,9 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
 
 def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
     operator.require("resolver", "clone", "fetch", "evidence")
-    record_live_host_qualification(operator.clone, operator.key)
+    record_live_host_qualification(
+        operator.clone, operator.key, history_environment=_HISTORY_ENV[operator.clone]
+    )
     code, out, err = ranex(
         operator.clone,
         ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],

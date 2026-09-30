@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 
 import _approver
+import _prereqs
 import pytest
 
 from ranex.foundation.canonical import canonical_json_bytes
@@ -82,6 +83,11 @@ def invoke(
 def subject_hex(repo: Path) -> str:
     tree = git(repo, "rev-parse", "HEAD^{tree}")
     return hashlib.sha256(canonical_json_bytes({"tree": tree})).hexdigest()
+
+
+@pytest.fixture
+def prereq_rekor_network() -> None:
+    _prereqs.prereq_or_skip("rekor_network")
 
 
 @pytest.fixture
@@ -162,6 +168,7 @@ def _evaluate(
 
 
 def test_arm1_publish_and_witnessed_verify(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED: witness.json present; --witnessed accepts."""
@@ -193,6 +200,7 @@ def test_arm1_publish_and_witnessed_verify(
 
 
 def test_arm2_rewrite_refused_when_witnessed(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED negative: self-consistent rewrite fails --witnessed."""
@@ -274,6 +282,7 @@ def test_arm3_network_down_refuses_and_unwitnessed_publishes(
 
 
 def test_arm4_tampered_witness_refused(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED negative: edited inclusion proof fails."""
@@ -304,6 +313,7 @@ def test_arm4_tampered_witness_refused(
 
 
 def test_arm5_repeats_identical_local_artifacts(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED: identical inputs → identical payload digests; log coalesces."""

@@ -15,7 +15,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import yaml
+
 from ranex.foundation.signing import generate_keypair
+from ranex.policy.adapters.configuration.yaml.principal_catalog import load_principals_text
+from ranex.policy.adapters.configuration.yaml.producer_keyring import _NoDuplicateKeys
 
 APPROVER_ENV = "RANEX_APPROVER_SIGNING_KEY"
 
@@ -43,31 +47,38 @@ def register_approver(keyring: Path, approver_id: str, public: str) -> None:
     never a producer: one principal, one role.
     """
 
-    lines = keyring.read_text(encoding="utf-8").splitlines(keepends=True)
-    producers = [
-        (line.split(":", 1)[0].strip(), line.split(":", 1)[1].strip())
-        for line in lines
-        if line.startswith("  ") and ": ed25519:" in line and not line.lstrip().startswith("role")
-    ]
-    approver_entry = (
-        f"  {approver_id}:\n    role: approver\n    keys:\n"
-        f"      - key: {public}\n        status: active\n"
-    )
-    for index, line in enumerate(lines):
-        if line.rstrip() == "principals:":
-            lines.insert(index + 1, approver_entry)
-            keyring.write_text("".join(lines), encoding="utf-8")
+    raw = keyring.read_text(encoding="utf-8")
+    document = yaml.load(raw, Loader=_NoDuplicateKeys)
+    if "principals" in document:
+        # Validate before editing: fixture rotation cannot repair malformed
+        # trust or reinterpret a worker/service identity as an approver.
+        load_principals_text(raw, keyring)
+    else:
+        document["principals"] = {
+            producer: {"role": "worker", "keys": [{"key": key, "status": "active"}]}
+            for producer, key in document["producers"].items()
+        }
+        signer = document.get("verdict_signer")
+        if signer is not None:
+            document["principals"].setdefault(signer["id"], {
+                "role": "service", "keys": [{"key": signer["public_key"], "status": "active"}]
+            })
+    principals = document["principals"]
+    existing = principals.get(approver_id)
+    if existing is None:
+        principals[approver_id] = {"role": "approver", "keys": [{"key": public, "status": "active"}]}
+    else:
+        if existing["role"] != "approver":
+            raise ValueError("fixture approver registration cannot change a principal's role")
+        previous = next((key for key in existing["keys"] if key["key"] == public), None)
+        if previous is not None:
+            if previous["status"] != "active":
+                raise ValueError("fixture approver rotation cannot reactivate a retired key")
             return
-    # No principals block: adopt the principal catalog wholesale, every
-    # existing producer becoming the worker principal of its own key.
-    lines.append("principals:\n")
-    for producer_id, public_key in producers:
-        lines.append(
-            f"  {producer_id}:\n    role: worker\n    keys:\n"
-            f"      - key: {public_key}\n        status: active\n"
-        )
-    lines.append(approver_entry)
-    keyring.write_text("".join(lines), encoding="utf-8")
+        existing["keys"].append({"key": public, "status": "active"})
+    encoded = yaml.safe_dump(document, sort_keys=False)
+    load_principals_text(encoded, keyring)
+    keyring.write_text(encoded, encoding="utf-8")
 
 
 def strip_approvers(monkeypatch) -> None:  # type: ignore[no-untyped-def]
