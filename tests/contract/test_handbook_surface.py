@@ -38,7 +38,7 @@ _ENGINE_IMPORTERS = {_ENGINE, "src/ranex/cli/delegation.py"}
 _MENTION_ALLOWED = {
     "src/ranex/policy/handbook.py",
     "src/ranex/cli/delegation.py",
-    "src/ranex/execution/retained_logs.py",
+    "src/ranex/foundation/retained_logs.py",
     "src/ranex/foundation/delegated_review.py",
 }
 

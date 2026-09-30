@@ -90,3 +90,17 @@ were widened. A shipped-tree scanner regression was red with both findings and
 is green. Logging, architecture, unchanged kernel and the formerly failing
 host qualification gate case passed 101 focused checks. Final full-suite
 qualification and refreeze remain pending.
+
+### R54 — repeated subject reads (#205)
+
+Generic, delegated-review and antislop interpretation now own a per-parse
+16 MiB / 32 entry subject cache, including retained line views and object
+accounting. First reads retain descriptor confinement and regular-file byte
+limits; oversized and evicted entries bypass retention. Fresh parses reacquire
+content. Delegated review reuses resolved anchors. Six benchmark summaries
+match their prior canonical values; 100-finding cases read 1 MiB instead of
+100–400 MiB. Distinct anchor searches remain linear in source lines per
+finding; this is not a constant-time review engine. Targeted root controls:
+111 passed. The broader root run found one stale handbook surface location
+after moving the log implementation; its allow-list now follows that same
+implementation, with engine importers and authority boundaries unchanged.

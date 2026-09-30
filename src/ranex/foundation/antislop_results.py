@@ -61,6 +61,7 @@ from ranex.foundation.scan_results import (
     _validate_sarif_core,
     fingerprint,
 )
+from ranex.foundation.subject_reader import SubjectReader
 from ranex.foundation.suite_results import validate_suite_results
 
 ANTISLOP_REPORTERS = frozenset({"antislop-sarif-2.1.0"})
@@ -201,6 +202,7 @@ def _parse(
     if not isinstance(runs, list) or not runs:
         raise ValueError("SARIF artifact carries no runs")
 
+    reader = SubjectReader(subject_root)
     _validate_sarif_core(document)
     census: dict[str, int] = {}
     findings: list[tuple[str, str, str]] = []
@@ -290,7 +292,7 @@ def _parse(
                 if isinstance(region.get("snippet"), dict)
                 else None
             )
-            material = _region_bytes(subject_root, path, start_line, end_line, snippet)
+            material = _region_bytes(subject_root, path, start_line, end_line, snippet, reader=reader)
             identifier = fingerprint(rule_id, path, start_line, end_line, material)
             if rule_id == RULE_CENSUS:
                 if level != "none":

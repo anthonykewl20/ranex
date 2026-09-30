@@ -46,6 +46,7 @@ from ranex.foundation.scan_results import (
     _validate_sarif_core,
     validate_scan_manifest,
 )
+from ranex.foundation.subject_reader import SubjectReader, _normalise_excerpt
 
 DELEGATED_REVIEW_REPORTERS = frozenset({"delegated-review-sarif-2.1.0"})
 
@@ -165,19 +166,8 @@ def finding_id(path: str, category: str, excerpt: str, *, occurrence: int = 0) -
     )
 
 
-def _normalise_excerpt(text: str) -> str:
-    """Whitespace-normalise an excerpt: strip diff markers and blank lines."""
 
-    lines: list[str] = []
-    for line in text.splitlines():
-        stripped = line[1:] if line[:1] in "+- " else line
-        stripped = stripped.strip()
-        if stripped:
-            lines.append(stripped)
-    return "\n".join(lines)
-
-
-def resolve_anchor(subject_root: Path, path: str, excerpt: str) -> tuple[int, int] | None:
+def resolve_anchor(subject_root: Path, path: str, excerpt: str, *, reader: SubjectReader | None = None) -> tuple[int, int] | None:
     """Derive (start_line, end_line) from a verbatim excerpt, or None.
 
     Never trusts a producer-supplied line number. Searches the subject's file
@@ -188,7 +178,7 @@ def resolve_anchor(subject_root: Path, path: str, excerpt: str) -> tuple[int, in
     if not isinstance(excerpt, str) or not excerpt.strip():
         return None
     try:
-        raw = _subject_file_bytes(subject_root, path).decode("utf-8")
+        compact = (reader or SubjectReader(subject_root)).compact_lines(path)
     except ValueError as exc:
         if isinstance(exc.__cause__, FileNotFoundError):
             return None
@@ -196,11 +186,6 @@ def resolve_anchor(subject_root: Path, path: str, excerpt: str) -> tuple[int, in
     needle = _normalise_excerpt(excerpt)
     if not needle:
         return None
-    file_lines = raw.splitlines()
-    normalised_lines = [_normalise_excerpt(line) for line in file_lines]
-    compact: list[tuple[int, str]] = [
-        (index, text) for index, text in enumerate(normalised_lines) if text
-    ]
     needle_parts = needle.split("\n")
     matches: list[tuple[int, int]] = []
     for start in range(len(compact) - len(needle_parts) + 1):
@@ -248,7 +233,8 @@ def _category_from_result(result: Mapping[str, Any]) -> str:
 
 
 def rederive_findings(
-    sarif: Mapping[str, Any], subject_root: Path
+    sarif: Mapping[str, Any], subject_root: Path, *, reader: SubjectReader | None = None,
+    _rewritten: dict[str, Any] | None = None,
 ) -> list[tuple[str, str, str]]:
     """Every result as ``(finding_id, path, level)`` with anchors re-derived.
 
@@ -263,17 +249,18 @@ def rederive_findings(
     if not isinstance(runs, list) or not runs:
         raise ValueError("SARIF artifact carries no runs")
 
+    reader = reader or SubjectReader(subject_root)
     _validate_sarif_core(sarif)
     findings: list[tuple[str, str, str]] = []
     base_counts: dict[str, int] = {}
-    for run in runs:
+    for run_index, run in enumerate(runs):
         if not isinstance(run, dict):
             raise ValueError("SARIF runs entries must be objects")
         results = run.get("results", [])
         if not isinstance(results, list):
             raise ValueError("SARIF runs[].results must be a list when present")
         levels = _driver_levels(run)
-        for result in results:
+        for result_index, result in enumerate(results):
             if not isinstance(result, dict):
                 raise ValueError("SARIF results entries must be objects")
             category = _category_from_result(result)
@@ -303,12 +290,15 @@ def rederive_findings(
                     f"delegated-review finding for {path!r} carries no verbatim excerpt; "
                     "absence blocks (ADR-060 rule 6)"
                 )
-            anchor = resolve_anchor(subject_root, path, excerpt)
+            anchor = resolve_anchor(subject_root, path, excerpt, reader=reader)
             if anchor is None:
                 raise ValueError(
                     f"delegated-review finding for {path!r} has an unresolvable "
                     "excerpt anchor; absence blocks (ADR-060 rule 6)"
                 )
+            if _rewritten is not None:
+                rewritten_result = _rewritten["runs"][run_index]["results"][result_index]
+                _rewrite_resolved_result(rewritten_result, path, category, anchor, reader)
             base = prose_free_fingerprint(path, category, excerpt, occurrence=0)
             occurrence = base_counts.get(base, 0)
             base_counts[base] = occurrence + 1
@@ -330,54 +320,25 @@ def _expected_packet_digest(document: Mapping[str, Any]) -> str:
     return digest
 
 
-def _rewrite_with_rederived_regions(
-    document: Mapping[str, Any], subject_root: Path
-) -> dict[str, Any]:
-    """Copy the SARIF with startLine/endLine replaced by re-derived anchors."""
+def _rewrite_resolved_result(
+    result: dict[str, Any], path: str, category: str, anchor: tuple[int, int], reader: SubjectReader,
+) -> None:
+    """Reuse the anchor already validated for identity; never resolve it twice."""
+    result["ruleId"] = category
+    physical = result["locations"][0]["physicalLocation"]
+    start, end = anchor
+    region = physical.get("region")
+    if not isinstance(region, dict):
+        region = {"startLine": start, "endLine": end, "snippet": {}}
+        physical["region"] = region
+    else:
+        region["startLine"] = start
+        region["endLine"] = end
+    snippet = region.setdefault("snippet", {})
+    if isinstance(snippet, dict):
+        lines = reader.text_lines(path)
+        snippet["text"] = "".join(lines[start - 1 : end]).rstrip("\n")
 
-    rewritten = copy.deepcopy(dict(document))
-    for run in rewritten.get("runs", []):
-        if not isinstance(run, dict):
-            continue
-        for result in run.get("results", []) if isinstance(run.get("results"), list) else []:
-            if not isinstance(result, dict):
-                continue
-            result["ruleId"] = _category_from_result(result)
-            excerpt = _excerpt_from_result(result)
-            if excerpt is None:
-                continue
-            locations = result.get("locations")
-            if not isinstance(locations, list) or not locations:
-                continue
-            physical = (
-                locations[0].get("physicalLocation")
-                if isinstance(locations[0], dict)
-                else None
-            )
-            if not isinstance(physical, dict):
-                continue
-            artifact_location = physical.get("artifactLocation")
-            path = _subject_relative(
-                artifact_location.get("uri") if isinstance(artifact_location, dict) else None,
-                subject_root,
-            )
-            anchor = resolve_anchor(subject_root, path, excerpt)
-            if anchor is None:
-                continue
-            start, end = anchor
-            region = physical.get("region")
-            if not isinstance(region, dict):
-                physical["region"] = {"startLine": start, "endLine": end, "snippet": {}}
-                region = physical["region"]
-            else:
-                region["startLine"] = start
-                region["endLine"] = end
-            snippet = region.setdefault("snippet", {})
-            if isinstance(snippet, dict):
-                lines = _subject_file_bytes(subject_root, path).decode("utf-8").splitlines(keepends=True)
-                region_text = "".join(lines[start - 1 : end]).rstrip("\n")
-                snippet["text"] = region_text
-    return rewritten
 
 
 def delegated_review_results_from_sarif(
@@ -419,7 +380,8 @@ def delegated_review_results_from_sarif(
 
 
 def validated_review_findings(
-    document: Mapping[str, Any], subject_root: Path, expected_packet_digest: str
+    document: Mapping[str, Any], subject_root: Path, expected_packet_digest: str,
+    *, reader: SubjectReader | None = None,
 ) -> tuple[list[tuple[str, str, str]], set[str] | None]:
     """Bind the packet, re-derive identity, and validate SARIF coverage/regions."""
 
@@ -429,11 +391,12 @@ def validated_review_findings(
             "delegated-review SARIF properties.packet_digest does not match the "
             f"bound packet ({claimed} != {expected_packet_digest}); substitution refused"
         )
-    findings = rederive_findings(document, subject_root)
-    rewritten = _rewrite_with_rederived_regions(document, subject_root)
+    reader = reader or SubjectReader(subject_root)
+    rewritten = copy.deepcopy(dict(document))
+    findings = rederive_findings(document, subject_root, reader=reader, _rewritten=rewritten)
     # Generic validation checks coverage and the actual re-derived regions;
     # only the review identities above enter the common outcome reduction.
-    _, witnessed = _findings(rewritten, subject_root)
+    _, witnessed = _findings(rewritten, subject_root, reader=reader)
     return findings, witnessed
 
 

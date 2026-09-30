@@ -55,6 +55,7 @@ from typing import Any, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
+from ranex.foundation.subject_reader import SubjectReader
 from ranex.foundation.suite_results import (
     probe_results_artifact,
     read_results_artifact,
@@ -343,7 +344,8 @@ def _subject_file_present(subject_root: Path, path: str) -> bool:
 
 
 def _region_bytes(
-    subject_root: Path, path: str, start_line: int, end_line: int, snippet: object
+    subject_root: Path, path: str, start_line: int, end_line: int, snippet: object,
+    *, reader: SubjectReader | None = None,
 ) -> bytes:
     """The subject's own bytes at a reported region — or the artifact is malformed.
 
@@ -353,12 +355,11 @@ def _region_bytes(
     """
 
     try:
-        raw = _subject_file_bytes(subject_root, path)
+        lines = (reader or SubjectReader(subject_root)).lines(path)
     except OSError as exc:
         raise ValueError(
             f"SARIF result names {path!r}, which the materialised subject does not carry"
         ) from exc
-    lines = raw.splitlines(keepends=True)
     if start_line < 1 or end_line < start_line or end_line > len(lines):
         raise ValueError(
             f"SARIF region {start_line}-{end_line} lies outside {path!r} "
@@ -378,10 +379,11 @@ def _region_bytes(
 
 
 def _findings(
-    sarif: Mapping[str, Any], subject_root: Path
+    sarif: Mapping[str, Any], subject_root: Path, *, reader: SubjectReader | None = None,
 ) -> tuple[list[tuple[str, str, str]], set[str] | None]:
     """Every result as `(finding_id, path, level)`, plus the witnessed paths."""
 
+    reader = reader or SubjectReader(subject_root)
     _validate_sarif_core(sarif)
 
     if sarif.get("version") != _SARIF_VERSION:
@@ -464,7 +466,7 @@ def _findings(
             snippet = region.get("snippet", {}).get("text") if isinstance(
                 region.get("snippet"), dict
             ) else None
-            material = _region_bytes(subject_root, path, start_line, end_line, snippet)
+            material = _region_bytes(subject_root, path, start_line, end_line, snippet, reader=reader)
             findings.append(
                 (finding_id(rule_id, path, start_line, end_line, material), path, level)
             )
@@ -492,7 +494,7 @@ def _sarif_packet_digest(document: Mapping[str, Any]) -> str | None:
     return declarations[0] if declarations else None
 
 
-def _materialised_packet_digest(subject_root: Path) -> str | None:
+def _materialised_packet_digest(subject_root: Path, *, reader: SubjectReader | None = None) -> str | None:
     """Re-derive the expected packet digest from the subject's committed packet.
 
     ``governance/review-packet.json`` is the bound packet a delegated-review
@@ -502,7 +504,7 @@ def _materialised_packet_digest(subject_root: Path) -> str | None:
 
     packet_path = "governance/review-packet.json"
     try:
-        raw = _subject_file_bytes(subject_root, packet_path)
+        raw = (reader or SubjectReader(subject_root)).read(packet_path)
     except ValueError as exc:
         if isinstance(exc.__cause__, FileNotFoundError):
             return None
@@ -561,12 +563,13 @@ def scan_results_from_sarif(
     if not isinstance(document, dict):
         raise ValueError("SARIF artifact must be a JSON object")
 
+    reader = SubjectReader(subject_root)
     claimed_packet = _sarif_packet_digest(document)
     required = require_review or expected_packet_digest is not None
     if required and claimed_packet is None:
         raise ValueError("required delegated-review SARIF must carry properties.packet_digest")
     if claimed_packet is not None:
-        materialised = _materialised_packet_digest(subject_root)
+        materialised = _materialised_packet_digest(subject_root, reader=reader)
         if required and materialised is None:
             raise ValueError("required delegated-review SARIF needs a materialised review packet")
         if materialised is not None and expected_packet_digest is not None and materialised != expected_packet_digest:
@@ -577,17 +580,12 @@ def scan_results_from_sarif(
                 "delegated-review SARIF carries properties.packet_digest but the "
                 "subject has no governance/review-packet.json to re-derive against"
             )
-        from ranex.foundation.delegated_review import delegated_review_results_from_sarif
+        from ranex.foundation.delegated_review import validated_review_findings
 
-        return delegated_review_results_from_sarif(
-            sarif_bytes,
-            validated,
-            subject_root=subject_root,
-            expected_packet_digest=expected,
-            require_review=required,
-        )
+        findings, witnessed = validated_review_findings(document, subject_root, expected, reader=reader)
+        return _reduce_scan_findings(findings, witnessed, validated, subject_root, require_review=required)
 
-    findings, witnessed = _findings(document, subject_root)
+    findings, witnessed = _findings(document, subject_root, reader=reader)
     return _reduce_scan_findings(findings, witnessed, validated, subject_root)
 
 
@@ -727,18 +725,19 @@ def observed_findings(
         raise ValueError(f"cannot parse SARIF artifact: {exc}") from exc
     if not isinstance(document, dict):
         raise ValueError("SARIF artifact must be a JSON object")
+    reader = SubjectReader(subject_root)
     claimed_packet = _sarif_packet_digest(document)
     if require_review and claimed_packet is None:
         raise ValueError("required delegated-review SARIF must carry properties.packet_digest")
     if claimed_packet is not None:
-        expected = _materialised_packet_digest(subject_root)
+        expected = _materialised_packet_digest(subject_root, reader=reader)
         if expected is None:
             raise ValueError("delegated-review findings require a materialised packet")
         from ranex.foundation.delegated_review import validated_review_findings
 
-        findings, witnessed = validated_review_findings(document, subject_root, expected)
+        findings, witnessed = validated_review_findings(document, subject_root, expected, reader=reader)
     else:
-        findings, witnessed = _findings(document, subject_root)
+        findings, witnessed = _findings(document, subject_root, reader=reader)
     if required_scope:
         missing = sorted(
             path for path in required_scope
