@@ -192,8 +192,8 @@ DEFAULT_SUITE_MANIFEST = "governance/suite_manifest.json"
 DEFAULT_EVIDENCE = "governance/evidence.json"
 
 # The committed calibration directory holds the BASE freeze: the durable
-# measurement instrument promotion claims are graded against (SLICE-093,
-# ADR-063). A constant path for the same reason the catalog's is: the gauge
+# measurement instrument promotion claims are graded against (SLICE-095,
+# ADR-064). A constant path for the same reason the catalog's is: the gauge
 # a claim is judged by may not be chosen by the party being judged.
 DEFAULT_CALIBRATION_DIR = "governance/calibration"
 
@@ -1354,7 +1354,7 @@ def _print_promotion_decision(
 
 
 def cmd_promotion_evaluate(args: argparse.Namespace) -> int:
-    """Judge an improvement claim against a committed BASE freeze (ADR-063).
+    """Judge an improvement claim against a committed BASE freeze (ADR-064).
 
     The freeze is the gauge and the claim is the thing judged, so the two
     are read under different disciplines. The freeze must be committed at

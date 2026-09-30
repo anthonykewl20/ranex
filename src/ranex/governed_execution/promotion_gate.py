@@ -1,6 +1,6 @@
 """The base-freeze promotion gate: improvement claims must cite their gauge.
 
-SLICE-093 ships the oracle-science §5 result. The BASE freeze — a committed,
+SLICE-095 ships the oracle-science §5 result. The BASE freeze — a committed,
 digest-bound record of kernel identity, pinned subjects, control banks and
 reference metrics — is what makes a self-evolving policy claim falsifiable:
 a treatment may promote only on paired MARGINAL deltas against the freeze's

@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** [SLICE-093 — the BASE freeze and the promotion gate](docs/slices/SLICE-093-base-freeze-promotion-gate.md) — P1 on PR #130.
+**Active slice:** [SLICE-095 — the BASE freeze and the promotion gate](docs/slices/SLICE-095-base-freeze-promotion-gate.md) — P1 on PR #130.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -243,6 +243,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-094 — the antislop claim](docs/slices/done/SLICE-094-antislop-claim.md): `ranex antislop` censuses every test's effective-assert count (assertion-equivalent calls included) and flags the structural slop shapes — constant-truth asserts, pass-only bodies, snapshot-blind updates, narrowed input ranges — as the third SARIF-family claim, reduced at seam B against per-test expectations frozen at seam C; a test-integrity gauge, never a verdict path.
 
 - [SLICE-093 — Bare-arm purity](docs/slices/done/SLICE-093-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
 
