@@ -224,7 +224,7 @@ def test_a_freeze_refuses_to_accept_a_finding_nobody_observed(subject) -> None:
 
 
 
-@pytest.mark.parametrize("old_binding", ["legacy", "previous-v2"])
+@pytest.mark.parametrize("old_binding", ["legacy", "previous-v2", "previous-review-required"])
 def test_signed_legacy_scan_summary_cannot_satisfy_versioned_expectations(
     subject: Path, manifest: dict[str, object], old_binding: str,
 ) -> None:
@@ -235,7 +235,7 @@ def test_signed_legacy_scan_summary_cannot_satisfy_versioned_expectations(
 
     current = scan_results_from_sarif(sarif([]), manifest, subject_root=subject)
     old_digest = "sha256:" + canonical_sha256(manifest)
-    if old_binding == "previous-v2":
+    if old_binding in {"previous-v2", "previous-review-required"}:
         old_digest = "sha256:" + canonical_sha256({
             "schema": "ranex-scan-expectations-binding-v2",
             "semantics": {
@@ -243,6 +243,19 @@ def test_signed_legacy_scan_summary_cannot_satisfy_versioned_expectations(
                 "review_severity": "explicit-then-driver-default-v1",
                 "review_category": "rule-id-then-properties-category-v1",
                 "review_packet": "all-declarations-bound-v1",
+                "coverage": "explicit-witness-required-v1",
+                "generic_identity": "subject-region-v1",
+            }, "manifest": manifest,
+        })
+    if old_binding == "previous-review-required":
+        old_digest = "sha256:" + canonical_sha256({
+            "schema": "ranex-scan-expectations-binding-v2",
+            "semantics": {
+                "review_identity": "excerpt-category-occurrence-v1",
+                "review_severity": "explicit-then-driver-default-v1",
+                "review_category": "rule-id-then-properties-category-v1",
+                "review_packet": "trusted-required-dispatch-v2",
+                "review_required": False,
                 "coverage": "explicit-witness-required-v1",
                 "generic_identity": "subject-region-v1",
             }, "manifest": manifest,

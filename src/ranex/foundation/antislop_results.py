@@ -56,6 +56,7 @@ from ranex.foundation.scan_results import (
     SARIF_LEVELS,
     _region_bytes,
     _subject_relative,
+    _validate_sarif_core,
     fingerprint,
 )
 from ranex.foundation.suite_results import validate_suite_results
@@ -150,7 +151,8 @@ def antislop_expectations_digest(manifest: Mapping[str, object]) -> str:
 
     validated = validate_antislop_expectations(dict(manifest))
     material = {
-        "schema": "ranex-antislop-expectations-binding-v2",
+        "schema": "ranex-antislop-expectations-binding-v3",
+        "ingestion_core": "strict-interpreted-structure-v1",
         "expectations": validated,
         "required_structural_id": ANTISLOP_STRUCTURAL_ID,
     }
@@ -197,6 +199,7 @@ def _parse(
     if not isinstance(runs, list) or not runs:
         raise ValueError("SARIF artifact carries no runs")
 
+    _validate_sarif_core(document)
     census: dict[str, int] = {}
     findings: list[tuple[str, str, str]] = []
     witnessed: set[str] | None = None

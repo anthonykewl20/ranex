@@ -365,7 +365,7 @@ def forged_sarif(line: int, snippet: str | None = None, **run_fields: object) ->
         "runs": [{
             "tool": {"driver": {"name": "forger"}},
             "results": [{
-                "ruleId": "F401",
+                "ruleId": "F401", "message": {"text": "forged region"},
                 "level": "error",
                 "locations": [{"physicalLocation": {
                     "artifactLocation": {"uri": SCOPE}, "region": region,
@@ -524,3 +524,40 @@ def test_committed_review_reporter_governs_real_worker_dispatch(
         assert "packet_digest" in captured.err
     elif operation == "run":
         assert evaluate(repo) == 0
+
+
+@pytest.mark.parametrize("operation", ["run", "freeze"])
+@pytest.mark.parametrize("malformed", ["tool", "severity"])
+def test_real_worker_malformed_sarif_core_refuses(repo, capsys, operation, malformed):
+    import sys
+
+    document = {"version": "2.1.0", "runs": [{
+        "tool": {"driver": {"name": "worker", "rules": [{
+            "id": "security", "defaultConfiguration": {"level": "error"},
+        }]}}, "artifacts": [{"location": {"uri": SCOPE}}], "results": [],
+    }]}
+    if malformed == "tool":
+        document["runs"][0].pop("tool")
+    else:
+        document["runs"][0]["tool"]["driver"]["rules"][0]["defaultConfiguration"] = [{"level": "error"}]
+        document["runs"][0]["results"] = [{
+            "ruleId": "security", "message": {"text": "danger"},
+            "locations": [{"physicalLocation": {"artifactLocation": {"uri": SCOPE},
+                                                  "region": {"startLine": 1}}}],
+        }]
+    code = "import sys; open(sys.argv[-1].split('=',1)[1], 'w').write(" + repr(json.dumps(document)) + ")"
+    command = [sys.executable, "-c", code, "--output-format=sarif", f"--output-file={ARTIFACT}"]
+    (repo / "gates.yaml").write_text(catalog(command))
+    (repo / MANIFEST).write_bytes(canonical_json_bytes({
+        "scope": [SCOPE], "rules": ["security"], "blocking_levels": ["error"], "accepted": {},
+    }))
+    commit(repo, "bind malformed-report negative control")
+    if operation == "run":
+        actual = run(repo, command)
+    else:
+        actual = invoke(repo, ["suite", "freeze", "--repository", ".",
+                              "--evidence", "evidence.json", "--artifact", ARTIFACT,
+                              "--output", MANIFEST, "--results-reporter", "sarif-2.1.0",
+                              "--scan-scope", SCOPE, "--scan-rule", "security", "--", *command])
+    assert actual == 2, capsys.readouterr()
+    assert evaluate(repo) != 0

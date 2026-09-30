@@ -373,8 +373,9 @@ def test_uncalled_assertion_cannot_replace_a_frozen_parent_assertion(
     assert kernel_verdict(manifest, result) == "FAIL"
 
 
+@pytest.mark.parametrize("old_binding", ["legacy", "previous-v2"])
 def test_signed_legacy_summary_cannot_satisfy_the_repaired_claim(
-    tmp_path: Path,
+    tmp_path: Path, old_binding: str,
 ) -> None:
     from ranex.foundation.canonical import canonical_sha256
     from ranex.foundation.scan_results import claim_expectations
@@ -395,6 +396,12 @@ def test_signed_legacy_summary_cannot_satisfy_the_repaired_claim(
             {path: "passed" for path in manifest["scope"]}
         ),
     }
+    if old_binding == "previous-v2":
+        legacy = {**result, "manifest_digest": "sha256:" + canonical_sha256({
+            "schema": "ranex-antislop-expectations-binding-v2",
+            "expectations": manifest,
+            "required_structural_id": "ranex/antislop-structural-integrity",
+        })}
     private, public = generate_keypair()
     command_digest = "sha256:" + "c" * 64
     subject_digest = "sha256:" + "a" * 64

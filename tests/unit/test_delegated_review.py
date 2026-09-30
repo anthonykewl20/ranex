@@ -291,7 +291,7 @@ def test_all_review_packet_declarations_must_match(
 
 def test_packet_on_later_run_dispatches_review_anchor_validation(tmp_path: Path) -> None:
     doc = json.loads(worker_cli_artifact(tmp_path))
-    doc["runs"].insert(0, {"results": []})
+    doc["runs"].insert(0, {"tool": {"driver": {"name": "empty-worker"}}, "results": []})
     identifier = finding_id("mod.py", "r", "target = True")
     assert observed_findings(canonical_json_bytes(doc), tmp_path) == (
         (identifier, "mod.py", "error"),

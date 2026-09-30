@@ -42,6 +42,7 @@ from ranex.foundation.scan_results import (
     _reduce_scan_findings,
     _sarif_packet_digest,
     _subject_relative,
+    _validate_sarif_core,
     validate_scan_manifest,
 )
 
@@ -260,6 +261,7 @@ def rederive_findings(
     if not isinstance(runs, list) or not runs:
         raise ValueError("SARIF artifact carries no runs")
 
+    _validate_sarif_core(sarif)
     findings: list[tuple[str, str, str]] = []
     base_counts: dict[str, int] = {}
     for run in runs:

@@ -13,10 +13,13 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import _approver
 import pytest
 
 E2E_DIR = Path(__file__).resolve().parent
 ROOT = E2E_DIR.parents[1]
+_HISTORY_REPOSITORIES: set[Path] = set()
+_HISTORY_KEYS: dict[Path, Path] = {}
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
 import _prereqs  # noqa: E402
@@ -33,10 +36,16 @@ def _cli(arguments: list[str], *, env: dict[str, str] | None = None) -> subproce
 
 
 def _environment(key: Path | None = None) -> dict[str, str]:
-    environment = dict(os.environ)
+    environment = {name: value for name, value in os.environ.items()
+                   if not name.startswith("RANEX_")}
     environment["PYTHONPATH"] = str(ROOT / "src")
     if key is not None:
         environment["RANEX_SIGNING_KEY"] = str(key)
+    if key is not None:
+        for repository in _HISTORY_REPOSITORIES:
+            if _HISTORY_KEYS[repository] == key:
+                environment.update(_approver.history_for(repository).environment())
+                break
     return environment
 
 
@@ -102,9 +111,13 @@ def _clone_governed_repository(path: Path, key: Path, producer: str) -> None:
             f"      - key: {public.group(0)}\n        status: active\n",
         )
     producers.write_text("".join(lines), encoding="utf-8")
+    service = _approver.register_history_service(path, producers, path.parent)
     _require_git(path, "rm", "-q", "governance/deps.yaml")
     _require_git(path, "add", "governance/producers.yaml")
     _require_git(path, "commit", "-qm", f"test: register {producer} for host workflow")
+    service.establish()
+    _HISTORY_REPOSITORIES.add(path)
+    _HISTORY_KEYS[path] = key
 
 
 @dataclass(frozen=True)

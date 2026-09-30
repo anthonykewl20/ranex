@@ -18,6 +18,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.cli.main import admitted_evidence
@@ -37,6 +38,7 @@ EXPECTED = ROOT / "tests/e2e/expected/slice072-result.json"
 RESULT_PREFIX = "RANEX-RUNTIME-RESULT "
 OUTPUT_PREFIX = "RANEX-RUNTIME-OUTPUT "
 PRODUCER = "slice072-owner"
+_HISTORY_REPOSITORIES: set[Path] = set()
 
 
 @dataclass(frozen=True)
@@ -54,6 +56,8 @@ def _env(repository: Path, key: Path | None = None) -> dict[str, str]:
     }
     if key is not None:
         value["RANEX_SIGNING_KEY"] = str(key)
+    if repository in _HISTORY_REPOSITORIES:
+        value.update(_approver.history_for(repository).environment())
     return value
 
 
@@ -117,9 +121,12 @@ def _register_owner(repository: Path, key: Path) -> None:
             f"      - key: {public.group(0)}\n        status: active\n",
         )
     producers.write_text("".join(lines), encoding="utf-8")
+    service = _approver.register_history_service(repository, producers, repository.parent)
     _git(repository, "rm", "-q", "governance/deps.yaml")
     _git(repository, "add", "governance/producers.yaml")
     _git(repository, "commit", "-qm", "test: register slice072 fixture owner")
+    service.establish()
+    _HISTORY_REPOSITORIES.add(repository)
 
 
 @pytest.fixture(scope="module")

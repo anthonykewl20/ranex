@@ -94,6 +94,7 @@ import pytest
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
+import _history  # noqa: E402
 import _prereqs  # noqa: E402
 import launcher_host  # noqa: E402
 
@@ -225,9 +226,10 @@ def _clone_real(destination: Path, identity: str) -> None:
     )
 
 
-def _register_producer(subject: Path, public: str) -> None:
+def _register_producer(subject: Path, public: str, history_public: str) -> None:
     keyring = subject / "governance" / "producers.yaml"
     _prereqs.register_worker_key(keyring, FAMILY_PRODUCER, public)
+    _history.register_service(keyring, history_public)
     subprocess.run(["git", "-C", str(subject), "rm", "-q", "governance/deps.yaml"], check=True)
     subprocess.run(["git", "-C", str(subject), "add", "governance/producers.yaml"], check=True)
     subprocess.run(
@@ -243,6 +245,7 @@ class ConfinementJourney:
     subject: Path
     key: Path
     public: str
+    history: tuple[str, str, Path]
     record: dict[str, object]
     recorded_transcript: str
     qualification: dict[str, object]
@@ -338,6 +341,7 @@ def _finish_v1_session(
     command: tuple[str, ...],
     completed: subprocess.CompletedProcess[str],
     result_path: Path,
+    *, history: tuple[str, str, Path],
 ) -> V1SessionObservation:
     evidence_path = subject / evidence
     if completed.returncode != 0:
@@ -372,7 +376,15 @@ def _finish_v1_session(
     }
     private_key = key.read_text(encoding="utf-8").strip()
     record = {**content, "signature": sign_evidence(content, private_key)}
-    record_evidence(evidence_path, record)
+    history_private, history_public, history_key = history
+    checkpoint = history_key.parent / ("checkpoint-" + hashlib.sha256(evidence.encode()).hexdigest() + ".json")
+    if not checkpoint.exists():
+        _history.establish(subject, evidence, checkpoint, history_private, history_public)
+    record_evidence(
+        evidence_path, record, repository_root=subject,
+        history_public_key=history_public, history_private_key=history_private,
+        history_checkpoint_path=checkpoint,
+    )
     transcript = (
         f"RECORDED  claim={CONFINED_CLAIM}  producer={FAMILY_PRODUCER}  "
         f"exit={result_command['exit_code']}\n"
@@ -388,6 +400,7 @@ def _run_v1_session(
     key: Path,
     evidence: str,
     *command: str,
+    history: tuple[str, str, Path],
 ) -> V1SessionObservation:
     exact_command = tuple(command)
     arguments, _descriptor_path, result_path = _prepare_v1_session(
@@ -395,7 +408,7 @@ def _run_v1_session(
     )
     completed = controller(subject, arguments)
     return _finish_v1_session(
-        subject, key, evidence, exact_command, completed, result_path
+        subject, key, evidence, exact_command, completed, result_path, history=history
     )
 
 
@@ -416,7 +429,8 @@ def journey(
     match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
     assert match, f"keygen printed no public key: {generated.stdout!r}"
     public = match.group(1)
-    _register_producer(subject, public)
+    history = _history.mint_service(base)
+    _register_producer(subject, public, history[1])
 
     # --- the subject's own build, then two clean builds in different ------
     # --- absolute roots: all three byte-equal (issue #37's "two clean ----
@@ -470,7 +484,7 @@ def journey(
         key,
         evidence,
         "/bin/sleep",
-        "2",
+        "2", history=history,
     )
     assert confined.controller.returncode == 0, (
         "the public v1 session must publish its result: "
@@ -501,6 +515,7 @@ def journey(
         subject=subject,
         key=key,
         public=public,
+        history=history,
         record=record,
         recorded_transcript=confined.recorded_transcript,
         qualification=qualification,
@@ -513,7 +528,7 @@ def _confined_run(journey: ConfinementJourney, evidence: str, *command: str):
         journey.subject,
         journey.key,
         evidence,
-        *command,
+        *command, history=journey.history,
     )
 
 
@@ -1115,7 +1130,7 @@ def _confined_run_observed(
         evidence,
         exact_command,
         completed,
-        result_path,
+        result_path, history=journey.history,
     )
     return observation, poller.finish()
 

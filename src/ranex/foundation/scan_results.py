@@ -171,6 +171,7 @@ def scan_manifest_digest(
             "review_category": "rule-id-then-properties-category-v1",
             "review_packet": "trusted-required-dispatch-v2",
             "review_required": require_review,
+            "ingestion_core": "strict-interpreted-structure-v1",
             "coverage": "explicit-witness-required-v1",
             "generic_identity": "subject-region-v1",
         },
@@ -202,19 +203,88 @@ def finding_id(rule_id: str, path: str, start_line: int, end_line: int, region: 
     return f"{path}::{rule_id}::{fingerprint(rule_id, path, start_line, end_line, region)}"
 
 
+def _validated_driver(run: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Validate the rule metadata we interpret; never discard malformed severity."""
+
+    tool = run.get("tool")
+    driver = tool.get("driver") if isinstance(tool, Mapping) else None
+    if not isinstance(driver, Mapping):
+        raise ValueError("SARIF run requires tool.driver object")
+    name = driver.get("name")
+    if not isinstance(name, str) or not name:
+        raise ValueError("SARIF tool.driver requires a non-empty name")
+    if "rules" in driver:
+        rules = driver["rules"]
+        if not isinstance(rules, list):
+            raise ValueError("SARIF tool.driver.rules must be a list")
+        for rule in rules:
+            if not isinstance(rule, Mapping):
+                raise ValueError("SARIF rule descriptors must be objects")
+            identifier = rule.get("id")
+            if not isinstance(identifier, str) or not identifier:
+                raise ValueError("SARIF rule descriptors require a non-empty id")
+            if "defaultConfiguration" in rule:
+                configuration = rule["defaultConfiguration"]
+                if not isinstance(configuration, Mapping):
+                    raise ValueError("SARIF rule defaultConfiguration must be an object")
+                if "level" in configuration and (
+                    not isinstance(configuration["level"], str)
+                    or configuration["level"] not in SARIF_LEVELS
+                ):
+                    raise ValueError("SARIF rule defaultConfiguration carries an unknown level")
+    return driver
+
+
+def _validate_sarif_core(document: Mapping[str, Any]) -> None:
+    """Validate the interpreted ingestion profile, not the entire SARIF schema.
+
+    Tool identity, rule severity, invocation shape and mandatory result messages
+    are common to all consumers. Optional uninterpreted metadata and properties
+    extensions remain supported; each consumer enforces its own region contract.
+    """
+
+    if document.get("version") != _SARIF_VERSION:
+        raise ValueError(f"SARIF artifact must declare version {_SARIF_VERSION}")
+    runs = document.get("runs")
+    if not isinstance(runs, list) or not runs:
+        raise ValueError("SARIF artifact carries no runs")
+    for run in runs:
+        if not isinstance(run, Mapping):
+            raise ValueError("SARIF runs entries must be objects")
+        _validated_driver(run)
+        if "invocations" in run:
+            invocations = run["invocations"]
+            if not isinstance(invocations, list):
+                raise ValueError("SARIF invocations must be a list when present")
+            if any(not isinstance(invocation, Mapping) for invocation in invocations):
+                raise ValueError("SARIF invocations entries must be objects")
+        results = run.get("results", [])
+        if not isinstance(results, list):
+            raise ValueError("SARIF runs[].results must be a list when present")
+        for result in results:
+            if not isinstance(result, Mapping):
+                raise ValueError("SARIF results entries must be objects")
+            message = result.get("message")
+            if not isinstance(message, Mapping) or not ({"text", "id"} & message.keys()):
+                raise ValueError("SARIF result requires a message with text or id")
+            for field in ("text", "id", "markdown"):
+                if field in message and not isinstance(message[field], str):
+                    raise ValueError(f"SARIF message {field} must be a string")
+            if "arguments" in message:
+                arguments = message["arguments"]
+                if not isinstance(arguments, list) or any(not isinstance(arg, str) for arg in arguments):
+                    raise ValueError("SARIF message arguments must be a list of strings")
+
+
 def _driver_levels(run: Mapping[str, Any]) -> dict[str, str]:
     """`ruleId -> defaultConfiguration.level`, for results that omit a level."""
 
-    driver = run.get("tool", {}).get("driver", {}) if isinstance(run.get("tool"), dict) else {}
+    driver = _validated_driver(run)
     levels: dict[str, str] = {}
-    for rule in driver.get("rules", []) if isinstance(driver.get("rules"), list) else []:
-        if not isinstance(rule, dict):
-            continue
-        rule_id = rule.get("id")
-        configuration = rule.get("defaultConfiguration")
-        level = configuration.get("level") if isinstance(configuration, dict) else None
-        if isinstance(rule_id, str) and isinstance(level, str) and level in SARIF_LEVELS:
-            levels[rule_id] = level
+    for rule in driver.get("rules", []):
+        configuration = rule.get("defaultConfiguration", {})
+        if "level" in configuration:
+            levels[rule["id"]] = configuration["level"]
     return levels
 
 
@@ -287,6 +357,8 @@ def _findings(
     sarif: Mapping[str, Any], subject_root: Path
 ) -> tuple[list[tuple[str, str, str]], set[str] | None]:
     """Every result as `(finding_id, path, level)`, plus the witnessed paths."""
+
+    _validate_sarif_core(sarif)
 
     if sarif.get("version") != _SARIF_VERSION:
         raise ValueError(f"SARIF artifact must declare version {_SARIF_VERSION}")
