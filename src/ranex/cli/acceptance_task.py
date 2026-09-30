@@ -18,6 +18,7 @@ import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, cast
 
 from ranex.cli.http_observer import observe, validate_profile
 from ranex.cli.probe_bundle import _path, _regular_read, _roots, _selected, check_bundle
@@ -61,7 +62,10 @@ def refuse(detail): raise ValueError('E-TASK-'+detail)
 def require(condition,detail):
     if not condition: refuse(detail)
 
-def read(path): return parse_canonical_payload(Path(path).read_bytes())
+def read(path) -> dict[str, Any]:
+    value=parse_canonical_payload(Path(path).read_bytes())
+    if not isinstance(value,dict): refuse('ABSENT: canonical object required')
+    return cast(dict[str,Any],value)
 
 def module_digest(): return 'sha256:'+hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
@@ -101,11 +105,14 @@ def as_event(row):
 
 
 class Task:
+    context: dict[str, Any]
+    payload: dict[str, Any]
+
     def __init__(self,path):
         self.root=Path(path).absolute()
         require(self.root==self.root.resolve() and self.root.is_dir(),'ABSENT: task directory is missing or aliased')
         self.context=read(self.root/'context.json')
-        self.c=self.context['c'];self.payload=self.c['payload'];self.c_digest=payload_digest(self.payload)
+        self.c=cast(dict[str,Any],self.context['c']);self.payload=cast(dict[str,Any],self.c['payload']);self.c_digest=payload_digest(self.payload)
         assert_abc_chain(self.context['a'],self.context['b'],self.c)
         require(self.payload['key']==self.context['owner_key'],'OWNER: approval key changed')
         expected={'module':module_digest(),'worker':self.context['worker'],'identities':self.context['identities']}
@@ -244,7 +251,9 @@ def prove(args):
             task.append({'type':'acceptance-proof-error','c_digest':task.c_digest,'run':run_id,'error':str(exc)})
             raise
         commit=receipt['candidate_commit'];subject=subject_digest_for(task.candidate,commit)
-        evidence=Evidence('live-acceptance',subject,'evaluator','ranex specification observe-http',receipt['command_digest'],str(Path(sys.modules['ranex.cli.http_observer'].__file__)),0 if receipt['status']=='OBSERVED-MATCH' and receipt['calibrated'] else 1)
+        observer_file=sys.modules['ranex.cli.http_observer'].__file__
+        if observer_file is None: refuse('OBS: observer module path required')
+        evidence=Evidence('live-acceptance',subject,'evaluator','ranex specification observe-http',receipt['command_digest'],str(Path(observer_file)),0 if receipt['status']=='OBSERVED-MATCH' and receipt['calibrated'] else 1)
         result=evaluate(task.gate,(evidence,),subject_digest=subject,catalog_digest=payload_digest(task.context['b']),approver_id=task.payload['principal'])
         task.append({'type':'acceptance-proof','c_digest':task.c_digest,'run':run_id,'status':receipt['status'],'candidate':commit,'receipt_digest':payload_digest(receipt),'failed_assertion':receipt['failed_assertion'],'evaluation':result.as_record()},result)
         misses=task.misses()
