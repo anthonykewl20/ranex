@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/tmp/ocr-pin/opencodereview-linux-amd64",
+    "delegate",
+    "preview",
+    "--format",
+    "json",
+    "--from",
+    "7b4ff3c82c61ea5a5fc2b47a0c250ceea9c5c2eb",
+    "--to",
+    "2a3e0c9bcdc6528876989faade2570f83c70d8c2"
+  ],
+  "cwd": "/tmp/ranex-105-delegate-cm60wutt",
+  "digests": {
+    "stdout": "sha256:75118624ab2fac91616bcd254c986f922a5ea632f8b141b5b795daf1b94cbff4"
+  },
+  "exit_code": 0,
+  "expectation": "arm3-ocr-delegate-advisory",
+  "notes": "v3 Arm 0 refused; arm 3 stays UNVERIFIED per issue protocol. offline delegate probe stable=True exits=[0, 0, 0] unique_digests=1; findings remain ADVISORY never required_claims (#102 / ADR-069).",
+  "status": "UNVERIFIED"
+}

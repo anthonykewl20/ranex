@@ -1,0 +1,9 @@
+{
+  "argv": [],
+  "cwd": "tools/dogfood/audits/2026-09-30-ocr-subject",
+  "digests": {},
+  "exit_code": 0,
+  "expectation": "arm4-live-probe-pr",
+  "notes": "Arm 0 v3 entrypoint admission REFUSED for static OCR Go binary (pin v1.12.9 sha256=9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8); issue protocol marks this arm UNVERIFIED (not skipped). static-v2 would admit the same bytes but is not the named Arm 0 path.",
+  "status": "UNVERIFIED"
+}

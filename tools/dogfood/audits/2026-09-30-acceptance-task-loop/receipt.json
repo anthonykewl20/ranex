@@ -1,0 +1,30 @@
+{
+  "slug": "2026-09-30-acceptance-task-loop",
+  "issue": 119,
+  "status": "EXPERIMENT-MATCH",
+  "vocabulary": [
+    "VERIFIED",
+    "GAP",
+    "FALSE-PASS",
+    "NON-DETERMINISTIC",
+    "UNVERIFIED"
+  ],
+  "cases_verified": 14,
+  "cases_total": 14,
+  "misses": [
+    1,
+    2,
+    3
+  ],
+  "fourth_attempt": "REFUSED",
+  "controls": [
+    "tenant-isolation-missx3",
+    "fourth-revoked",
+    "stale-candidate",
+    "moved-target",
+    "duplicate-land"
+  ],
+  "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7",
+  "product_sha256": "a0ce4a07244e6ca0ad79ff120dab8cecaaeed5bcd1dd04d6b62a2f8a65a7aa6b",
+  "proof_command": "uv run --frozen python tools/dogfood/acceptance_task_proof.py --output /outside/new-dir"
+}

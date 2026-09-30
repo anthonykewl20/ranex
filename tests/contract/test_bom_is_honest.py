@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BOM = REPO_ROOT / "governance" / "bom.yaml"
 
 EXPECTED_IDS = tuple(f"FT-{number:02d}" for number in range(1, 17))
-REQUIRED_FIELDS = frozenset({"id", "stage", "abb", "sbb", "gauge", "status", "depends_on"})
+REQUIRED_FIELDS = frozenset({"id", "stage", "abb", "sbb", "gauge", "status", "calibrated", "depends_on"})
 STAGES = frozenset({"specify", "freeze", "execute", "result"})
 STATUSES = frozenset({"missing", "specified", "built", "calibrated"})
 _CALIBRATION_RESULT = re.compile(r"(?:mutation|negative[_-]control)", re.IGNORECASE)
@@ -76,6 +76,24 @@ def test_bom_is_honest() -> None:
         if status == "calibrated":
             assert gauge is not None and _CALIBRATION_RESULT.search(gauge), (
                 f"{part_id}: calibrated parts name a mutation or negative-control result"
+            )
+
+        calibrated = part["calibrated"]
+        assert calibrated is None or isinstance(calibrated, str), (
+            f"{part_id}: calibrated must be null or a receipt path"
+        )
+        if calibrated is not None:
+            receipt = REPO_ROOT / calibrated
+            assert receipt.is_file(), (
+                f"{part_id}: calibrated claims receipt {calibrated!r} but it is "
+                "not resolvable under the repository root"
+            )
+            assert calibrated.startswith("tools/dogfood/audits/"), (
+                f"{part_id}: calibrated receipt must live under tools/dogfood/audits/"
+            )
+        if status == "calibrated":
+            assert calibrated is not None, (
+                f"{part_id}: status calibrated requires a named receipt"
             )
 
         depends_on = part["depends_on"]

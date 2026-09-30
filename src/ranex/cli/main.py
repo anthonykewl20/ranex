@@ -396,10 +396,12 @@ def load_reconciled_records(
     reconciliation = reconcile(log, records)
     for record in records:
         if not reconciliation.in_chain(record):
+            claim = record.get("claim_id") if isinstance(record, dict) else None
+            producer = record.get("producer_id") if isinstance(record, dict) else None
             raise ValueError(
                 f"{OBSERVATION_CHAIN_ERROR}: evidence record "
-                f"claim={record.get('claim_id')!r} "
-                f"producer={record.get('producer_id')!r} is absent from "
+                f"claim={claim!r} "
+                f"producer={producer!r} is absent from "
                 "the observation log; refuse rather than judge invented history"
             )
     return list(reconciliation.records), reconciliation.removed
@@ -5574,6 +5576,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     from ranex.cli.probe_bundle import register as register_probe_commands
     register_probe_commands(specification)
+
+    from ranex.cli.acceptance_task import register as register_acceptance_task
+    register_acceptance_task(sub, specification)
 
     task = sub.add_parser("task", help="dispatch and materialise task candidates")
     task_actions = task.add_subparsers(dest="action", required=True)

@@ -5,6 +5,7 @@ parts:
     sbb: governance/gates.yaml
     gauge: tests/contract/test_gate_catalog_claim_commands.py
     status: built
+    calibrated: null
     depends_on: []
   - id: FT-02
     stage: specify
@@ -12,6 +13,7 @@ parts:
     sbb: ranex.governed_execution.domain.verdict.Claim.command_digest
     gauge: tests/unit/test_claim_command_binding.py
     status: built
+    calibrated: null
     depends_on: [FT-01]
   - id: FT-03
     stage: specify
@@ -19,6 +21,7 @@ parts:
     sbb: governance/gates.yaml
     gauge: tests/contract/test_gate_catalog_claim_commands.py
     status: built
+    calibrated: null
     depends_on: [FT-02]
   - id: FT-04
     stage: freeze
@@ -26,6 +29,7 @@ parts:
     sbb: ranex.cli.main.subject_digest_for
     gauge: tests/security/test_slice004_hermetic_observation.py
     status: built
+    calibrated: null
     depends_on: [FT-03]
   - id: FT-05
     stage: freeze
@@ -33,6 +37,7 @@ parts:
     sbb: ranex.cli.main.committed_bytes
     gauge: tests/security/test_slice002_trust_root_reopened.py
     status: built
+    calibrated: null
     depends_on: [FT-01, FT-04]
   - id: FT-06
     stage: freeze
@@ -40,6 +45,7 @@ parts:
     sbb: null
     gauge: null
     status: specified
+    calibrated: null
     depends_on: [FT-03, FT-04, FT-05]
   - id: FT-07
     stage: freeze
@@ -47,6 +53,7 @@ parts:
     sbb: null
     gauge: null
     status: specified
+    calibrated: null
     depends_on: [FT-06]
   - id: FT-08
     stage: execute
@@ -54,6 +61,7 @@ parts:
     sbb: ranex.cli.subject.materialise_subject
     gauge: tests/security/test_slice004_hermetic_observation.py
     status: built
+    calibrated: null
     depends_on: [FT-04, FT-05]
   - id: FT-09
     stage: execute
@@ -61,6 +69,7 @@ parts:
     sbb: ranex.cli.main.cmd_run
     gauge: tests/security/test_slice004_hermetic_observation.py
     status: built
+    calibrated: null
     depends_on: [FT-08]
   - id: FT-10
     stage: execute
@@ -68,6 +77,7 @@ parts:
     sbb: null
     gauge: null
     status: specified
+    calibrated: null
     depends_on: [FT-09]
   - id: FT-11
     stage: execute
@@ -75,6 +85,7 @@ parts:
     sbb: null
     gauge: null
     status: specified
+    calibrated: null
     depends_on: [FT-10]
   - id: FT-12
     stage: result
@@ -82,6 +93,7 @@ parts:
     sbb: ranex.foundation.signing.sign_evidence
     gauge: tests/e2e/test_run_produces_evidence.py
     status: built
+    calibrated: null
     depends_on: [FT-04, FT-08]
   - id: FT-13
     stage: result
@@ -89,6 +101,7 @@ parts:
     sbb: ranex.governed_execution.domain.verdict.evaluate
     gauge: tests/unit/test_gate_verdict.py
     status: built
+    calibrated: tools/dogfood/audits/2026-09-30-gate-calibration/certificate-landing.json
     depends_on: [FT-02, FT-05, FT-12]
   - id: FT-14
     stage: result
@@ -96,6 +109,7 @@ parts:
     sbb: ranex.governed_execution.adapters.persistence.sqlite.journal.Journal
     gauge: tests/integration/test_journal.py
     status: built
+    calibrated: null
     depends_on: [FT-13]
   - id: FT-15
     stage: result
@@ -103,6 +117,7 @@ parts:
     sbb: ranex.cli.main.cmd_journal_verify
     gauge: tests/e2e/test_gate_evaluate_cli.py::test_journal_verify_reports_a_valid_chain
     status: built
+    calibrated: null
     depends_on: [FT-14]
   - id: FT-16
     stage: result
@@ -110,4 +125,5 @@ parts:
     sbb: tools/dogfood/selftest.py
     gauge: tests/contract/test_instrument_selftest.py
     status: built
+    calibrated: tools/dogfood/audits/2026-09-30-gate-calibration/SUMMARY.json
     depends_on: [FT-15]

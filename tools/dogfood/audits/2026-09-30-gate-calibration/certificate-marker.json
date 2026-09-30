@@ -1,0 +1,144 @@
+{
+  "base_freeze": {
+    "digest": "sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a",
+    "freeze_id": "base-freeze-v1",
+    "note": "Cited, not re-derived. MAP \u00a78.4 AIAG percentage thresholds remain unverified; this certificate invents none.",
+    "path": "governance/calibration/base-freeze-v1.json",
+    "reference_metrics_present": [
+      "ranex-handbook",
+      "six"
+    ]
+  },
+  "bound_argv": [
+    "/usr/bin/python3",
+    "-c",
+    "import pathlib,sys;bad=[p for p in pathlib.Path('.').rglob('*.py') if 'ranex:' in p.read_text() and ';' not in p.read_text().split('ranex:')[1].split(chr(10))[0]];print('markers without a trigger:',len(bad));sys.exit(1 if bad else 0)"
+  ],
+  "bound_argv_digest": "sha256:16c37e4c8bfe6ba8ff2291972232830046b36709306fe5a378c9704c97cf6932",
+  "catalog_gate_id": "landing",
+  "date": "2026-09-30",
+  "firing_count": {
+    "driver_negative_refusals": 3,
+    "journal_independent": {
+      "determinable": true,
+      "fires": 1,
+      "passes": 2,
+      "positions": [
+        1,
+        2,
+        3
+      ],
+      "rows": 3,
+      "source": "/tmp/ranex-115-marker-3umtuu1p/repo/governance/journal.sqlite3",
+      "verdict_digests": [
+        "sha256:14a4f64cd7c98877d0535b3f9f6faa81907cf59814f8a7db29a4f8690d86a916",
+        "sha256:b22314a0acbd0d270711cf0109faf6230a0f0e56f639e41b83ce456ae0337c6a",
+        "sha256:f4ad75c8dfc17059ac1b0daf354e9316304aff5e80db89f377d4ac553b779c66"
+      ]
+    }
+  },
+  "gate_id": "marker",
+  "host": {
+    "cwd": "/tmp/ranex-115",
+    "hostname": "desk-tony",
+    "machine": "x86_64",
+    "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
+    "python": "3.14.7",
+    "ranex": "/tmp/ranex-115/.venv/bin/ranex",
+    "user": "soultransit"
+  },
+  "known_defect": {
+    "caught": true,
+    "defects_caught": 3,
+    "name": "trigger-less-marker",
+    "plant": "# ranex: global lock  (no ';' trigger half)"
+  },
+  "recall": {
+    "armed": true,
+    "demonstrated_here": false,
+    "detail": "Recall demonstration is in recall-false-pass.json"
+  },
+  "repeatability": {
+    "distinct_count": 1,
+    "identical": true,
+    "repeats": 3,
+    "status": "VERIFIED",
+    "verdict_digests": [
+      "sha256:eb1c6580347ddcdab0188c98d67795e7eeb4ce645664ff29c48c080eb333beb3",
+      "sha256:eb1c6580347ddcdab0188c98d67795e7eeb4ce645664ff29c48c080eb333beb3",
+      "sha256:eb1c6580347ddcdab0188c98d67795e7eeb4ce645664ff29c48c080eb333beb3"
+    ]
+  },
+  "repeats": 3,
+  "reproducibility": {
+    "detail": "No second host available on this run; same-host \u00d7N repeatability is recorded. Cross-host / cross-operator reproducibility remains UNVERIFIED.",
+    "second_host": null,
+    "second_operator": null,
+    "status": "UNVERIFIED"
+  },
+  "schema": "ranex-gate-certificate-v1",
+  "status": "VERIFIED",
+  "trials": [
+    {
+      "negative": {
+        "exit": 1,
+        "run_exit": 1,
+        "run_stdout_head": "markers without a trigger: 1\nRECORDED  claim=markers-declared  producer=worker  exit=1\n          subject=sha256:9dceb9e9b034230a97d3745f87c46a885ce67cb4ffdc02885b5d8fd64e0ecc41\n",
+        "stdout_head": "FAIL  gate=landing  rule=MARKERS_DECLARED\n      the bound command was observed failing: markers-declared\n      subject=sha256:9dceb9e9b034230a97d3745f87c46a885ce67cb4ffdc02885b5d8fd64e0ecc41\n",
+        "verdict": "FAIL"
+      },
+      "negative_accepted": false,
+      "negative_digest": "sha256:54dc5e0510c7c4487bae04dd12b567eaa464920ac70d4233d2012a3bbf1c6589",
+      "positive": {
+        "exit": 0,
+        "run_exit": 0,
+        "run_stdout_head": "markers without a trigger: 0\nRECORDED  claim=markers-declared  producer=worker  exit=0\n          subject=sha256:be71a21994a47eab2f22abc363095e68c9350f169f26189a821c5e27898a078d\n",
+        "stdout_head": "PASS  gate=landing  subject=sha256:be71a21994a47eab2f22abc363095e68c9350f169f26189a821c5e27898a078d\n",
+        "verdict": "PASS"
+      },
+      "positive_digest": "sha256:eb1c6580347ddcdab0188c98d67795e7eeb4ce645664ff29c48c080eb333beb3",
+      "positive_ok": true
+    },
+    {
+      "negative": {
+        "exit": 1,
+        "run_exit": 1,
+        "run_stdout_head": "markers without a trigger: 1\nRECORDED  claim=markers-declared  producer=worker  exit=1\n          subject=sha256:9dceb9e9b034230a97d3745f87c46a885ce67cb4ffdc02885b5d8fd64e0ecc41\n",
+        "stdout_head": "FAIL  gate=landing  rule=MARKERS_DECLARED\n      the bound command was observed failing: markers-declared\n      subject=sha256:9dceb9e9b034230a97d3745f87c46a885ce67cb4ffdc02885b5d8fd64e0ecc41\n",
+        "verdict": "FAIL"
+      },
+      "negative_accepted": false,
+      "negative_digest": "sha256:54dc5e0510c7c4487bae04dd12b567eaa464920ac70d4233d2012a3bbf1c6589",
+      "positive": {
+        "exit": 0,
+        "run_exit": 0,
+        "run_stdout_head": "markers without a trigger: 0\nRECORDED  claim=markers-declared  producer=worker  exit=0\n          subject=sha256:be71a21994a47eab2f22abc363095e68c9350f169f26189a821c5e27898a078d\n",
+        "stdout_head": "PASS  gate=landing  subject=sha256:be71a21994a47eab2f22abc363095e68c9350f169f26189a821c5e27898a078d\n",
+        "verdict": "PASS"
+      },
+      "positive_digest": "sha256:eb1c6580347ddcdab0188c98d67795e7eeb4ce645664ff29c48c080eb333beb3",
+      "positive_ok": true
+    },
+    {
+      "negative": {
+        "exit": 1,
+        "run_exit": 1,
+        "run_stdout_head": "markers without a trigger: 1\nRECORDED  claim=markers-declared  producer=worker  exit=1\n          subject=sha256:9dceb9e9b034230a97d3745f87c46a885ce67cb4ffdc02885b5d8fd64e0ecc41\n",
+        "stdout_head": "FAIL  gate=landing  rule=MARKERS_DECLARED\n      the bound command was observed failing: markers-declared\n      subject=sha256:9dceb9e9b034230a97d3745f87c46a885ce67cb4ffdc02885b5d8fd64e0ecc41\n",
+        "verdict": "FAIL"
+      },
+      "negative_accepted": false,
+      "negative_digest": "sha256:54dc5e0510c7c4487bae04dd12b567eaa464920ac70d4233d2012a3bbf1c6589",
+      "positive": {
+        "exit": 0,
+        "run_exit": 0,
+        "run_stdout_head": "markers without a trigger: 0\nRECORDED  claim=markers-declared  producer=worker  exit=0\n          subject=sha256:be71a21994a47eab2f22abc363095e68c9350f169f26189a821c5e27898a078d\n",
+        "stdout_head": "PASS  gate=landing  subject=sha256:be71a21994a47eab2f22abc363095e68c9350f169f26189a821c5e27898a078d\n",
+        "verdict": "PASS"
+      },
+      "positive_digest": "sha256:eb1c6580347ddcdab0188c98d67795e7eeb4ce645664ff29c48c080eb333beb3",
+      "positive_ok": true
+    }
+  ],
+  "wall_clock_s": 8.422
+}
