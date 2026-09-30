@@ -461,6 +461,7 @@ def run_task_judge(
     journal: Path,
 ) -> subprocess.CompletedProcess[str]:
     from _task_history import checkpoint
+
     from ranex.governed_execution.adapters.persistence.history import bootstrap_history
     service = _approver.history_for(target)
     anchor = checkpoint(emitted_worktree, "evidence.json")

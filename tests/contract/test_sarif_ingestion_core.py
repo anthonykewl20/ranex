@@ -118,8 +118,11 @@ def test_valid_message_forms_and_properties_extensions_preserve_severity(tmp_pat
 ])
 def test_pre_unique_rule_validation_summary_cannot_satisfy_current_claim(family, legacy_digest):
     """Retained clean summaries from the ambiguous-rule profile must be rerun."""
-    from ranex.foundation.antislop_results import antislop_expectations_digest, antislop_expected_ids
-    from ranex.foundation.scan_results import scan_manifest_digest, scan_expected_ids
+    from ranex.foundation.antislop_results import (
+        antislop_expectations_digest,
+        antislop_expected_ids,
+    )
+    from ranex.foundation.scan_results import scan_expected_ids, scan_manifest_digest
     from ranex.governed_execution.domain.verdict import Claim, Evidence, Gate, evaluate
 
     if family == 'antislop':

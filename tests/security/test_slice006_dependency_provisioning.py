@@ -37,9 +37,8 @@ import sys
 import zipfile
 from pathlib import Path
 
-import pytest
-
 import _approver
+import pytest
 
 from ranex.cli.main import main
 from ranex.foundation.signing import generate_keypair

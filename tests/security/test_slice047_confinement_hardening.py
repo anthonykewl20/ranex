@@ -11,9 +11,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 import _approver
+import pytest
 
 from ranex.cli import main as cli
 from ranex.foundation.signing import generate_keypair

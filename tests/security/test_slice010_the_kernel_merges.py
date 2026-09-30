@@ -5,9 +5,8 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-import pytest
-
 import _task_history
+import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
 from ranex.cli.main import main, subject_digest_for
