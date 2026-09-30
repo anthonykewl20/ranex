@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "gh",
+    "pr",
+    "create"
+  ],
+  "cwd": "/home/soultransit/devtony/ranex",
+  "digests": {},
+  "exit_code": 1,
+  "expectation": "arm4-live-probe-pr",
+  "notes": "live App pipeline reachable (ranex github status exit=0) and the journey proceeded until: push refused: To https://github.com/anthonykewl20/ranex-app-live-probe.git\n ! [rejected]        ocr-subject/2026-09-30-ocr-subject-v2 -> ocr-subject/2026-09-30-ocr-subject-v2 (non-fast-forward)\nerror: failed to push some refs to 'https://github.com/anthonykewl20/ranex-app-live-probe.git'\nhint: Updates were rejected because the tip of your current branch is behind\nhint: its remote counterpart. If you want to integrate the remote changes,\nhint: use 'git pull' before pushing again.\nhint: See the 'Note about fast-forwards' in 'git push --help' for details.\n. Full step evidence in arm4-live-facts.json. UNVERIFIED for the finding-id-in-check-text and fix->success expectations on this run.",
+  "status": "GAP",
+  "wall_ms": 4832
+}

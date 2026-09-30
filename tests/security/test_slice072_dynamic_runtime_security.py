@@ -102,6 +102,23 @@ def test_profile_pins_loader_tcb_and_closed_dynamic_syscall_delta() -> None:
         "sysinfo",
         "unlinkat",
     ]
+    assert value["seccomp"]["static_worker_additions"] == [
+        "chdir",
+        "epoll_create1",
+        "epoll_ctl",
+        "epoll_pwait",
+        "eventfd2",
+        "faccessat2",
+        "nanosleep",
+        "pidfd_open",
+        "pidfd_send_signal",
+        "pipe2",
+        "prctl",
+        "sched_getaffinity",
+        "sigaltstack",
+        "tgkill",
+        "waitid",
+    ]
 
 
 def test_launcher_mounts_only_the_sealed_file_map_at_literal_runtime_paths() -> None:
@@ -140,9 +157,55 @@ def test_launcher_v3_seccomp_matches_profile_and_retains_default_deny() -> None:
         "set_robust_list", "set_tid_address", "wait4", "write",
     }
     additions = set(_profile()["seccomp"]["worker_additions"])
+    static_additions = set(_profile()["seccomp"]["static_worker_additions"])
     assert set(re.findall(r"__NR_([a-z0-9_]+)", v2_policy)) == v2_expected
-    assert set(re.findall(r"__NR_([a-z0-9_]+)", policy)) == v2_expected | additions
+    assert set(re.findall(r"__NR_([a-z0-9_]+)", policy)) == (
+        v2_expected | additions | static_additions
+    )
     assert "SECCOMP_RET_ERRNO" in policy
+
+
+def test_static_entrypoint_verifier_report_is_frozen_and_exec_free() -> None:
+    """#105: the static root's report is the frozen literal, with no exec."""
+
+    source = LAUNCHER.read_text(encoding="utf-8")
+    verifier = _function(source, "run_v3_verifier")
+    assert 'static const char static_report[] = "statically linked";' in verifier
+    assert "sizeof(static_report) - 1U" in verifier
+    assert "map->entrypoint_static" in verifier
+    static_block = verifier[verifier.index("if (map->entrypoint_static") :]
+    static_block = static_block[: static_block.index("continue;")]
+    assert "fork(" not in static_block
+    assert "execve" not in static_block
+    assert "write_v3_u32be(map->report_fd" in static_block
+    assert "write_all(map->report_fd, report, report_length)" in static_block
+
+
+def test_static_worker_delta_is_measured_and_never_verifier_wide() -> None:
+    """#105: additions are static-worker-only; the verifier never grows."""
+
+    source = LAUNCHER.read_text(encoding="utf-8")
+    policy = _function(source, "enforce_seccomp_v3")
+    assert "seccomp_v3_static_worker = !verifier && static_worker;" in policy
+    assert "ALLOW_STATIC_WORKER_SYSCALL" not in policy
+    assert "enforce_seccomp_v3(true, false)" in source
+    assert "enforce_seccomp_v3(false, v3_map.entrypoint_static)" in source
+    seccomp = _function(source, "enforce_seccomp")
+    for name in _profile()["seccomp"]["static_worker_additions"]:
+        assert f"ALLOW_STATIC_WORKER_SYSCALL(SYS_{name})" in seccomp
+
+
+def test_map_carries_the_static_bit_and_binds_it_to_the_entrypoint_row() -> None:
+    """#105: the sealed map's static flag is parsed rigidly and row-bound."""
+
+    source = LAUNCHER.read_text(encoding="utf-8")
+    reader = _function(source, "read_v3_map")
+    assert 'v3_key(&cursor, end, "static")' in reader
+    assert "v3_bool(&cursor, end, &map->entrypoint_static)" in reader
+    assert "entrypoint_seen" in reader
+    boolean = _function(source, "v3_bool")
+    assert 'memcmp(*cursor, "true", 4U)' in boolean
+    assert 'memcmp(*cursor, "false", 5U)' in boolean
 
 
 def test_loader_probe_and_worker_share_snapshot_but_not_process_authority() -> None:

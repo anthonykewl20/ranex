@@ -67,7 +67,7 @@ E_C18_HOST_DRIFT = "E-C18-HOST-DRIFT"
 # destinations are fixed by the profile and never become caller-controlled data.
 _RUNTIME_VERIFIER_REPORT_ARG = "--ranex-verifier-report-fd"
 _RUNTIME_VERIFIER_ACK_ARG = "--ranex-verifier-ack-fd"
-RUNTIME_V3_CANONICAL_SHA256 = "ec521ade8163ac2e86069daf07d8404e352b9b96b62583284574ba71fcb1172e"
+RUNTIME_V3_CANONICAL_SHA256 = "4846412f06c197c1850747fb73b27ffe743fb932e907292bfd44fe95fec6af49"
 
 PROTOCOL = "ranex-launcher-v1"
 RESPONSE_LIMIT = 65_536
@@ -266,7 +266,14 @@ def _runtime_map_bytes(closure: Any, manifest: Mapping[str, Any], descriptors: M
         "source": "sealed-memfd-map",
         "files": sorted(rows, key=lambda row: str(row["path"])),
         "loader": {"path": manifest["loader"]["path"], "sha256": manifest["loader"]["sha256"]},
-        "entrypoint": {"path": manifest["entrypoint"]["path"], "sha256": manifest["entrypoint"]["sha256"]},
+        "entrypoint": {
+            "path": manifest["entrypoint"]["path"],
+            "sha256": manifest["entrypoint"]["sha256"],
+            # #105: bound by the byte-verified manifest — `pt_interp is None`
+            # is exactly the static entrypoint shape `parsed_runtime_graph`
+            # proved against the sealed bytes.
+            "static": manifest["entrypoint"]["pt_interp"] is None,
+        },
     }
     return canonical_json_bytes(value) + b"\n"
 

@@ -259,7 +259,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none.
+**Active slice:** [SLICE-103 — Audit findings and remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
