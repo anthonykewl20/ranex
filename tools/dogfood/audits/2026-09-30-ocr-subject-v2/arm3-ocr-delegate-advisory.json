@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/home/soultransit/.cache/ranex/ocr/v1.12.9/opencodereview-linux-amd64",
+    "delegate",
+    "preview",
+    "--format",
+    "json",
+    "--from",
+    "299a7db3d67d91e1f52ea41c4c0fdbb911c0cbcf",
+    "--to",
+    "36b41ad7d841ca2f37c587468b1384f3b01dcb1b",
+    "/home/soultransit/devtony/ranex/.venv/bin/python3",
+    "-m",
+    "ranex.foundation.delegated_review",
+    "--output-format=sarif",
+    "--output-file=governance/review.sarif",
+    "--path=pkg/mod.py",
+    "--excerpt=data = open(path).read()  # noqa: SIM115",
+    "--level=error"
+  ],
+  "cwd": "/tmp/ranex-105-arm3-eaw_lf2y/subject",
+  "digests": {
+    "outcome": "sha256:f0d495e0466f6bd7b7f26ae796fa3b73b49221e4aa8eda1842d2ce087b99d82f",
+    "packet": "sha256:586321fc9be9e5c3210728c04ea6f04ee591349aa602aa3804741da3e8e420da",
+    "sarif": "sha256:b1ce68104a29db78d4a57edbc656e908658554dc406ad14dfaba8eb6cf75457b",
+    "spec": "sha256:45171187e3ea9020e94b2c471dd5bb42202c38c84635b115d3e751cff7b24c2c"
+  },
+  "exit_code": 0,
+  "expectation": "arm3-ocr-delegate-advisory",
+  "notes": "ocr delegate preview --format json x3: exits=[0, 0, 0] unique=1 (real delegation spec: mode='range' reviewable=1). #102 packet digest x3: unique=1 bound to subject=sha256:279b73ca438ee372456baa704b4b35f850f8d61e24d19d587804f43e8e2ab3a4 range=299a7db3d67d..36b41ad7d841. SARIF admitted under the packet binding; finding ids=['pkg/mod.py::review.finding::f8fc3ba42cf23ad26239d0067806a0e8571c9f391eefc94d1514f102ee5876fb'] (advisory posture: the findings claim is recorded and never part of any default required_claims; an operator catalog that requires it gates on it \u2014 #102's stated relaxation). negatives: packet substitution REFUSED:delegated-review SARIF properties.packet_digest does not match the bound packet (sha256:5fb84bf8ecf88594a6236364482fdfc8384a0332c79985f7f3157fe65742d47d != sha256:586321fc9be9e5c3210728c04ea6f04ee591349aa602aa3804741da3e8e420da); substitution refused; unresolvable anchor REFUSED:delegated-review finding for 'pkg/mod.py' has an unresolvable excerpt anchor; absence blocks (ADR-060 rule 6).",
+  "status": "VERIFIED",
+  "wall_ms": 86
+}

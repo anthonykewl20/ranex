@@ -99,6 +99,7 @@ struct v3_runtime_map {
     int verifier_kill_fd;
     char loader_path[PATH_MAX];
     char entrypoint_path[PATH_MAX];
+    bool entrypoint_static;
 };
 
 static int v3_report_descriptor = -1;
@@ -139,6 +140,20 @@ static bool v3_key(const char **cursor, const char *end, const char *key) {
            *(*cursor)++ == ':';
 }
 
+static bool v3_bool(const char **cursor, const char *end, bool *value) {
+    if ((size_t)(end - *cursor) >= 4U && memcmp(*cursor, "true", 4U) == 0) {
+        *cursor += 4U;
+        *value = true;
+        return true;
+    }
+    if ((size_t)(end - *cursor) >= 5U && memcmp(*cursor, "false", 5U) == 0) {
+        *cursor += 5U;
+        *value = false;
+        return true;
+    }
+    return false;
+}
+
 /* The map is newline-delimited canonical objects.  Deliberately accepting no
  * whitespace, escapes, aliases, or extra members makes the bytes handed to
  * the launcher an ABI rather than a general-purpose JSON input. */
@@ -171,6 +186,7 @@ static bool read_v3_map(struct v3_runtime_map *map) {
     char *buffer = NULL;
     size_t used = 0U;
     bool ok = false;
+    bool entrypoint_seen = false;
     size_t held_count = map->count;
     int held_fds[V3_RUNTIME_MAX + 1U];
     if (held_count > V3_RUNTIME_MAX + 1U) return false;
@@ -178,6 +194,7 @@ static bool read_v3_map(struct v3_runtime_map *map) {
         held_fds[index] = map->rows[index].fd;
     map->count = 0U;
     map->loader_fd = -1;
+    map->entrypoint_static = false;
     memset(map->loader_path, 0, sizeof(map->loader_path));
     memset(map->entrypoint_path, 0, sizeof(map->entrypoint_path));
     buffer = calloc(1U, V3_MAP_LIMIT + 1U);
@@ -196,7 +213,9 @@ static bool read_v3_map(struct v3_runtime_map *map) {
     if (*cursor++ != '{' || !v3_key(&cursor, end, "entrypoint") || cursor == end || *cursor++ != '{' ||
         !v3_key(&cursor, end, "path") || !v3_string(&cursor, end, map->entrypoint_path, sizeof(map->entrypoint_path)) ||
         cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "sha256") ||
-        !v3_string(&cursor, end, ignored_digest, sizeof(ignored_digest)) || cursor == end || *cursor++ != '}' ||
+        !v3_string(&cursor, end, ignored_digest, sizeof(ignored_digest)) ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "static") ||
+        !v3_bool(&cursor, end, &map->entrypoint_static) || cursor == end || *cursor++ != '}' ||
         cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "files") || cursor == end || *cursor++ != '[') goto done;
     while (cursor != end && *cursor != ']') {
         struct v3_runtime_row row;
@@ -222,8 +241,16 @@ static bool read_v3_map(struct v3_runtime_map *map) {
         cursor == end || *cursor++ != '}' || cursor != end) goto done;
     for (size_t index = 0U; index < map->count; index++)
         if (strcmp(map->rows[index].path, map->loader_path) == 0) map->loader_fd = map->rows[index].fd;
+    /* The header's static flag is total only when it names the one
+     * entrypoint row; anything else refuses the map outright. */
+    for (size_t index = 0U; index < map->count; index++)
+        if (strcmp(map->rows[index].kind, "entrypoint") == 0) {
+            if (entrypoint_seen ||
+                strcmp(map->rows[index].path, map->entrypoint_path) != 0) goto done;
+            entrypoint_seen = true;
+        }
     ok = map->count > 0U && map->count == held_count && map->loader_fd >= 0 &&
-         map->entrypoint_path[0] != '\0';
+         map->entrypoint_path[0] != '\0' && entrypoint_seen;
 done:
     free(buffer);
     return ok;
@@ -356,8 +383,9 @@ static int wait_cgroup_empty(struct v3_runtime_map *map) {
  * auditable without inferring it from mount side effects. */
 static bool seccomp_v3_verifier = false;
 static bool seccomp_v3_mode = false;
+static bool seccomp_v3_static_worker = false;
 
-static int enforce_seccomp_v3(bool verifier) {
+static int enforce_seccomp_v3(bool verifier, bool static_worker) {
     /* Default-deny failures use SECCOMP_RET_ERRNO, never an allow fallback. */
     /* The v2 default deny remains: __NR_arch_prctl __NR_brk __NR_clone
      * __NR_clock_gettime __NR_clock_nanosleep __NR_close __NR_dup __NR_dup2
@@ -371,11 +399,19 @@ static int enforce_seccomp_v3(bool verifier) {
      * __NR_set_tid_address __NR_wait4 __NR_write */
     /* v3 additive delta: __NR_access __NR_getcwd __NR_ioctl __NR_readlink
      * __NR_readlinkat __NR_statx __NR_sysinfo __NR_unlinkat */
+    /* #105 static-entrypoint worker delta — worker-only (the verifier profile
+     * is never widened), every entry measured with strace -f on the pinned
+     * OCR v1.12.9 (bccbc15, 2026-09-30): __NR_chdir __NR_epoll_create1
+     * __NR_epoll_ctl __NR_epoll_pwait __NR_eventfd2 __NR_faccessat2
+     * __NR_nanosleep __NR_pidfd_open __NR_pidfd_send_signal __NR_pipe2
+     * __NR_prctl __NR_sched_getaffinity __NR_sigaltstack __NR_tgkill
+     * __NR_waitid */
     /* Keep the v2 filter as the base implementation, but do not silently
      * inherit the v2 mkdir exception.  v3 is a closed runtime and must use the
      * errno default for every syscall outside the declared delta. */
     seccomp_v3_verifier = verifier;
     seccomp_v3_mode = true;
+    seccomp_v3_static_worker = !verifier && static_worker;
     return enforce_seccomp(false) ? 0 : -1;
 }
 
@@ -626,6 +662,24 @@ static int run_v3_verifier(const char *runtime_snapshot, struct v3_runtime_map *
             verifier_root, NULL};
         bool complete = false;
 
+        /* #105: a byte-verified static entrypoint has no interpreter and no
+         * resolved objects.  Its frozen report goes out through the same
+         * frame the dynamic path uses — without forking or executing
+         * anything, because a static Go root would RUN under `--list`. */
+        if (map->entrypoint_static &&
+            strcmp(roots[root_index], map->entrypoint_path) == 0) {
+            static const char static_report[] = "statically linked";
+            report_length = sizeof(static_report) - 1U;
+            memcpy(report, static_report, report_length);
+            if (strlen(roots[root_index]) > UINT32_MAX ||
+                write_v3_u32be(map->report_fd,
+                               (uint32_t)strlen(roots[root_index])) != 0 ||
+                write_all(map->report_fd, roots[root_index],
+                          strlen(roots[root_index])) != 0 ||
+                write_v3_u32be(map->report_fd, (uint32_t)report_length) != 0 ||
+                write_all(map->report_fd, report, report_length) != 0) return -1;
+            continue;
+        }
         if (snprintf(verifier_root, sizeof(verifier_root), "/ranex/runtime/%s",
                      roots[root_index]) < 0 ||
             (size_t)strlen(verifier_root) >= sizeof(verifier_root) ||
@@ -650,7 +704,7 @@ static int run_v3_verifier(const char *runtime_snapshot, struct v3_runtime_map *
                 close(output_pipe[0]) != 0 || close(output_pipe[1]) != 0 ||
                 dup2(map->loader_fd, 3) != 3 || close(map->loader_fd) != 0 ||
                 close_worker_descriptors(-1, -1, -1, -1) != true ||
-                enforce_seccomp_v3(true) != 0) _exit(126);
+                enforce_seccomp_v3(true, false) != 0) _exit(126);
             (void)syscall(SYS_execveat, 3, "", verifier_argv, environ, AT_EMPTY_PATH);
             _exit(127);
         }
@@ -705,6 +759,29 @@ static int run_v3_verifier(const char *runtime_snapshot, struct v3_runtime_map *
         }
     }
     return 0;
+}
+
+/* #105: a static worker's runtime `checkfds` opens /dev/null for any closed
+ * standard descriptor and fatals `cannot open standard fds` before main()
+ * when the namespace carries no device nodes (measured: pinned OCR v1.12.9
+ * exits 2).  One sealed, empty memfd created HERE — never inherited
+ * authority — dup2'd over 0/1/2 keeps the descriptors present but
+ * channel-free: reads are EOF and writes fail under F_SEAL_WRITE (measured:
+ * the binary's checkfds accepts the descriptors and runs to completion). */
+#define RANEX_MFD_CLOEXEC 0x0001U
+#define RANEX_MFD_NOEXEC_SEAL 0x0008U
+static int inert_standard_fds(void) {
+    int fd = (int)syscall(SYS_memfd_create, "ranex-inert-stdio",
+                          RANEX_MFD_CLOEXEC | RANEX_MFD_NOEXEC_SEAL);
+    if (fd < 0) return -1;
+    if (fchmod(fd, 0400) != 0 ||
+        fcntl(fd, F_ADD_SEALS,
+              F_SEAL_WRITE | F_SEAL_GROW | F_SEAL_SHRINK | F_SEAL_SEAL) != 0) {
+        (void)close(fd);
+        return -1;
+    }
+    if (dup2(fd, 0) != 0 || dup2(fd, 1) != 1 || dup2(fd, 2) != 2) return -1;
+    return fd > 2 ? close(fd) : 0;
 }
 
 static int v3_worker_exec(const char *runtime_snapshot, char *const argv[],
@@ -1004,6 +1081,15 @@ fail:
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, (number), 0, 1),                        \
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
 
+/* #105: admit only for a static-entrypoint worker; everyone else keeps the
+ * errno default.  See enforce_seccomp_v3 for the measured delta. */
+#define ALLOW_STATIC_WORKER_SYSCALL(number)                                     \
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, (number), 0, 1),                        \
+    BPF_STMT(BPF_RET | BPF_K,                                                  \
+             seccomp_v3_static_worker                                           \
+                 ? SECCOMP_RET_ALLOW                                            \
+                 : SECCOMP_RET_ERRNO | (EPERM & SECCOMP_RET_DATA))
+
 static bool enforce_seccomp(bool runtime_v2) {
     const struct sock_filter filter[] = {
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
@@ -1082,6 +1168,28 @@ static bool enforce_seccomp(bool runtime_v2) {
         BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_unlinkat, 0, 1),
         BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        /* #105 static-worker delta (see enforce_seccomp_v3).  Counts below are
+         * strace -f -c on the pinned OCR v1.12.9 (bccbc15, 2026-09-30):
+         * --version: nanosleep(59) sigaltstack(10) prctl(24, PR_SET_VMA_ANON_NAME)
+         *   sched_getaffinity(2) tgkill(1) epoll_create1(1) epoll_ctl(2)
+         *   epoll_pwait(1) eventfd2(1) faccessat2(1, /usr/bin/xclip probe);
+         * delegate preview (offline): chdir(5) pipe2(14) waitid(7)
+         *   pidfd_open(1) pidfd_send_signal(1). */
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_chdir),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_epoll_create1),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_epoll_ctl),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_epoll_pwait),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_eventfd2),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_faccessat2),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_nanosleep),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_pidfd_open),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_pidfd_send_signal),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_pipe2),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_prctl),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_sched_getaffinity),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_sigaltstack),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_tgkill),
+        ALLOW_STATIC_WORKER_SYSCALL(SYS_waitid),
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mkdir, 0, 1),
         BPF_STMT(BPF_RET | BPF_K,
                  runtime_v2 ? SECCOMP_RET_ALLOW
@@ -2629,9 +2737,15 @@ static int worker_exec(int argc, char **argv) {
     if (executable_fd != 3 && close(executable_fd) != 0) {
         return 64;
     }
-    (void)close(0);
-    (void)close(1);
-    (void)close(2);
+    if (runtime_v3 && v3_map.entrypoint_static) {
+        /* #105: channel-free standard descriptors for a static worker (see
+         * inert_standard_fds); dynamic workers keep the frozen close. */
+        if (inert_standard_fds() != 0) return 64;
+    } else {
+        (void)close(0);
+        (void)close(1);
+        (void)close(2);
+    }
     if (runtime_v3 &&
         (close(v3_map.report_fd) != 0 || !v3_read_exact_go(v3_map.ack_fd) ||
          close(v3_map.ack_fd) != 0 || close(v3_map.readback_fd) != 0 ||
@@ -2644,7 +2758,8 @@ static int worker_exec(int argc, char **argv) {
                                   -1, -1)) {
         return 64;
     }
-    if (!(runtime_v3 ? enforce_seccomp_v3(false) == 0 : enforce_seccomp(runtime_v2))) {
+    if (!(runtime_v3 ? enforce_seccomp_v3(false, v3_map.entrypoint_static) == 0
+                     : enforce_seccomp(runtime_v2))) {
         return 64;
     }
     if (status_descriptor >= 0) {

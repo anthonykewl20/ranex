@@ -1,0 +1,78 @@
+{
+  "app_credentials_files": [
+    "app.pem",
+    "identity.json",
+    "webhook-secret"
+  ],
+  "app_pipeline_reachable": true,
+  "blocked_at": "push refused: To https://github.com/anthonykewl20/ranex-app-live-probe.git\n ! [rejected]        ocr-subject/2026-09-30-ocr-subject-v2 -> ocr-subject/2026-09-30-ocr-subject-v2 (non-fast-forward)\nerror: failed to push some refs to 'https://github.com/anthonykewl20/ranex-app-live-probe.git'\nhint: Updates were rejected because the tip of your current branch is behind\nhint: its remote counterpart. If you want to integrate the remote changes,\nhint: use 'git pull' before pushing again.\nhint: See the 'Note about fast-forwards' in 'git push --help' for details.\n",
+  "phase": "preflight",
+  "steps": [
+    {
+      "argv": [
+        "gh",
+        "api",
+        "user",
+        "--jq",
+        ".login"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": "anthonykewl20\n",
+      "step": "gh-api-user"
+    },
+    {
+      "argv": [
+        "gh",
+        "api",
+        "repos/anthonykewl20/ranex-app-live-probe",
+        "--jq",
+        ".full_name"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": "anthonykewl20/ranex-app-live-probe\n",
+      "step": "probe-repo"
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "github",
+        "status"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": "APP  id=4863198  slug=ranex-gate  url=https://github.com/apps/ranex-gate\n     installation=159825611  account=anthonykewl20  repos=all\n",
+      "step": "ranex-github-status"
+    },
+    {
+      "argv": [
+        "gh",
+        "repo",
+        "clone",
+        "anthonykewl20/ranex-app-live-probe",
+        "/tmp/ranex-105-arm4-7htqqdia/probe"
+      ],
+      "exit": 0,
+      "stderr": "Cloning into '/tmp/ranex-105-arm4-7htqqdia/probe'...\n",
+      "stdout": "",
+      "step": "clone-probe"
+    },
+    {
+      "argv": [
+        "git",
+        "push",
+        "-u",
+        "origin",
+        "ocr-subject/2026-09-30-ocr-subject-v2"
+      ],
+      "exit": 1,
+      "stderr": "To https://github.com/anthonykewl20/ranex-app-live-probe.git\n ! [rejected]        ocr-subject/2026-09-30-ocr-subject-v2 -> ocr-subject/2026-09-30-ocr-subject-v2 (non-fast-forward)\nerror: failed to push some refs to 'https://github.com/anthonykewl20/ranex-app-live-probe.git'\nhint: Updates were rejected because the tip of your current branch is behind\nhint: its remote counterpart. If you want to integrate the remote changes,\nhint: use 'git pull' before pushing again.\nhint: See the 'Note about fast-forwards' in 'git push --help' for details.\n",
+      "stdout": "",
+      "step": "push-branch"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/ranex/runtime/bin/opencodereview",
+    "review",
+    "--format",
+    "sarif",
+    "-o",
+    "/ranex/output/ocr.sarif",
+    "--audience",
+    "agent"
+  ],
+  "cwd": "/tmp/ranex-105-journey-h_3_ld4q/repository",
+  "digests": {
+    "arm1_verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc",
+    "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+    "repeats": "1 distinct of 3",
+    "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+  },
+  "exit_code": 1,
+  "expectation": "arm2-offline-key-set-strict-local",
+  "notes": "same journey, same commit, model credential SET on the host (HOME config api_key + OCR_LLM_*/ANTHROPIC_* = probe values). verdict=['FAIL', 'FAIL', 'FAIL'] verdict_digests=['sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc', 'sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc', 'sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc']; identical to arm 1: True (INVARIANT: removing every model credential must not change a verdict). refused connect (real binary, real key, refused socket): exit=1 refused=True 'Error: llm request failed: Post \"http://127.0.0.1:9/v1/v1/messages\": dial tcp 127.0.0.1:9: connect: connection refused'. credential strip: a session descriptor carrying ANTHROPIC_AUTH_TOKEN is refused (True, names allowlist: True) '{\"detail\":\"worker environment exceeds the launcher allowlist\",\"refusal\":\"E-C18-GATE\"}\\n'. strict-local profile denies the network (governance/confinement/strict-local-v3.json verifier.network=\"denied\").",
+  "status": "VERIFIED",
+  "wall_ms": 71694
+}

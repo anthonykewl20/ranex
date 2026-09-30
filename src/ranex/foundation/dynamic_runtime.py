@@ -61,7 +61,7 @@ class RuntimeLoader(TypedDict):
 
 class RuntimeEntrypoint(TypedDict):
     path: str
-    pt_interp: str
+    pt_interp: str | None
     sha256: str
 
 
@@ -211,7 +211,10 @@ def parse_runtime_manifest(raw: bytes) -> RuntimeManifest:
     if (
         loader.get("self_id") != _LOADER_SELF_ID
         or loader.get("version") != "glibc-2.39"
-        or entry.get("pt_interp") != loader.get("self_id")
+        or (
+            entry.get("pt_interp") is not None
+            and entry.get("pt_interp") != loader.get("self_id")
+        )
         or not isinstance(loader.get("sha256"), str)
         or not _SHA.fullmatch(loader["sha256"])
         or not isinstance(entry.get("sha256"), str)
@@ -279,8 +282,20 @@ def parse_runtime_manifest(raw: bytes) -> RuntimeManifest:
         or entry_rows[0].path != entry_path
         or entry_rows[0].sha256 != entry["sha256"]
         or entry_rows[0].elf is None
-        or entry_rows[0].elf["pt_interp"] != loader["self_id"]
     ):
+        raise ValueError("loader or entrypoint row")
+    entry_elf = entry_rows[0].elf
+    if entry["pt_interp"] is None:
+        # #105: a static entrypoint is admitted only in its exact
+        # self-contained shape — ET_EXEC with no interpreter or dynamic strings.
+        if (
+            entry_elf["type"] != "ET_EXEC"
+            or entry_elf["pt_interp"] is not None
+            or entry_elf["needed"] != []
+            or entry_elf["soname"] is not None
+        ):
+            raise ValueError("static entrypoint shape")
+    elif entry_elf["pt_interp"] != loader["self_id"]:
         raise ValueError("loader or entrypoint row")
     return RuntimeManifest(value, tuple(parsed))
 
@@ -486,6 +501,12 @@ def parsed_runtime_graph(
     for item in manifest.files:
         if item.elf is None:
             continue
+        static_entrypoint = (
+            item.kind == "entrypoint"
+            and item.elf["pt_interp"] is None
+            and item.elf["type"] == "ET_EXEC"
+            and item.elf["needed"] == []
+        )
         try:
             handle = (
                 os.fdopen(os.dup(descriptors[item.path]), "rb")
@@ -495,42 +516,66 @@ def parsed_runtime_graph(
             with handle:
                 elf = ELFFile(handle)
                 dynamic = elf.get_section_by_name(".dynamic")
-                if dynamic is None:
-                    raise ValueError("native runtime object has no dynamic section")
-                tags = list(dynamic.iter_tags())
-                needed = sorted(
-                    str(tag.needed)
-                    for tag in tags
-                    if tag.entry.d_tag == "DT_NEEDED"
-                )
-                sonames = [str(tag.soname) for tag in tags if tag.entry.d_tag == "DT_SONAME"]
-                interps = [
-                    segment.get_interp_name()
-                    for segment in elf.iter_segments()
-                    if segment.header.p_type == "PT_INTERP"
-                ]
-                actual = {
-                    "elf_class": elf.elfclass,
-                    "endian": "little" if elf.little_endian else "big",
-                    "machine": elf.header.e_machine,
-                    "osabi": elf.header.e_ident.EI_OSABI,
-                    "abi_version": elf.header.e_ident.EI_ABIVERSION,
-                    "type": elf.header.e_type,
-                    "pt_interp": interps[0] if len(interps) == 1 else None,
-                    "soname": sonames[0] if len(sonames) == 1 else None,
-                    "needed": needed,
-                    **{
-                        name: next(
-                            (
-                                str(tag.entry.d_val)
-                                for tag in tags
-                                if tag.entry.d_tag == "DT_" + name.upper()
-                            ),
-                            None,
-                        )
-                        for name in _TAGS
-                    },
-                }
+                if static_entrypoint:
+                    # #105: a static entrypoint must be self-contained — no
+                    # PT_INTERP/PT_DYNAMIC segments and no .dynamic section.
+                    segments = [segment.header.p_type for segment in elf.iter_segments()]
+                    if (
+                        dynamic is not None
+                        or "PT_INTERP" in segments
+                        or "PT_DYNAMIC" in segments
+                    ):
+                        raise ValueError("static entrypoint shape")
+                    needed = []
+                    actual = {
+                        "elf_class": elf.elfclass,
+                        "endian": "little" if elf.little_endian else "big",
+                        "machine": elf.header.e_machine,
+                        "osabi": elf.header.e_ident.EI_OSABI,
+                        "abi_version": elf.header.e_ident.EI_ABIVERSION,
+                        "type": elf.header.e_type,
+                        "pt_interp": None,
+                        "soname": None,
+                        "needed": needed,
+                        **{name: None for name in _TAGS},
+                    }
+                else:
+                    if dynamic is None:
+                        raise ValueError("native runtime object has no dynamic section")
+                    tags = list(dynamic.iter_tags())
+                    needed = sorted(
+                        str(tag.needed)
+                        for tag in tags
+                        if tag.entry.d_tag == "DT_NEEDED"
+                    )
+                    sonames = [str(tag.soname) for tag in tags if tag.entry.d_tag == "DT_SONAME"]
+                    interps = [
+                        segment.get_interp_name()
+                        for segment in elf.iter_segments()
+                        if segment.header.p_type == "PT_INTERP"
+                    ]
+                    actual = {
+                        "elf_class": elf.elfclass,
+                        "endian": "little" if elf.little_endian else "big",
+                        "machine": elf.header.e_machine,
+                        "osabi": elf.header.e_ident.EI_OSABI,
+                        "abi_version": elf.header.e_ident.EI_ABIVERSION,
+                        "type": elf.header.e_type,
+                        "pt_interp": interps[0] if len(interps) == 1 else None,
+                        "soname": sonames[0] if len(sonames) == 1 else None,
+                        "needed": needed,
+                        **{
+                            name: next(
+                                (
+                                    str(tag.entry.d_val)
+                                    for tag in tags
+                                    if tag.entry.d_tag == "DT_" + name.upper()
+                                ),
+                                None,
+                            )
+                            for name in _TAGS
+                        },
+                    }
         except (OSError, AttributeError, ValueError) as exc:
             raise ValueError(f"cannot parse ELF {item.path}: {exc}") from exc
         if actual != item.elf:
@@ -609,9 +654,10 @@ def expected_realized_runtime_graph(manifest: RuntimeManifest) -> list[dict[str,
             for name, path in report["resolved"].items()
         ]
         # glibc's --list output names the PT_INTERP loader as a resolved edge
-        # for an executable, while shared-object roots print the loader without
-        # the `name => path` form consumed by realized_runtime_graph_from_reports.
-        if root == entrypoint:
+        # for a dynamic executable, while shared-object roots and the
+        # "statically linked" report of a static entrypoint print no
+        # `name => path` line consumed by realized_runtime_graph_from_reports.
+        if root == entrypoint and manifest.value["entrypoint"]["pt_interp"] is not None:
             resolved.append(
                 {
                     "name": str(loader["self_id"]),

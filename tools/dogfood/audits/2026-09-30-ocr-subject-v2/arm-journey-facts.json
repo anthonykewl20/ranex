@@ -1,0 +1,276 @@
+{
+  "arm1": [
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":61726}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":60229}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":58259}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+    }
+  ],
+  "arm2": [
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":60724}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":54214}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:654ab617e1b940cab6abdca1ea49831d6497ff9238e0394008fc7addf287b7de",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":66482}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+    }
+  ],
+  "control": {
+    "artifact_absent": true,
+    "evaluate_exit": 0,
+    "evaluate_stdout": "PASS  gate=control  subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+    "record": {
+      "approver_id": "ocr-subject-approver",
+      "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+      "causes": [],
+      "considered": [
+        "ocr-version@sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "control",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    },
+    "record_digest": "sha256:025740a3a18533778eea018b1cd594578dff975f004968b5552f9f3560923bac",
+    "run_exit": 0,
+    "run_stderr_head": "",
+    "run_stdout_head": "open-code-review v1.12.9 (bccbc15) linux/amd64\nbuilt at: 2026-09-22T11:04:08Z\nhttps://github.com/alibaba/open-code-review\nRECORDED  claim=ocr-version  producer=ocr-subject-worker  exit=0\n          subject=sha256:da4fa00a2a75f42841d8a2898b153a9209302e7a751a157ede38a3f797d1e6c5\n",
+    "session_outputs": [],
+    "verdict": "PASS",
+    "verdict_digest": "sha256:17ff44ddb909e3a0bb5103a8bd769ff85ad9941556ca02f3e0c362ae2b498de3"
+  },
+  "credential_strip": {
+    "exit": 1,
+    "names_allowlist": true,
+    "refused": true,
+    "text": "{\"detail\":\"worker environment exceeds the launcher allowlist\",\"refusal\":\"E-C18-GATE\"}\n"
+  },
+  "probe_key_set": {
+    "argv": [
+      "/home/soultransit/.cache/ranex/ocr/v1.12.9/opencodereview-linux-amd64",
+      "llm",
+      "test"
+    ],
+    "exit": 1,
+    "refused_connect": true,
+    "stderr": "Error: llm request failed: Post \"http://127.0.0.1:9/v1/v1/messages\": dial tcp 127.0.0.1:9: connect: connection refused",
+    "wall_ms": 13684
+  },
+  "probe_key_unset": {
+    "argv": [
+      "/home/soultransit/.cache/ranex/ocr/v1.12.9/opencodereview-linux-amd64",
+      "llm",
+      "test"
+    ],
+    "exit": 1,
+    "refused_connect": false,
+    "stderr": "Error: resolve LLM endpoint: no valid LLM endpoint configured; one of OCR_LLM_URL/OCR_LLM_TOKEN/OCR_LLM_MODEL, ~/.opencodereview/config.json, or ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN/ANTHROPIC_MODEL must be set",
+    "wall_ms": 6
+  },
+  "scrubbed_host_run": {
+    "exit": 1,
+    "text": "warning: running git --version: exec: \"git\": executable file not found in $PATH\nError: --output directory does not exist: /ranex/output"
+  }
+}

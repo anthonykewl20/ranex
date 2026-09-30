@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "repeat",
+    "arm1+arm2"
+  ],
+  "cwd": "/tmp/ranex-105-journey-h_3_ld4q/repository",
+  "digests": {
+    "all": "1 distinct of 6",
+    "arm1": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc",
+    "arm2": "sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc"
+  },
+  "exit_code": 0,
+  "expectation": "arm5-repeats-identical-fail-digests",
+  "notes": "arm1 x3 + arm2 x3 verdict digests: ['sha256:214ed132dde65db4f7f7283942f6b1282e5af06d628c9b31d3678448489be6cc']; every run FAILed on the unsatisfied ocr-review claim with the artifact absent.",
+  "status": "VERIFIED"
+}

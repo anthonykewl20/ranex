@@ -7,6 +7,7 @@ import fcntl
 import hashlib
 import json
 import os
+import struct
 import subprocess
 import threading
 from pathlib import Path
@@ -101,14 +102,16 @@ def _elf(
     pt_interp: str | None = None,
     soname: str | None = None,
     needed: list[str] | None = None,
+    elf_type: str = "ET_DYN",
+    osabi: str = "ELFOSABI_SYSV",
 ) -> dict[str, object]:
     return {
         "elf_class": 64,
         "endian": "little",
         "machine": "EM_X86_64",
-        "osabi": "ELFOSABI_SYSV",
+        "osabi": osabi,
         "abi_version": 0,
-        "type": "ET_DYN",
+        "type": elf_type,
         "pt_interp": pt_interp,
         "soname": soname,
         "needed": [] if needed is None else needed,
@@ -324,6 +327,241 @@ def test_manifest_parser_refuses_each_loader_affecting_tag(tag: str) -> None:
     value["files"][0]["elf"][tag] = "forbidden"
     with pytest.raises(ValueError, match=tag.upper()):
         parse_runtime_manifest(canonical_json_bytes(value))
+
+
+def _static_entry_elf(**overrides: object) -> dict[str, object]:
+    elf = _elf(elf_type="ET_EXEC")
+    elf.update(overrides)
+    return elf
+
+
+def _loader_row() -> dict[str, object]:
+    return {
+        "path": "loader/ld-linux-x86-64.so.2",
+        "mode": "0555",
+        "kind": "loader",
+        "sha256": DIGEST,
+        "elf": _elf(osabi="ELFOSABI_LINUX", soname="ld-linux-x86-64.so.2"),
+    }
+
+
+def _static_manifest(*, entry_elf: dict[str, object] | None = None) -> dict[str, object]:
+    """#105 arm 0: a closure whose entrypoint is a self-contained static ET_EXEC."""
+    return {
+        "schema": "ranex-dynamic-runtime-closure-v1",
+        "architecture": {
+            "elf_class": 64,
+            "endian": "little",
+            "machine": "EM_X86_64",
+            "osabi": "ELFOSABI_SYSV",
+            "abi_version": 0,
+        },
+        "loader": {
+            "path": "loader/ld-linux-x86-64.so.2",
+            "self_id": "/lib64/ld-linux-x86-64.so.2",
+            "version": "glibc-2.39",
+            "sha256": DIGEST,
+        },
+        "entrypoint": {"path": "bin/opencodereview", "pt_interp": None, "sha256": DIGEST},
+        "library_paths": ["lib"],
+        "files": [
+            {
+                "path": "bin/opencodereview",
+                "mode": "0555",
+                "kind": "entrypoint",
+                "sha256": DIGEST,
+                "elf": _static_entry_elf() if entry_elf is None else entry_elf,
+            },
+            _loader_row(),
+        ],
+    }
+
+
+def _static_elf_bytes() -> bytes:
+    """A minimal real ELF64 little-endian x86-64 ET_EXEC with no segments beyond PT_LOAD."""
+    identity = b"\x7fELF" + bytes([2, 1, 1, 0]) + bytes(8)
+    header = identity + struct.pack(
+        "<HHIQQQIHHHHHH",
+        2, 62, 1, 0x400000, 64, 0, 0, 64, 56, 1, 64, 0, 0,
+    )
+    load = struct.pack("<IIQQQQQQ", 1, 5, 0, 0x400000, 0x400000, 0x200, 0x200, 0x1000)
+    return header + load
+
+
+def _static_graph_root(tmp_path: Path, entry_payload: bytes) -> Path:
+    fixture = ROOT / "tests/e2e/fixtures/slice072-runtime"
+    (tmp_path / "bin").mkdir()
+    (tmp_path / "loader").mkdir()
+    (tmp_path / "bin/opencodereview").write_bytes(entry_payload)
+    (tmp_path / "loader/ld-linux-x86-64.so.2").write_bytes(
+        (fixture / "loader/ld-linux-x86-64.so.2").read_bytes()
+    )
+    return tmp_path
+
+
+def test_manifest_parser_admits_static_entrypoint_with_null_pt_interp() -> None:
+    """#105 arm 0: an honest static entrypoint binds without an interpreter."""
+    from ranex.foundation.dynamic_runtime import parse_runtime_manifest
+
+    parsed = parse_runtime_manifest(canonical_json_bytes(_static_manifest()))
+    assert parsed.value["entrypoint"]["pt_interp"] is None
+    entry = [row for row in parsed.files if row.kind == "entrypoint"]
+    assert len(entry) == 1
+    assert entry[0].elf["type"] == "ET_EXEC"
+    assert entry[0].elf["pt_interp"] is None
+    assert entry[0].elf["needed"] == []
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (
+            lambda value: value["files"][0].update(elf=_static_entry_elf(type="ET_DYN")),
+            "static entrypoint shape",
+        ),
+        (
+            lambda value: value["files"][0].update(
+                elf=_static_entry_elf(needed=["libc.so.6"])
+            ),
+            "static entrypoint shape",
+        ),
+        (
+            lambda value: value["files"][0].update(
+                elf=_static_entry_elf(pt_interp="/lib64/ld-linux-x86-64.so.2")
+            ),
+            "static entrypoint shape",
+        ),
+        (
+            lambda value: value["files"][0].update(
+                elf=_static_entry_elf(soname="opencodereview")
+            ),
+            "static entrypoint shape",
+        ),
+        (
+            lambda value: value["entrypoint"].update(
+                pt_interp="/lib64/ld-linux-x86-64.so.2"
+            ),
+            "loader or entrypoint row",
+        ),
+    ],
+)
+def test_manifest_parser_refuses_static_entrypoint_shape_drift(
+    mutate: object,
+    message: str,
+) -> None:
+    """#105: static admission is exact-shape only; any drift refuses."""
+    from ranex.foundation.dynamic_runtime import parse_runtime_manifest
+
+    value = _static_manifest()
+    mutate(value)
+    with pytest.raises(ValueError, match=message):
+        parse_runtime_manifest(canonical_json_bytes(value))
+
+
+def test_static_entrypoint_self_contained_bytes_pass_the_graph(tmp_path: Path) -> None:
+    """#105: declared static shape verifies against self-contained static bytes."""
+    from ranex.foundation.dynamic_runtime import (
+        parse_runtime_manifest,
+        parsed_runtime_graph,
+    )
+
+    root = _static_graph_root(tmp_path, _static_elf_bytes())
+    manifest = parse_runtime_manifest(canonical_json_bytes(_static_manifest()))
+    assert parsed_runtime_graph(root, manifest) == [
+        {"path": "bin/opencodereview", "needed": []},
+        {"path": "loader/ld-linux-x86-64.so.2", "needed": []},
+    ]
+
+
+def test_static_entrypoint_claim_with_dynamic_bytes_is_refused(tmp_path: Path) -> None:
+    """#105: a dynamic byte payload never satisfies the static entrypoint shape."""
+    from ranex.foundation.dynamic_runtime import (
+        parse_runtime_manifest,
+        parsed_runtime_graph,
+    )
+
+    dynamic = ROOT / "tests/e2e/fixtures/slice072-runtime/bin/python3.12"
+    root = _static_graph_root(tmp_path, dynamic.read_bytes())
+    manifest = parse_runtime_manifest(canonical_json_bytes(_static_manifest()))
+    with pytest.raises(ValueError, match="static entrypoint shape"):
+        parsed_runtime_graph(root, manifest)
+
+
+def test_static_entrypoint_expected_graph_is_the_statically_linked_report() -> None:
+    """#105: expected report is the statically linked shape with no loader edge."""
+    from ranex.foundation.dynamic_runtime import (
+        expected_realized_graph,
+        expected_realized_runtime_graph,
+        normalize_loader_report,
+        parse_runtime_manifest,
+        realized_runtime_graph_from_reports,
+    )
+
+    manifest = parse_runtime_manifest(canonical_json_bytes(_static_manifest()))
+    entrypoint = "bin/opencodereview"
+    report = normalize_loader_report(b"statically linked", "/ranex/runtime/" + entrypoint)
+    assert report == {
+        "loader": "/ranex/runtime/loader/ld-linux-x86-64.so.2",
+        "synthetic": [],
+        "resolved": {},
+    }
+    assert expected_realized_graph(manifest)[entrypoint] == report
+    rows = expected_realized_runtime_graph(manifest)
+    assert rows == [{"root": entrypoint, "resolved": []}]
+    assert rows == realized_runtime_graph_from_reports({entrypoint: b"statically linked"})
+
+
+def test_runtime_map_bytes_freezes_the_static_bit_abi() -> None:
+    """#105: the sealed map's entrypoint object carries the byte-bound static bit."""
+
+    from types import SimpleNamespace
+
+    from ranex.cli.host_confinement import _runtime_map_bytes
+
+    closure = SimpleNamespace(
+        file_set=[
+            {"path": "bin/opencodereview", "mode": "0555", "kind": "entrypoint", "sha256": DIGEST},
+            {"path": "closure.json", "mode": "0444", "kind": "manifest", "sha256": DIGEST},
+            {"path": "loader/ld-linux-x86-64.so.2", "mode": "0555", "kind": "loader", "sha256": DIGEST},
+        ]
+    )
+    descriptors = {
+        "bin/opencodereview": 7,
+        "closure.json": 8,
+        "loader/ld-linux-x86-64.so.2": 9,
+    }
+    expected = (
+        '{"entrypoint":{"path":"bin/opencodereview","sha256":"%s","static":%s},'
+        '"files":[{"fd":7,"kind":"entrypoint","mode":"0555",'
+        '"path":"bin/opencodereview","sha256":"%s"},'
+        '{"fd":8,"kind":"manifest","mode":"0444","path":"closure.json","sha256":"%s"},'
+        '{"fd":9,"kind":"loader","mode":"0555",'
+        '"path":"loader/ld-linux-x86-64.so.2","sha256":"%s"}],'
+        '"loader":{"path":"loader/ld-linux-x86-64.so.2","sha256":"%s"},'
+        '"source":"sealed-memfd-map"}\n'
+    )
+    for pt_interp, static in (
+        ("/lib64/ld-linux-x86-64.so.2", "false"),
+        (None, "true"),
+    ):
+        manifest = {
+            "loader": {
+                "path": "loader/ld-linux-x86-64.so.2",
+                "self_id": "/lib64/ld-linux-x86-64.so.2",
+                "version": "glibc-2.39",
+                "sha256": DIGEST,
+            },
+            "entrypoint": {
+                "path": "bin/opencodereview",
+                "pt_interp": pt_interp,
+                "sha256": DIGEST,
+            },
+        }
+        produced = _runtime_map_bytes(closure, manifest, descriptors)
+        assert produced == (
+            expected % (DIGEST, static, DIGEST, DIGEST, DIGEST, DIGEST)
+        ).encode()
+        assert json.loads(produced)["entrypoint"]["static"] is (static == "true")
 
 
 def test_dynamic_and_static_selector_pairs_are_distinct() -> None:
