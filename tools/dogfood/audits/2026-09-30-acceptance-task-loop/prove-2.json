@@ -1,0 +1,30 @@
+{
+  "expectation": "prove-2",
+  "argv": [
+    "/tmp/ranex-119/.venv/bin/python3",
+    "-m",
+    "ranex.cli.main",
+    "prove",
+    "--task",
+    "/tmp/ranex-119-dogfood/final/state"
+  ],
+  "cwd": "/tmp/ranex-119",
+  "exit_code": 1,
+  "expected_exit": 1,
+  "stdout_sha256": "d064385c34f8557f498a08a6d20058fa1f6f008bd03d56cbb014c5fb7d84d8f0",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "wall_clock_ms": 3989,
+  "host": {
+    "kernel": "7.0.0-34-generic",
+    "docker": "29.8.1",
+    "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7"
+  },
+  "facts": {
+    "wall_clock_ms": 3989,
+    "misses": 2,
+    "failed_assertion": "tenant-isolation"
+  },
+  "status": "VERIFIED",
+  "stdout": "{\"candidate\":\"eac5d4f8ba246c38a99c7c793fe66c7792f3b39e\",\"failed_assertion\":\"tenant-isolation\",\"journal_head\":\"sha256:dbe5078f37896565634ac7d6295adc72b908245c7fdc62231175140ce21e9efd\",\"misses\":2,\"status\":\"MISS\",\"verdict\":\"/tmp/ranex-119-dogfood/final/state/verdict.json\"}\n",
+  "stderr": ""
+}

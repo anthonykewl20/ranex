@@ -1,30 +1,27 @@
 # State
 
-**Updated:** 2026-09-27
-**Active slice:** none — ADR-065 accepted; SLICE-096 wiring landed;
-SLICE-097 / #107 (authenticated approver) closed; SLICE-098 / #108
-(external Rekor witness) closed; SLICE-099 / #109 (observation log)
-closed on this branch.
+**Updated:** 2026-09-30
+**Active slice:** none — SLICE-102 / #119 (acceptance task loop) closed on
+this branch; SLICE-085 / #88 remains blocked.
 
 **ADP / architecture freeze (promoted):**
 - ADR-065 **accepted**; `governance/architecture-freeze.json` pins
   ranex's ten-subpackage graph + root `__init__`.
 - `landing` gate carries claim `architecture`.
 
-**#107 / RISK-07 closed:** catalogued `role: approver`, CLI possession
-before `evaluate()`, second Ed25519 signature in the verdict.
+**#119 / ADR-061 task authority closed:** `specification approve-task` /
+`build-task` / `reapprove-task` / `land-task` and top-level `prove --task`
+compose A/B/C grants, journal CAS, evaluate() and the #118 live observer.
+Three persisted OBSERVED-MISMATCH misses revoke; land requires the exact
+PASS candidate and unchanged target head. Receipts:
+`tools/dogfood/audits/2026-09-30-acceptance-task-loop/` (#95 vocabulary,
+3× deterministic repeats).
 
-**#108 / RISK-19+03 closed-with-witness:** DSSE-wrapped verdicts anchored
-in Rekor (`gate evaluate --witness`; `journal verify --witnessed`);
-pinned log key `governance/rekor_public_key.pem` (ADR-067 / SLICE-098).
+**Still closed on main:** #107 authenticated approver; #108 Rekor witness;
+#109 observation log; #112 minimization ladder; #102 delegated review;
+#118 calibrated live HTTP observer.
 
-**#109 / RISK-11 closed:** append-only hash-chained
-`governance/observations.sqlite3`; `run` appends every signed record;
-`gate evaluate` restores deleted FAILs as `removed-observation`;
-`journal verify --observations` (ADR-068 / SLICE-099).
-
-Recent: #112 minimization ladder; #102 delegated review. Queue remains
-#115, #119, #105, #90; #88 parked.
+Queue remains #115, #105, #90; #88 parked.
 
 Suite: standing host-drift / fixture red family on main unchanged by this
 ship; refreeze is IDs-only and outcome-blind.

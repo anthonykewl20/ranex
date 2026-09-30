@@ -1,0 +1,29 @@
+{
+  "expectation": "prove-4",
+  "argv": [
+    "/tmp/ranex-119/.venv/bin/python3",
+    "-m",
+    "ranex.cli.main",
+    "prove",
+    "--task",
+    "/tmp/ranex-119-dogfood/final/state"
+  ],
+  "cwd": "/tmp/ranex-119",
+  "exit_code": 2,
+  "expected_exit": 2,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "e7e189dbc9734b235e9b8eaede6bb8b0834232e7ec2f1315e67a678e469d070d",
+  "wall_clock_ms": 343,
+  "host": {
+    "kernel": "7.0.0-34-generic",
+    "docker": "29.8.1",
+    "controller_sha256": "0a3de91beed376ff5a2dc18644294e6fa2b4b9ae46c10e61d9c7787a35e914d7"
+  },
+  "facts": {
+    "wall_clock_ms": 343,
+    "refusal": "E-TASK-REVOKED"
+  },
+  "status": "VERIFIED",
+  "stdout": "",
+  "stderr": "E-TASK-REFUSED: E-TASK-REVOKED: three misses, revocation or expiry requires new operator approval\n"
+}

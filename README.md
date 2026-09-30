@@ -114,6 +114,28 @@ file membership, bytes and executable modes. These commands verify artifact
 integrity; they do not execute the application or issue a product PASS.
 See the [probe bundle recipe](docs/OPERATIONS.md#frozen-executable-probe-bundles).
 
+### Run an approved live acceptance task
+
+The initial live profile supports pinned local PostgreSQL/PostgREST images.
+After freezing the HTTP and worker profiles, the operator signs the bundle:
+
+```sh
+RANEX_SIGNING_KEY=/outside/repo/owner.key uv run --frozen ranex specification approve-task \
+  --external-repository /path/to/product --bundle /outside/repo/bundle \
+  --manifest-digest sha256:YOUR_INDEPENDENT_PIN \
+  --worker-profile acceptance/worker.json --state /outside/repo/task
+uv run --frozen ranex specification build-task --task /outside/repo/task
+uv run --frozen ranex prove --task /outside/repo/task
+uv run --frozen ranex specification land-task --task /outside/repo/task
+```
+
+Three observed misses revoke the grant. `specification reapprove-task` requires
+a newer operator-approved map. Integration requires the exact passing candidate
+and unchanged target base. See
+[SLICE-102](docs/slices/done/SLICE-102-approved-live-task-loop.md) and the
+[operator recipe](docs/OPERATIONS.md#approved-live-acceptance-task-loop).
+
+
 ### Path-scoped handbook guidance for delegates
 
 `governance/handbook.json` in your repository (and, for one operator, the
@@ -246,6 +268,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-102 — Approved live acceptance task loop](docs/slices/done/SLICE-102-approved-live-task-loop.md): signed authority, scoped builds, three misses, reapproval and exact integration (ADR-061 / #119).
 
 - [SLICE-098 — External verdict witness](docs/slices/done/SLICE-098-external-verdict-witness.md): DSSE-wrapped verdicts anchored in Rekor; `gate evaluate --witness` and `journal verify --witnessed` (ADR-067 / #108).
 - [SLICE-099 — Append-only observation log](docs/slices/done/SLICE-099-append-only-observation-log.md): hash-chained `observations.sqlite3` so a deleted FAIL is named `removed-observation` (ADR-068 / #109).

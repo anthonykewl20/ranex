@@ -1,0 +1,179 @@
+[
+  {
+    "argv": [
+      "specification",
+      "freeze-probes",
+      "--external-repository",
+      "/tmp/ranex-119-dogfood/final/subject",
+      "--spec-packet",
+      "/tmp/ranex-119-dogfood/final/A.json",
+      "--invocation",
+      "/tmp/ranex-119-dogfood/final/argv.json",
+      "--root",
+      "acceptance",
+      "--output",
+      "/tmp/ranex-119-dogfood/final/task-bundle"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 273
+  },
+  {
+    "argv": [
+      "specification",
+      "approve-task",
+      "--external-repository",
+      "/tmp/ranex-119-dogfood/final/subject",
+      "--bundle",
+      "/tmp/ranex-119-dogfood/final/task-bundle",
+      "--manifest-digest",
+      "sha256:4ea88415fcc507b3293a008018823413e1d6d5f405d1553ae52a80f446d48a9b",
+      "--worker-profile",
+      "acceptance/worker.json",
+      "--state",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 481
+  },
+  {
+    "argv": [
+      "specification",
+      "build-task",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 858
+  },
+  {
+    "argv": [
+      "prove",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 1,
+    "wall_clock_ms": 3378
+  },
+  {
+    "argv": [
+      "prove",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 1,
+    "wall_clock_ms": 3989
+  },
+  {
+    "argv": [
+      "prove",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 1,
+    "wall_clock_ms": 4223
+  },
+  {
+    "argv": [
+      "prove",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 2,
+    "wall_clock_ms": 343
+  },
+  {
+    "argv": [
+      "specification",
+      "freeze-probes",
+      "--external-repository",
+      "/tmp/ranex-119-dogfood/final/subject",
+      "--spec-packet",
+      "/tmp/ranex-119-dogfood/final/A2.json",
+      "--invocation",
+      "/tmp/ranex-119-dogfood/final/argv.json",
+      "--root",
+      "acceptance",
+      "--output",
+      "/tmp/ranex-119-dogfood/final/bundle2"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 345
+  },
+  {
+    "argv": [
+      "specification",
+      "reapprove-task",
+      "--external-repository",
+      "/tmp/ranex-119-dogfood/final/subject",
+      "--bundle",
+      "/tmp/ranex-119-dogfood/final/bundle2",
+      "--manifest-digest",
+      "sha256:4233f4e43efcfc47a83007e6d0bbd6daf66b74aabc82404b45f23bd6c3d75f80",
+      "--worker-profile",
+      "acceptance/worker.json",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 397
+  },
+  {
+    "argv": [
+      "specification",
+      "build-task",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 862
+  },
+  {
+    "argv": [
+      "prove",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 8404
+  },
+  {
+    "argv": [
+      "specification",
+      "land-task",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 2,
+    "wall_clock_ms": 214
+  },
+  {
+    "argv": [
+      "specification",
+      "land-task",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 2,
+    "wall_clock_ms": 297
+  },
+  {
+    "argv": [
+      "specification",
+      "land-task",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 0,
+    "wall_clock_ms": 304
+  },
+  {
+    "argv": [
+      "specification",
+      "land-task",
+      "--task",
+      "/tmp/ranex-119-dogfood/final/state"
+    ],
+    "exit": 2,
+    "wall_clock_ms": 239
+  }
+]
