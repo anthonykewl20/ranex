@@ -159,6 +159,8 @@ class Operator:
         self.clone: Path | None = None
         self.key: Path | None = None
         self.approver_key: Path | None = None
+        self.service_key: Path | None = None
+        self.checkpoint: Path | None = None
         self.store: Path | None = None
 
     def reach(self, stage: str) -> None:
@@ -203,9 +205,14 @@ def operator(tmp_path_factory: pytest.TempPathFactory) -> Operator:
     root = tmp_path_factory.mktemp("cold-start")
     state.key = root / "keys" / "worker.key"
     state.approver_key = root / "keys" / "reviewer_alice.key"
+    state.service_key = root / "keys" / "history-service.key"
+    state.checkpoint = root / "history.checkpoint.json"
     state.store = root / "store"
     state.clone = root / "clone"
     return state
+
+
+_HISTORY_ENV: dict[Path, dict[str, str]] = {}
 
 
 def ranex(
@@ -217,6 +224,9 @@ def ranex(
     environment = {**os.environ, "PYTHONPATH": str(repo / "src"), GUARD: "1"}
     environment.pop("RANEX_SIGNING_KEY", None)
     environment.pop(_approver.APPROVER_ENV, None)
+    for name in ("RANEX_VERDICT_SIGNING_KEY", "RANEX_HISTORY_CHECKPOINT", "RANEX_VERDICT_DIR"):
+        environment.pop(name, None)
+    environment.update(_HISTORY_ENV.get(repo, {}))
     if key is not None:
         environment["RANEX_SIGNING_KEY"] = str(key)
     if approver_key is not None:
@@ -301,11 +311,27 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
         "reviewer_alice",
         approver_public,
     )
+    # The history service is a third identity; the producer never certifies
+    # its own retained history. Establish trust before the first judgment.
+    minted_service = ranex(operator.clone, ["keygen", "--producer", "kernel-verdict-signer"],
+                           key=operator.service_key)
+    assert minted_service[0] == 0, minted_service[2]
+    service_public = _approver_public_key(minted_service[1])
+    assert service_public, minted_service[1]
+    from tests._history import register_service
+    register_service(operator.clone / "governance/producers.yaml", service_public)
     git(operator.clone, "add", "governance/producers.yaml")
     committed = git(
-        operator.clone, "commit", "-q", "-m", "register the journey's approver"
+        operator.clone, "commit", "-q", "-m", "register the journey's approver and history service"
     )
     assert committed.returncode == 0, committed.stderr
+    _HISTORY_ENV[operator.clone] = {
+        "RANEX_VERDICT_SIGNING_KEY": str(operator.service_key),
+        "RANEX_HISTORY_CHECKPOINT": str(operator.checkpoint),
+    }
+    documented("history bootstrap")
+    established = ranex(operator.clone, ["history", "bootstrap"])
+    assert established[0] == 0, established[1] + established[2]
 
 
 # --------------------------------------------------------------------------

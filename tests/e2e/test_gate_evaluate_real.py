@@ -116,11 +116,15 @@ _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
     "RANEX_APPROVER_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
+    "RANEX_HISTORY_CHECKPOINT",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
     "COVERAGE_PROCESS_CONFIG",
     "COVERAGE_FILE",
 )
+
+
+_HISTORY_ENV: dict[Path, dict[str, str]] = {}
 
 
 def ranex(
@@ -133,6 +137,7 @@ def ranex(
 
     env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
     env["PYTHONPATH"] = str(subject / "src")
+    env.update(_HISTORY_ENV.get(subject, {}))
     if key is not None:
         env["RANEX_SIGNING_KEY"] = str(key)
     if approver_key is not None:
@@ -230,12 +235,22 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
     assert approver_match, f"keygen printed no public key: {approver_generated.stdout!r}"
     keyring = subject / "governance" / "producers.yaml"
     _approver.register_approver(keyring, "reviewer", approver_match.group(1))
+    from tests._history import mint_service, register_service
+    _, service_public, service_path = mint_service(base)
+    register_service(keyring, service_public)
     registered = git(subject, "add", "governance/producers.yaml")
     assert registered.returncode == 0, registered.stderr
     registered = git(
         subject, "commit", "-q", "-m", "register the journey's catalogued approver"
     )
     assert registered.returncode == 0, registered.stderr
+
+    _HISTORY_ENV[subject] = {
+        "RANEX_VERDICT_SIGNING_KEY": str(service_path),
+        "RANEX_HISTORY_CHECKPOINT": str(base / "history.checkpoint.json"),
+    }
+    established = ranex(subject, ["history", "bootstrap"])
+    assert established.returncode == 0, established.stdout + established.stderr
 
     # --- FAIL arm: the real subject with no evidence at all --------
     fail = ranex(
