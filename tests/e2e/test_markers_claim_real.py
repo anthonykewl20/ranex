@@ -75,6 +75,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     (repository / "shortcut_probe.py").write_text(WELL_FORMED, encoding="utf-8")
     (repository / "governance").mkdir()
     (repository / "gates.yaml").write_text(catalog(marker_command()), encoding="utf-8")
+    (repository / ".gitignore").write_text("observations.sqlite3*\n", encoding="utf-8")
     signing.write_keyring(repository)
     attach(repository, signing)
     commit(repository, "initial")
@@ -99,6 +100,7 @@ def invoke(
                 _approver.APPROVER_ENV,
                 str(signing_for(repo).approver_path(approver)),
             )
+        signing_for(repo).configure_history(monkeypatch, repo)
         return main(argv)
 
 

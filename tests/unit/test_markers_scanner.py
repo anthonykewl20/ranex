@@ -13,6 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from ranex.foundation.markers import (
     RULE_MALFORMED,
     RULE_NO_TRIGGER,
@@ -291,3 +293,38 @@ def test_the_ranex_markers_subcommand_writes_the_same_artifact(
     assert exit_code == 0
     (result,) = json.loads(artifact.read_bytes())["runs"][0]["results"]
     assert result["ruleId"] == RULE_NO_TRIGGER
+
+
+@pytest.mark.parametrize("prefix", ["é" * 20, "😀" * 20, "e\u0301" * 20])
+def test_cli_unicode_before_comment_uses_byte_offsets_only_for_bytes(
+    tmp_path: Path, prefix: str
+) -> None:
+    root = tmp_path / "subject"
+    root.mkdir()
+    text = f'name = "{prefix}" # ranex: global lock\n'
+    (root / "unicode.py").write_text(text, encoding="utf-8")
+    (root / "quoted.py").write_text(
+        f'name = "{prefix} # ranex: global lock"\n', encoding="utf-8"
+    )
+    output = tmp_path / "out.sarif"
+    completed = subprocess.run(
+        [sys.executable, "-m", "ranex.foundation.markers", "--root", str(root),
+         "--output-file", str(output)],
+        capture_output=True, text=True, check=False, timeout=10,
+    )
+    assert completed.returncode == 0, completed.stderr
+    artifact = output.read_bytes()
+    result = json.loads(artifact)["runs"][0]["results"]
+    assert len(result) == 1
+    assert result[0]["ruleId"] == RULE_NO_TRIGGER
+    assert result[0]["locations"][0]["physicalLocation"]["region"] == {
+        "startLine": 1, "endLine": 1, "snippet": {"text": text.rstrip("\n")}
+    }
+    summary = scan_results_from_sarif(
+        artifact,
+        {"scope": ["quoted.py", "unicode.py"], "rules": [RULE_NO_TRIGGER],
+         "blocking_levels": ["error"], "accepted": {}},
+        subject_root=root,
+    )
+    assert dict(summary["non_passed"])["unicode.py"] == "failed"
+    assert summary["counts"]["passed"] == 1

@@ -338,17 +338,16 @@ def _edges(
             )
         if base_parts is None:
             continue  # the import names something outside the frozen package
-        files = [
-            resolved
-            for resolved in (
-                _resolve_file(root, [*base_parts, name]) for name in names
-            )
-            if resolved is not None
-        ]
-        if not files:
-            base_file = _resolve_file(root, base_parts)
-            files = [base_file] if base_file is not None else []
-        for file in files:
+        files: set[str] = set()
+        for name in names:
+            resolved = _resolve_file(root, [*base_parts, name])
+            if resolved is None:
+                # Each attribute (including '*') depends on the base module.
+                # A sibling submodule resolving must not hide that edge.
+                resolved = _resolve_file(root, base_parts)
+            if resolved is not None:
+                files.add(resolved)
+        for file in sorted(files):
             target = _module_of(freeze, file)
             if target is not None:
                 targets.append((line, target))

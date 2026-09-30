@@ -32,6 +32,7 @@ Three boundaries hold by construction:
 from __future__ import annotations
 
 import re
+import shlex
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -65,6 +66,68 @@ _VERDICTS = {"PASS", "FAIL"}
 _RUNG = re.compile(r"^L[012] ")
 _DIGEST = re.compile(r"sha256:[0-9a-f]{64}")
 _WHITESPACE = re.compile(r"\s+")
+
+# Built-in pytest 9.1.1 option arities. Unknown
+# plugin options have unknown arity: omit a targeted pointer rather than
+# treating their values as collection operands. This is advisory only.
+_PYTEST_VALUES = frozenset({
+    "-k", "-m", "-c", "-o", "-p", "-r", "--config-file", "--report-chars", "--override-ini", "--junitxml",
+    "--junit-xml", "--rootdir", "--confcutdir", "--basetemp", "--ignore",
+    "--ignore-glob", "--deselect", "--import-mode", "--tb", "--capture",
+    "--color", "--code-highlight", "--durations", "--durations-min",
+    "--maxfail", "--assert", "--log-level", "--log-format", "--log-date-format",
+    "--log-file", "--log-file-level", "--log-file-format", "--log-file-date-format",
+    "--show-capture",
+})
+_PYTEST_FLAGS = frozenset({
+    "-q", "-v", "-s", "-x", "-l", "--quiet", "--verbose", "--exitfirst",
+    "--showlocals", "--strict-config", "--strict-markers", "--disable-warnings",
+    "--disable-pytest-warnings", "--collect-only", "--co", "--continue-on-collection-errors",
+    "--lf", "--last-failed", "--ff", "--failed-first", "--full-trace",
+    "--runxfail", "--no-header", "--no-summary", "--cache-clear", "--noconftest",
+})
+
+
+def _targeted_pytest_argv(tokens: list[str], targeted: list[str]) -> list[str] | None:
+    if tokens[0].rsplit("/", 1)[-1].startswith("python") and tokens[1:3] == ["-m", "pytest"]:
+        boundary = 3
+    elif tokens[0].rsplit("/", 1)[-1] in {"pytest", "py.test"}:
+        boundary = 1
+    elif tokens[:2] == ["uv", "run"]:
+        boundary = 2
+        while boundary < len(tokens) and tokens[boundary] in {"--frozen", "--locked", "--offline", "--no-sync"}:
+            boundary += 1
+        if boundary == len(tokens) or tokens[boundary] != "pytest":
+            return None
+        boundary += 1
+    else:
+        return None
+    retained = tokens[:boundary]
+    index = boundary
+    while index < len(tokens):
+        token = tokens[index]
+        if token == "--":
+            break
+        if not token.startswith("-"):
+            index += 1
+            continue
+        option, separator, _value = token.partition("=")
+        if option in _PYTEST_VALUES:
+            retained.append(token)
+            if not separator:
+                index += 1
+                if index == len(tokens):
+                    return None
+                retained.append(tokens[index])
+        elif token in _PYTEST_FLAGS or (token.startswith("-") and not token.startswith("--")
+                                        and set(token[1:]) <= set("qvsxl")):
+            retained.append(token)
+        elif len(token) > 2 and token[:2] in _PYTEST_VALUES and not token.startswith("--"):
+            retained.append(token)
+        else:
+            return None
+        index += 1
+    return [*retained, "--", *targeted]
 
 
 def validate_repair_envelope(value: object) -> dict[str, object]:
@@ -160,18 +223,25 @@ def next_rung_lines(
     if not repro_argv:
         return []
     rungs: list[str] = []
-    tokens = repro_argv.split()
+    try:
+        tokens = shlex.split(repro_argv)
+    except ValueError:
+        return []
+    if not tokens:
+        return []
     located = sorted(
         {failure["at"].rsplit(":", 1)[0] for failure in failures if failure.get("at")}
     )
     if located and tokens and tokens[0].rsplit("/", 1)[-1].startswith("python"):
         rungs.append(
-            f"L0 {tokens[0]} -m py_compile {' '.join(located[:MAX_COMPILED_FILES])}"
+            "L0 " + shlex.join([tokens[0], "-m", "py_compile", *located[:MAX_COMPILED_FILES]])
         )
     targeted = [failure["id"] for failure in failures if failure.get("id")]
     if targeted:
-        rungs.append(f"L1 {repro_argv} {' '.join(targeted[:MAX_TARGETED_IDS])}")
-    rungs.append(f"L2 {repro_argv}")
+        argv = _targeted_pytest_argv(tokens, targeted[:MAX_TARGETED_IDS])
+        if argv is not None:
+            rungs.append("L1 " + shlex.join(argv))
+    rungs.append("L2 " + shlex.join(tokens))
     return rungs
 
 

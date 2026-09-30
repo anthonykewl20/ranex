@@ -17,6 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
+from _static_worker import build_worker
 from launcher_host import require_unprivileged_userns
 
 from ranex.cli.fanout import cmd_task_fanout
@@ -61,8 +62,8 @@ NEGATIVE_CONTROLS = json.loads(
     (FIXTURES / "approved-batch-negative-controls-v1.json").read_text()
 )
 FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
-BASE_COMMIT = "832d494b262b358101c877fd8e489f3d37e6ad03"
-SUBJECT_DIGEST = "sha256:2587939dcba7fb6e476a0af57ffeaa681afe50581ad2e15c549fd3bd0247b3d4"
+BASE_COMMIT = "a124257b3539b75a01d3ea5b96d440d923aba0f6"
+SUBJECT_DIGEST = "sha256:e6aaad9105a88ad7a605ebc11b927840857308cb8b02eda1c2b06df6ea2ed1a0"
 OWNER_PUBLIC_KEY = "ed25519:CiDh4vZcR9Np+EVlrMo4AEyddVqfaC+vXlunlDUvv8Y="
 
 
@@ -97,9 +98,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-20"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 16
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v20"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-22"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 18
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v22"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -216,7 +217,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "parent": FIXTURE_PARENT_COMMIT,
         "subject_digest": SUBJECT_DIGEST,
     }
-    assert len(successor["committed_paths"]) == 29
+    assert len(successor["committed_paths"]) == 32
     assert "governance/qualification/worker/slice036-worker" in successor["committed_paths"]
     published_authority = EXPECTED_VALUES["published_v2_authority"]
     assert published_authority == {
@@ -620,21 +621,7 @@ def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
     artifacts = []
     for ordinal in range(2):
         output = tmp_path / f"worker-{ordinal}"
-        flags = [
-            token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
-            .replace("<output>", str(output))
-            .replace("<source>", str(source))
-            for token in manifest["build"]["flags"]
-        ]
-        completed = subprocess.run(
-            [str(compiler), *flags],
-            cwd=ROOT,
-            env=manifest["build"]["environment"],
-            capture_output=True,
-            check=False,
-        )
-        assert completed.returncode == 0, completed.stderr.decode()
-        artifacts.append(output.read_bytes())
+        artifacts.append(build_worker(ROOT, source, output, manifest))
     assert artifacts[0] == artifacts[1]
     assert hashlib.sha256(artifacts[0]).hexdigest() == manifest["artifact"]["sha256"]
 
@@ -649,18 +636,7 @@ def test_static_worker_succeeds_with_stdout_closed_and_only_exact_output_file(
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]
     worker = tmp_path / "slice036-worker"
-    compiler = Path(manifest["build"]["compiler"]["path"])
-    flags = [
-        token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
-        .replace("<output>", str(worker))
-        .replace("<source>", str(source))
-        for token in manifest["build"]["flags"]
-    ]
-    built = subprocess.run(
-        [str(compiler), *flags], cwd=ROOT,
-        env=manifest["build"]["environment"], capture_output=True, check=False,
-    )
-    assert built.returncode == 0, built.stderr.decode()
+    build_worker(ROOT, source, worker, manifest)
     assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
     host_profile = json.loads(
         (ROOT / "governance/confinement/strict-local-host-v1.json").read_bytes()

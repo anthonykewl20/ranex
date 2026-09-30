@@ -13,7 +13,6 @@ does not restrict a production command to the Ranex repository or this commit.
 
 from __future__ import annotations
 
-import base64
 import datetime
 import hashlib
 import json
@@ -32,6 +31,7 @@ from pathlib import Path
 
 import _prereqs
 import pytest
+from _static_worker import build_worker
 
 from ranex.foundation.canonical import (
     canonical_json_bytes,
@@ -61,8 +61,8 @@ EXPECTED_VALUES = json.loads(
     (FIXTURES / "approved-batch-expected-values-v1.json").read_text(encoding="utf-8")
 )
 FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
-BASE_COMMIT = "832d494b262b358101c877fd8e489f3d37e6ad03"
-SUBJECT_DIGEST = "sha256:2587939dcba7fb6e476a0af57ffeaa681afe50581ad2e15c549fd3bd0247b3d4"
+BASE_COMMIT = "a124257b3539b75a01d3ea5b96d440d923aba0f6"
+SUBJECT_DIGEST = "sha256:e6aaad9105a88ad7a605ebc11b927840857308cb8b02eda1c2b06df6ea2ed1a0"
 OWNER_PUBLIC_KEY = "ed25519:CiDh4vZcR9Np+EVlrMo4AEyddVqfaC+vXlunlDUvv8Y="
 FIXTURE_AUTHOR_NAME = "Ranex Fixture"
 FIXTURE_AUTHOR_EMAIL = "fixture@ranex.invalid"
@@ -492,21 +492,7 @@ def test_static_worker_twice_built_bytes_have_required_elf_properties(
     artifacts: list[bytes] = []
     for index in range(2):
         output = tmp_path / f"slice036-worker-{index}"
-        flags = [
-            token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
-            .replace("<output>", str(output))
-            .replace("<source>", str(source))
-            for token in manifest["build"]["flags"]
-        ]
-        built = run(
-            manifest["build"]["compiler"]["path"],
-            *flags,
-            cwd=ROOT,
-            env=manifest["build"]["environment"],
-        )
-        assert built.returncode == 0, built.stderr
-        image = output.read_bytes()
-        assert hashlib.sha256(image).hexdigest() == manifest["artifact"]["sha256"]
+        image = build_worker(ROOT, source, output, manifest)
         _assert_closed_static_elf(image)
         artifacts.append(image)
     assert artifacts[0] == artifacts[1]
@@ -541,23 +527,15 @@ def materialize_governed_checkout(path: Path) -> Path:
     shutil.copyfile(worker_source, worker_root / "slice036-worker.c")
     shutil.copyfile(worker_manifest, worker_root / "slice036-worker-build-v1.json")
     manifest = json.loads(worker_manifest.read_bytes())
-    flags = [
-        token.replace("<ABS_REPO_ROOT>", str(path.resolve()))
-        .replace("<output>", str(worker_root / "slice036-worker"))
-        .replace("<source>", str(worker_root / "slice036-worker.c"))
-        for token in manifest["build"]["flags"]
-    ]
-    built = run(
-        manifest["build"]["compiler"]["path"],
-        *flags,
-        cwd=path,
-        env=manifest["build"]["environment"],
-    )
-    assert built.returncode == 0, built.stderr
+    build_worker(path, worker_root / "slice036-worker.c", worker_root / "slice036-worker", manifest,
+                 trace=path.parent / f"{path.name}-worker-build.trace")
     worker_binary = worker_root / "slice036-worker"
     assert file_digest(worker_binary) == "sha256:" + manifest["artifact"]["sha256"]
     worker_binary.chmod(0o555)
-    git(path, "add", "governance/producers.yaml", "governance/qualification")
+    for relative in (LAUNCHER_SOURCE, LAUNCHER_MANIFEST, HOST_PROFILE):
+        shutil.copyfile(ROOT / relative, path / relative)
+    git(path, "add", "governance/producers.yaml", "governance/qualification",
+        LAUNCHER_SOURCE, LAUNCHER_MANIFEST, HOST_PROFILE)
     commit_environment = dict(os.environ)
     commit_environment.update(
         {
@@ -605,6 +583,7 @@ def materialize_governed_checkout(path: Path) -> Path:
     )
     assert changed == {
         "governance/producers.yaml",
+        LAUNCHER_SOURCE, LAUNCHER_MANIFEST, HOST_PROFILE,
         *input_records,
         "governance/qualification/worker/slice036-worker",
         "governance/qualification/worker/slice036-worker-build-v1.json",
@@ -621,8 +600,10 @@ def materialize_governed_checkout(path: Path) -> Path:
         expected = published_authority[name]
         assert expected["path"] == relative
         parent_bytes = git_blob(path, FIXTURE_PARENT_COMMIT, relative)
-        assert git_blob(path, BASE_COMMIT, relative) == parent_bytes
-        assert (path / relative).read_bytes() == parent_bytes
+        reviewed = (ROOT / relative).read_bytes()
+        assert git_blob(path, BASE_COMMIT, relative) == reviewed
+        assert (path / relative).read_bytes() == reviewed
+        assert file_digest(path / relative) == VECTORS["digests"][name if name != "profile" else "host_profile"]
         assert "sha256:" + hashlib.sha256(parent_bytes).hexdigest() == expected[
             "digest"
         ]
@@ -643,10 +624,17 @@ def materialize_governed_checkout(path: Path) -> Path:
 def materialize_signing_key(path: Path) -> Path:
     """Write the deterministic non-secret fixture key outside every repository."""
 
-    private = "ed25519:" + base64.b64encode(bytes(range(32))).decode("ascii")
+    private = VECTORS["fixture_private_key"]
     path.write_text(private, encoding="utf-8")
     path.chmod(0o600)
     return path
+
+
+def test_materialized_owner_key_matches_signed_batch_authority(tmp_path: Path) -> None:
+    from ranex.foundation.signing import public_key_for
+
+    key = materialize_signing_key(tmp_path / "owner.key")
+    assert public_key_for(key.read_text()) == VECTORS["triple"]["key_id"]
 
 
 def materialize_authority(path: Path) -> tuple[Path, Path, Path]:
@@ -1728,38 +1716,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     sandbox.mkdir()
     governed = materialize_governed_checkout(sandbox / "governed")
     governed_source_before = source_manifest(governed)
-    if historical_build_input_drift(governed):
-        artifact = governed / LAUNCHER_BUILD
-        report = governed / QUALIFICATION_REPORT
-        journal = governed / "governance/journal.sqlite3"
-        before = (
-            git(governed, "rev-parse", "refs/heads/main"),
-            journal_snapshot(journal),
-            worktree_snapshot(governed),
-        )
-        refused = run(
-            shutil.which("uv") or "uv",
-            "run",
-            "--frozen",
-            "python",
-            "-m",
-            "ranex.cli.host_confinement",
-            *HOST_PROVISIONING_COMMANDS[0],
-            cwd=governed,
-            env=cli_environment(),
-        )
-        assert refused.returncode != 0
-        assert "E-C17-BUILD-INPUT-DRIFT" in refused.stdout + refused.stderr
-        assert not artifact.exists()
-        assert not report.exists()
-        after = (
-            git(governed, "rev-parse", "refs/heads/main"),
-            journal_snapshot(journal),
-            worktree_snapshot(governed),
-        )
-        assert after == before
-        assert git(governed, "status", "--porcelain") == ""
-        return
+    assert not historical_build_input_drift(governed), "reviewed native build closure drifted"
     development_source, source_transcript = observe_development_source(governed)
     signing_key = materialize_signing_key(tmp_path / "slice036-owner.key")
     child_calibration_transcript = calibrate_child_provisioning_release_invariant(
@@ -2058,8 +2015,8 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
         predecessor_command, checkout=governed, signing_key=signing_key
     )
     assert predecessor_refusal.returncode == 1
-    assert predecessor_refusal.stderr.startswith("ERROR  E-BATCH-STALE-BASE: journal predecessor changed")
-    with pytest.raises(BatchRefusal, match=r"^E-BATCH-STALE-BASE: journal predecessor changed"):
+    assert predecessor_refusal.stderr.startswith("ERROR  E-BATCH-PROTECTED-ARTIFACT: qualification identities disagree")
+    with pytest.raises(BatchRefusal, match=r"^E-BATCH-PROTECTED-ARTIFACT: qualification identities disagree"):
         verify_qualification(
             spec_packet=authority[0], artifact_manifest=authority[1],
             approval_envelope=predecessor_envelope, artifact_path=batch_artifact,

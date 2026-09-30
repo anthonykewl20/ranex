@@ -10,6 +10,8 @@ that can name a line it never read can also stay silent about one it did.
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -219,3 +221,90 @@ def test_a_freeze_refuses_to_accept_a_finding_nobody_observed(subject) -> None:
             findings, scope=[SUBJECT], rules=["F401"], blocking_levels=["error"],
             accepted={invented: "reviewed"},
         )
+
+
+
+@pytest.mark.parametrize("old_binding", ["legacy", "previous-v2"])
+def test_signed_legacy_scan_summary_cannot_satisfy_versioned_expectations(
+    subject: Path, manifest: dict[str, object], old_binding: str,
+) -> None:
+    from ranex.foundation.canonical import canonical_sha256
+    from ranex.foundation.signing import ENVELOPE_TYPE, generate_keypair, sign_evidence
+    from ranex.governed_execution.domain.admission import admit
+    from ranex.governed_execution.domain.verdict import Claim, Gate, evaluate
+
+    current = scan_results_from_sarif(sarif([]), manifest, subject_root=subject)
+    old_digest = "sha256:" + canonical_sha256(manifest)
+    if old_binding == "previous-v2":
+        old_digest = "sha256:" + canonical_sha256({
+            "schema": "ranex-scan-expectations-binding-v2",
+            "semantics": {
+                "review_identity": "excerpt-category-occurrence-v1",
+                "review_severity": "explicit-then-driver-default-v1",
+                "review_category": "rule-id-then-properties-category-v1",
+                "review_packet": "all-declarations-bound-v1",
+                "coverage": "explicit-witness-required-v1",
+                "generic_identity": "subject-region-v1",
+            }, "manifest": manifest,
+        })
+    legacy = {**current, "manifest_digest": old_digest}
+    digest, ids, skips = claim_expectations(canonical_json_bytes(manifest), "sarif-2.1.0")
+    private, public = generate_keypair()
+    command_digest = "sha256:" + "c" * 64
+    subject_digest = "sha256:" + "a" * 64
+    gate = Gate("landing", "SCAN_CLEAN", (Claim(
+        "scan", command_digest, results_required=True,
+        manifest_digest=digest, expected_ids=ids, expected_skips=skips,
+    ),), blocking=True)
+    for summary, expected in ((legacy, "FAIL"), (current, "PASS")):
+        content = {
+            "claim_id": "scan", "subject_digest": subject_digest,
+            "producer_id": "scanner", "command": "scanner",
+            "command_digest": command_digest, "executable_path": "/usr/bin/scanner",
+            "exit_code": 0, "suite_results": summary,
+            "confinement_result_digest": None, "confinement_profile_digest": None,
+            "envelope_type": ENVELOPE_TYPE, "gate_id": "landing",
+            "catalog_digest": "sha256:" + "b" * 64,
+        }
+        admission = admit(
+            [{**content, "signature": sign_evidence(content, private)}], {"scanner": public}
+        )
+        assert admission.rejections == ()
+        verdict = evaluate(gate, admission.evidence,
+                           subject_digest=subject_digest, approver_id="reviewer")
+        assert str(verdict.verdict) == expected
+
+
+
+def test_explicit_empty_cli_coverage_is_missing_and_blocks(subject, manifest, tmp_path) -> None:
+    from ranex.governed_execution.domain.verdict import Claim, Evidence, Gate, evaluate
+
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    artifact = tmp_path / "empty.sarif"
+    completed = subprocess.run(
+        [sys.executable, "-m", "ranex.foundation.markers", "--root", str(empty),
+         "--output-file", str(artifact)],
+        capture_output=True, text=True, timeout=10, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(artifact.read_bytes())["runs"][0]["artifacts"] == []
+    summary = scan_results_from_sarif(artifact.read_bytes(), manifest, subject_root=subject)
+    assert summary["missing"] == [SUBJECT]
+    digest, ids, skips = claim_expectations(canonical_json_bytes(manifest), "sarif-2.1.0")
+    command_digest = "sha256:" + "c" * 64
+    subject_digest = "sha256:" + "a" * 64
+    claim = Claim("scan", command_digest, results_required=True,
+                  manifest_digest=digest, expected_ids=ids, expected_skips=skips)
+    observation = Evidence("scan", subject_digest, "scanner", "scanner", command_digest,
+                           "/usr/bin/scanner", 0, suite_results=summary)
+    verdict = evaluate(Gate("landing", "SCAN_CLEAN", (claim,), blocking=True),
+                       (observation,), subject_digest=subject_digest, approver_id="reviewer")
+    assert str(verdict.verdict) == "FAIL"
+
+
+@pytest.mark.parametrize("artifacts", [None, {}, [None], [{}], [{"location": {}}],
+                                      [{"location": "mod.py"}]])
+def test_malformed_explicit_coverage_is_refused(subject, manifest, artifacts) -> None:
+    with pytest.raises(ValueError, match="artifacts|artifact"):
+        scan_results_from_sarif(sarif([], artifacts=artifacts), manifest, subject_root=subject)

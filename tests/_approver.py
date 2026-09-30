@@ -86,3 +86,53 @@ def approver_env(path: Path) -> dict[str, str]:
 
 def host_approvers_present() -> bool:
     return bool(os.environ.get(APPROVER_ENV))
+
+
+# History is a separate service identity. Fixtures register it before their
+# initial commit and explicitly establish the empty history after that commit.
+from dataclasses import dataclass, field  # noqa: E402
+
+import _history  # noqa: E402
+
+
+@dataclass
+class HistoryService:
+    repository: Path
+    private: str
+    public: str
+    key_path: Path
+    checkpoints: dict[str, Path] = field(default_factory=dict)
+
+    def establish(self, name: str = "evidence.json") -> Path:
+        if name not in self.checkpoints:
+            checkpoint = self.key_path.parent / f"history-{len(self.checkpoints)}.json"
+            _history.establish(self.repository, name, checkpoint, self.private, self.public)
+            self.checkpoints[name] = checkpoint
+        return self.checkpoints[name]
+
+    def environment(self, name: str = "evidence.json") -> dict[str, str]:
+        return {"RANEX_VERDICT_SIGNING_KEY": str(self.key_path),
+                "RANEX_HISTORY_CHECKPOINT": str(self.establish(name))}
+
+    def configure(self, monkeypatch, name: str = "evidence.json") -> None:
+        for variable, value in self.environment(name).items():
+            monkeypatch.setenv(variable, value)
+        monkeypatch.delenv("RANEX_VERDICT_DIR", raising=False)
+
+    def write(self, records, name: str = "evidence.json") -> None:
+        _history.write_records(self.repository, name, records, self.establish(name), self.private, self.public)
+
+
+_HISTORY_SERVICES: dict[Path, HistoryService] = {}
+
+
+def register_history_service(repository: Path, keyring: Path, directory: Path) -> HistoryService:
+    private, public, path = _history.mint_service(directory)
+    _history.register_service(keyring, public)
+    service = HistoryService(repository, private, public, path)
+    _HISTORY_SERVICES[repository.resolve()] = service
+    return service
+
+
+def history_for(repository: Path) -> HistoryService:
+    return _HISTORY_SERVICES[repository.resolve()]

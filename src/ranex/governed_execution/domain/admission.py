@@ -95,6 +95,28 @@ class Rejection:
 class Admission:
     evidence: tuple[Evidence, ...]
     rejections: tuple[Rejection, ...]
+    evidence_indices: tuple[int, ...] = ()
+    observation_checkpoint: tuple[str, str, int] | None = None
+    history_verified: bool = False
+    removed_observations: tuple[Any, ...] = ()
+    """Raw record positions, carried with evidence through every filter.
+
+    Qualification freshness is decided after ordinary records are admitted,
+    so evidence order need not be input order. Rejection positions cannot
+    reconstruct this association: each admitted item keeps its own position.
+    """
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.evidence_indices, tuple):
+            raise ValueError("admitted record indices must be an immutable tuple")
+        if len(self.evidence_indices) != len(self.evidence):
+            raise ValueError("each admitted evidence item must carry its record index")
+        if any(type(index) is not int or index < 0 for index in self.evidence_indices):
+            raise ValueError("admitted record indices must be non-negative integers")
+        if len(set(self.evidence_indices)) != len(self.evidence_indices):
+            raise ValueError("admitted record indices must be unique")
+        if set(self.evidence_indices).intersection(item.index for item in self.rejections):
+            raise ValueError("a record cannot be both admitted and rejected")
 
 
 _SIGNATURE = "signature"
@@ -408,6 +430,7 @@ def admit(
     """Split records into evidence and rejections. Never raises on bad input."""
 
     evidence: list[Evidence] = []
+    evidence_indices: list[int] = []
     rejections: list[Rejection] = []
     qualifications: list[tuple[int, Evidence, Mapping[str, Any], Any]] = []
 
@@ -543,6 +566,7 @@ def admit(
 
         if qualification_report is None:
             evidence.append(admitted)
+            evidence_indices.append(index)
         else:
             qualifications.append(
                 (index, admitted, qualification_report["host_state"], reject)
@@ -575,5 +599,9 @@ def admit(
                         )
                 else:
                     evidence.extend(admitted for _, admitted, _, _ in qualifications)
+                    evidence_indices.extend(index for index, _, _, _ in qualifications)
 
-    return Admission(evidence=tuple(evidence), rejections=tuple(rejections))
+    return Admission(
+        evidence=tuple(evidence), rejections=tuple(rejections),
+        evidence_indices=tuple(evidence_indices),
+    )

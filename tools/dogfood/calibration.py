@@ -41,6 +41,11 @@ SCHEMA = "ranex-calibration-v1"
 DEFAULT_REPEATS = 3
 
 
+def validate_repeats(repeats: int) -> None:
+    if type(repeats) is not int or repeats <= 0:
+        raise ValueError("repeats must be a positive integer")
+
+
 class Status(StrEnum):
     """Closed vocabulary. PASS is deliberately absent — that word belongs to a
     verdict, and a measurement that borrows it invites being read as one."""
@@ -112,7 +117,11 @@ class Calibration:
     history: Path | None = None
     cases: list[dict[str, Any]] = field(default_factory=list)
 
+    def __post_init__(self) -> None:
+        validate_repeats(self.repeats)
+
     def run(self, control: Control) -> dict[str, Any]:
+        validate_repeats(self.repeats)
         started = time.time()
         positive = [control.positive() for _ in range(self.repeats)]
         negative = (
@@ -122,7 +131,9 @@ class Calibration:
         )
         status, reason = self._classify(control, positive, negative)
 
+        rows = self._journal_rows()
         case: dict[str, Any] = {
+            "journal_head": rows[-1][0] if rows else None,
             "control": control.name,
             "expectation": control.expectation,
             "status": str(status),
@@ -154,6 +165,8 @@ class Calibration:
                 Status.GAP,
                 "no negative control: nobody knows whether this check can fail",
             )
+        if not positive or not negative:
+            return Status.UNVERIFIED, "no observations for one or both control sides"
         if control.deterministic:
             for label, side in (("positive", positive), ("negative", negative)):
                 digests = {item.digest for item in side}
@@ -257,8 +270,9 @@ class Calibration:
                 continue
             for case in loaded.get("cases", []):
                 if case.get("control") == control and case.get("status") == Status.VERIFIED:
-                    head = case.get("journal_head")
-                    if isinstance(head, int) and (best is None or head > best):
+                    # Older receipts recorded one checkpoint at the top level.
+                    head = case.get("journal_head", loaded.get("journal_head"))
+                    if type(head) is int and head >= 0 and (best is None or head > best):
                         best = head
         return best
 
@@ -277,9 +291,11 @@ class Calibration:
         for status in order:
             if str(status) in seen:
                 return status
-        return Status.VERIFIED
+        return Status.UNVERIFIED
 
     def save(self) -> None:
+        if not self.cases:
+            raise ValueError("no controls were executed; no calibration receipt")
         self.out.mkdir(parents=True, exist_ok=True)
         rows = self._journal_rows()
         (self.out / "calibration.json").write_text(
@@ -304,6 +320,8 @@ class Calibration:
         negative, so its green says nothing.
         """
 
+        if not self.cases:
+            return 1
         blocking = {str(s) for s in (Status.FALSE_PASS, Status.NON_DETERMINISTIC, Status.GAP)}
         for case in self.cases:
             if case.get("expected_outcome") is not None:
@@ -335,6 +353,8 @@ import os
 import subprocess
 import tempfile
 
+from history_service import install_service
+
 #: The scanner the gate binds. Held in argv rather than a committed script:
 #: containment refuses an argv[0] inside the subject, and an in-tree script
 #: reached by a system interpreter was measured escaping that check entirely
@@ -362,6 +382,9 @@ class Subject:
         self.scanner = scanner or _SCANNER
         self.repo = root / "subject"
         self.key = root / "worker.key"
+        self.service_key = root / "history-service.key"
+        self.sequence = 0
+        self.checkpoint = root / "history.checkpoint.json"
         self.good = ""
         self.bad = ""
 
@@ -380,6 +403,10 @@ class Subject:
         """
 
         env = {"PATH": "/usr/bin:/bin", "HOME": str(self.root / "home"), "LANG": "C.UTF-8"}
+        env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2] / "src")
+        env["RANEX_APPROVER_SIGNING_KEY"] = str(self.root / "approver.key")
+        env["RANEX_VERDICT_SIGNING_KEY"] = str(self.service_key)
+        env["RANEX_HISTORY_CHECKPOINT"] = str(self.checkpoint)
         if key:
             env["RANEX_SIGNING_KEY"] = str(self.key)
         # Inserted BEFORE any `--`: `run` takes everything after the separator
@@ -405,7 +432,7 @@ class Subject:
         self._git("config", "user.email", "calibration@example.invalid")
         self._git("config", "user.name", "Calibration")
         (self.repo / ".gitignore").write_text(
-            "governance/journal.sqlite3\ngovernance/evidence.json\n", encoding="utf-8"
+            "governance/journal.sqlite3*\ngovernance/evidence*.json\ngovernance/evidence*.sqlite3*\n", encoding="utf-8"
         )
         command = json.dumps(["/usr/bin/python3", "-c", self.scanner])
         (self.repo / "governance" / "gates.yaml").write_text(
@@ -432,6 +459,7 @@ class Subject:
             f"      - key: {public}\n        status: active\n",
             encoding="utf-8",
         )
+        install_service(self.repo / "governance" / "producers.yaml", self.service_key, "auditor")
         (self.repo / "good.py").write_text(
             "# ranex: single-threaded scan; parallelise past 100k files\n", encoding="utf-8"
         )
@@ -451,13 +479,16 @@ class Subject:
         """Record evidence at `ref` and judge it. `ok` means the gate said PASS."""
 
         self._git("checkout", "-q", ref)
-        store = self.repo / "governance" / "evidence.json"
-        store.unlink(missing_ok=True)
-        (self.repo / "governance" / "journal.sqlite3").unlink(missing_ok=True)
+        self.sequence += 1
+        store = f"governance/evidence-{self.sequence}.json"
+        self.checkpoint = self.root / f"history-{self.sequence}.checkpoint.json"
+        setup = self._cli("history", "bootstrap", "--evidence", store)
+        if setup.returncode != 0:
+            raise RuntimeError(f"history bootstrap failed: {setup.stderr}")
         if evidence:
-            self._cli("run", "--claim", "markers-declared", "--producer", producer,
+            self._cli("run", "--evidence", store, "--claim", "markers-declared", "--producer", producer,
                       "--", "/usr/bin/python3", "-c", self.scanner)
-        verdict = self._cli("gate", "evaluate", "HEAD", "--approver", approver, key=False)
+        verdict = self._cli("gate", "evaluate", "HEAD", "--evidence", store, "--approver", approver, key=False)
         first = verdict.stdout.split("\n", 1)[0].split("  ")[0].strip()
         return Observation(
             ok=first == "PASS",
@@ -574,6 +605,10 @@ def main() -> int:
                         help="deliberately blunt one instrument's gauge (#113 arm 2); "
                         "the pre-flight self-test must then refuse the run")
     args = parser.parse_args()
+    try:
+        validate_repeats(args.repeats)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     args.out.mkdir(parents=True, exist_ok=True)
     refused = preflight(args)

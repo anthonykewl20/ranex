@@ -23,11 +23,43 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ranex.foundation.canonical import canonical_json
+from ranex.foundation.canonical import canonical_json, canonical_sha256
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
 OBSERVATION_CHAIN_ERROR = "E-OBSERVATION-CHAIN"
 REMOVED_OBSERVATION = "removed-observation"
+GENESIS = "sha256:" + "0" * 64
+
+
+@dataclass(frozen=True, slots=True)
+class ObservationSnapshot:
+    records: tuple[tuple[int, dict[str, Any]], ...]
+    head: str
+    position: int
+
+
+def _verified_snapshot(rows: Any, expected_head: str | None) -> ObservationSnapshot:
+    head = GENESIS
+    retained = expected_head is None or expected_head == GENESIS
+    records: list[tuple[int, dict[str, Any]]] = []
+    position = 0
+    for row in rows:
+        try:
+            record = json.loads(row["record"])
+            link = "sha256:" + canonical_sha256({"prev_link": head, "record": record})
+            if row["prev_link"] != head or row["link"] != link:
+                raise ValueError("inconsistent link")
+            if not isinstance(record, dict) or int(row["seq"]) <= position:
+                raise ValueError("invalid observation row")
+        except (ValueError, TypeError, RecursionError) as exc:
+            raise ValueError(f"{OBSERVATION_CHAIN_ERROR}: invalid observation chain") from exc
+        position = int(row["seq"])
+        head = link
+        retained = retained or head == expected_head
+        records.append((position, record))
+    if not retained:
+        raise ValueError("E-OBSERVATION-ANCHOR: retained history head is absent")
+    return ObservationSnapshot(tuple(records), head, position)
 
 
 class ObservationLog(Journal):
@@ -54,6 +86,18 @@ class ObservationLog(Journal):
                 "SELECT seq, record FROM observations ORDER BY seq ASC"
             ).fetchall()
         return [(int(row["seq"]), json.loads(row["record"])) for row in rows]
+
+    def snapshot(self, *, expected_head: str | None = None) -> ObservationSnapshot:
+        """Verify and decode the same SQLite read snapshot, including its head."""
+        if not self.path.is_file():
+            if expected_head is not None:
+                raise ValueError("E-OBSERVATION-ANCHOR: anchored observation log is missing")
+            return ObservationSnapshot((), GENESIS, 0)
+        with closing(self._connect_for_verification()) as conn, conn:
+            rows = conn.execute(
+                "SELECT seq, record, prev_link, link FROM observations ORDER BY seq ASC"
+            ).fetchall()
+        return _verified_snapshot(rows, expected_head)
 
 
 def observations_path_for(evidence_path: Path) -> Path:
@@ -92,6 +136,8 @@ class Reconciliation:
     records: list[Any]
     removed: tuple[RemovedObservation, ...]
     chained: frozenset[str]
+    head: str = GENESIS
+    position: int = 0
 
     def in_chain(self, record: Any) -> bool:
         return identity(record) in self.chained
@@ -117,7 +163,8 @@ def _key(record: Any) -> tuple[str, str] | None:
     return claim, producer
 
 
-def reconcile(log: ObservationLog, evidence: list[Any]) -> Reconciliation:
+def reconcile(log: ObservationLog, evidence: list[Any], *, expected_head: str | None = None,
+              snapshot: ObservationSnapshot | None = None) -> Reconciliation:
     """Project the chain onto the evidence file, or refuse a broken chain.
 
     The projection `record_evidence` maintains is the chain's latest record per
@@ -127,14 +174,10 @@ def reconcile(log: ObservationLog, evidence: list[Any]) -> Reconciliation:
     pass through unchanged; the caller refuses those that would count.
     """
 
-    if log.path.is_file() and not log.verify():
-        raise ValueError(
-            f"{OBSERVATION_CHAIN_ERROR}: observation log {log.path} fails "
-            "hash-chain verification; run `ranex journal verify --observations`"
-        )
+    snapshot = snapshot if snapshot is not None else log.snapshot(expected_head=expected_head)
     latest: dict[tuple[str, str], tuple[int, Any]] = {}
     chained: set[str] = set()
-    for seq, record in log.records():
+    for seq, record in snapshot.records:
         key = _key(record)
         if key is None:
             raise ValueError(
@@ -156,4 +199,4 @@ def reconcile(log: ObservationLog, evidence: list[Any]) -> Reconciliation:
         if identity(record) not in present:
             kept.append(record)
             removed.append(RemovedObservation(seq, claim, producer))
-    return Reconciliation(kept, tuple(removed), frozenset(chained))
+    return Reconciliation(kept, tuple(removed), frozenset(chained), snapshot.head, snapshot.position)

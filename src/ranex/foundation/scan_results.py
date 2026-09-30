@@ -55,10 +55,11 @@ from pathlib import Path
 from typing import Any, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
-from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 from ranex.foundation.suite_results import validate_suite_results
 
-SCAN_REPORTERS = frozenset({"sarif-2.1.0"})
+REVIEW_REPORTER = "delegated-review-sarif-2.1.0"
+SCAN_REPORTERS = frozenset({"sarif-2.1.0", REVIEW_REPORTER})
 
 #: SARIF 2.1.0 §3.27.10. `none` is a level a result may carry; it decides
 #: nothing unless a manifest says it does.
@@ -156,11 +157,25 @@ def load_scan_manifest_bytes(raw: bytes) -> dict[str, object]:
     return cast(dict[str, object], manifest)
 
 
-def scan_manifest_digest(manifest: Mapping[str, object]) -> str:
+def scan_manifest_digest(
+    manifest: Mapping[str, object], *, require_review: bool = False
+) -> str:
     """Digest the exact canonical scan-manifest representation."""
 
     validated = validate_scan_manifest(dict(manifest))
-    return "sha256:" + hashlib.sha256(canonical_json_bytes(validated)).hexdigest()
+    return "sha256:" + canonical_sha256({
+        "schema": "ranex-scan-expectations-binding-v2",
+        "semantics": {
+            "review_identity": "excerpt-category-occurrence-v1",
+            "review_severity": "explicit-then-driver-default-v1",
+            "review_category": "rule-id-then-properties-category-v1",
+            "review_packet": "trusted-required-dispatch-v2",
+            "review_required": require_review,
+            "coverage": "explicit-witness-required-v1",
+            "generic_identity": "subject-region-v1",
+        },
+        "manifest": validated,
+    })
 
 
 def scan_expected_ids(manifest: Mapping[str, object]) -> tuple[str, ...]:
@@ -270,7 +285,7 @@ def _region_bytes(
 
 def _findings(
     sarif: Mapping[str, Any], subject_root: Path
-) -> tuple[list[tuple[str, str, str]], set[str]]:
+) -> tuple[list[tuple[str, str, str]], set[str] | None]:
     """Every result as `(finding_id, path, level)`, plus the witnessed paths."""
 
     if sarif.get("version") != _SARIF_VERSION:
@@ -280,7 +295,7 @@ def _findings(
         raise ValueError("SARIF artifact carries no runs")
 
     findings: list[tuple[str, str, str]] = []
-    witnessed: set[str] = set()
+    witnessed: set[str] | None = None
     for run in runs:
         if not isinstance(run, dict):
             raise ValueError("SARIF runs entries must be objects")
@@ -298,9 +313,18 @@ def _findings(
                         "SARIF invocation did not report executionSuccessful; a scan that "
                         "declares its own failure is refused, and absence blocks"
                     )
-        for artifact in run.get("artifacts", []) if isinstance(run.get("artifacts"), list) else []:
-            location = artifact.get("location") if isinstance(artifact, dict) else None
-            if isinstance(location, dict):
+        if "artifacts" in run:
+            artifacts = run["artifacts"]
+            if not isinstance(artifacts, list):
+                raise ValueError("SARIF artifacts must be a list when present")
+            if witnessed is None:
+                witnessed = set()
+            for artifact in artifacts:
+                if not isinstance(artifact, dict):
+                    raise ValueError("SARIF artifacts entries must be objects")
+                location = artifact.get("location")
+                if not isinstance(location, dict):
+                    raise ValueError("SARIF artifact coverage requires a location object")
                 witnessed.add(_subject_relative(location.get("uri"), subject_root))
 
         levels = _driver_levels(run)
@@ -352,19 +376,22 @@ def _findings(
 def _sarif_packet_digest(document: Mapping[str, Any]) -> str | None:
     """A delegated-review SARIF names its packet; scanners leave this absent."""
 
+    declarations: list[str] = []
+    containers: list[Mapping[str, Any]] = [document]
     runs = document.get("runs")
-    if isinstance(runs, list) and runs and isinstance(runs[0], dict):
-        props = runs[0].get("properties")
-        if isinstance(props, Mapping):
-            digest = props.get("packet_digest")
-            if isinstance(digest, str) and digest.startswith("sha256:"):
-                return digest
-    props = document.get("properties")
-    if isinstance(props, Mapping):
-        digest = props.get("packet_digest")
-        if isinstance(digest, str) and digest.startswith("sha256:"):
-            return digest
-    return None
+    if isinstance(runs, list):
+        containers.extend(run for run in runs if isinstance(run, Mapping))
+    for container in containers:
+        props = container.get("properties")
+        if not isinstance(props, Mapping) or "packet_digest" not in props:
+            continue
+        digest = props["packet_digest"]
+        if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+            raise ValueError("SARIF properties.packet_digest must be sha256:<64-hex>")
+        declarations.append(digest)
+    if len(set(declarations)) > 1:
+        raise ValueError("SARIF properties.packet_digest declarations conflict; substitution refused")
+    return declarations[0] if declarations else None
 
 
 def _materialised_packet_digest(subject_root: Path) -> str | None:
@@ -398,6 +425,7 @@ def scan_results_from_sarif(
     *,
     subject_root: Path,
     expected_packet_digest: str | None = None,
+    require_review: bool = False,
 ) -> dict[str, object]:
     """Summarise one SARIF artifact against a previously frozen scan manifest.
 
@@ -432,8 +460,16 @@ def scan_results_from_sarif(
         raise ValueError("SARIF artifact must be a JSON object")
 
     claimed_packet = _sarif_packet_digest(document)
+    required = require_review or expected_packet_digest is not None
+    if required and claimed_packet is None:
+        raise ValueError("required delegated-review SARIF must carry properties.packet_digest")
     if claimed_packet is not None:
-        expected = expected_packet_digest or _materialised_packet_digest(subject_root)
+        materialised = _materialised_packet_digest(subject_root)
+        if required and materialised is None:
+            raise ValueError("required delegated-review SARIF needs a materialised review packet")
+        if materialised is not None and expected_packet_digest is not None and materialised != expected_packet_digest:
+            raise ValueError("expected_packet_digest does not match materialised review packet")
+        expected = expected_packet_digest or materialised
         if expected is None:
             raise ValueError(
                 "delegated-review SARIF carries properties.packet_digest but the "
@@ -446,9 +482,22 @@ def scan_results_from_sarif(
             validated,
             subject_root=subject_root,
             expected_packet_digest=expected,
+            require_review=required,
         )
 
     findings, witnessed = _findings(document, subject_root)
+    return _reduce_scan_findings(findings, witnessed, validated, subject_root)
+
+
+def _reduce_scan_findings(
+    findings: list[tuple[str, str, str]],
+    witnessed: set[str] | None,
+    validated: ScanManifest,
+    subject_root: Path,
+    *, require_review: bool = False,
+) -> dict[str, object]:
+    """One outcome reduction for generic and re-derived review identities."""
+
     scope = list(validated["scope"])
     accepted = dict(validated["accepted"])
     blocking = set(validated["blocking_levels"])
@@ -468,7 +517,7 @@ def scan_results_from_sarif(
     missing = sorted(
         path
         for path in scope
-        if not (subject / path).is_file() or (witnessed and path not in witnessed)
+        if not (subject / path).is_file() or (witnessed is not None and path not in witnessed)
     )
     expected = set(scan_expected_ids(validated))
     observed = set(outcomes)
@@ -482,7 +531,7 @@ def scan_results_from_sarif(
     }
     ordered = dict(sorted(outcomes.items()))
     result: dict[str, object] = {
-        "manifest_digest": scan_manifest_digest(validated),
+        "manifest_digest": scan_manifest_digest(validated, require_review=require_review),
         "counts": counts,
         "non_passed": [
             [identifier, kind] for identifier, kind in ordered.items() if kind != "passed"
@@ -499,13 +548,14 @@ def parse_scan_artifact(
     manifest: Mapping[str, object],
     *,
     subject_root: Path,
+    require_review: bool = False,
 ) -> dict[str, object]:
     """Read a present SARIF artifact no larger than 50 MiB and summarise it."""
 
     from ranex.foundation.suite_results import read_results_artifact
 
     return scan_results_from_sarif(
-        read_results_artifact(path), manifest, subject_root=subject_root
+        read_results_artifact(path), manifest, subject_root=subject_root, require_review=require_review
     )
 
 
@@ -525,7 +575,7 @@ def claim_expectations(
     if reporter in SCAN_REPORTERS:
         manifest = validate_scan_manifest(load_scan_manifest_bytes(raw))
         return (
-            scan_manifest_digest(manifest),
+            scan_manifest_digest(manifest, require_review=reporter == REVIEW_REPORTER),
             scan_expected_ids(manifest),
             scan_expected_skips(manifest),
         )
@@ -557,7 +607,7 @@ def claim_expectations(
 
 
 def observed_findings(
-    sarif_bytes: bytes, subject_root: Path
+    sarif_bytes: bytes, subject_root: Path, *, require_review: bool = False
 ) -> tuple[tuple[str, str, str], ...]:
     """Every finding a run reported, as `(finding_id, path, level)`.
 
@@ -575,7 +625,18 @@ def observed_findings(
         raise ValueError(f"cannot parse SARIF artifact: {exc}") from exc
     if not isinstance(document, dict):
         raise ValueError("SARIF artifact must be a JSON object")
-    findings, _ = _findings(document, subject_root)
+    claimed_packet = _sarif_packet_digest(document)
+    if require_review and claimed_packet is None:
+        raise ValueError("required delegated-review SARIF must carry properties.packet_digest")
+    if claimed_packet is not None:
+        expected = _materialised_packet_digest(subject_root)
+        if expected is None:
+            raise ValueError("delegated-review findings require a materialised packet")
+        from ranex.foundation.delegated_review import validated_review_findings
+
+        findings, _ = validated_review_findings(document, subject_root, expected)
+    else:
+        findings, _ = _findings(document, subject_root)
     return tuple(findings)
 
 

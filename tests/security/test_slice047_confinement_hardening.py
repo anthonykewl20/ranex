@@ -216,3 +216,22 @@ def test_only_host_confinement_module_may_name_host_confinement() -> None:
         ):
             offenders.append(path.relative_to(source_root).as_posix())
     assert not offenders
+
+
+def test_worker_progress_cannot_contaminate_controller_protocol():
+    script = """import json, os
+from ranex.cli.host_confinement import _isolate_worker_stdout
+pid = os.fork()
+if pid == 0:
+    _isolate_worker_stdout()
+    os.write(1, b'ordinary worker progress\\n')
+    os.write(2, b'ordinary worker error\\n')
+    os._exit(0)
+_, status = os.waitpid(pid, 0)
+print(json.dumps({'worker_status': status}))
+"""
+    completed = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, timeout=10, check=False)
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == {"worker_status": 0}
+    assert "ordinary worker progress" in completed.stderr
+    assert "ordinary worker error" in completed.stderr

@@ -102,12 +102,15 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
     import _approver
 
     _approver.register_approver(keyring, "reviewer", keys["approver_public"])
+    _approver.register_history_service(repository, repository / "producers.yaml", tmp_path)
+    (repository / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n")
     return repository
 
 
 def commit_all(repo: Path, message: str = "initial") -> None:
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", message], check=True)
+    _approver.history_for(repo).establish()
 
 
 def invoke(
@@ -144,6 +147,9 @@ def invoke(
             monkeypatch.setenv(
                 "PATH", f"{path_prefix}{os.pathsep}{os.environ['PATH']}"
             )
+        if argv[0] in ("run", "gate"):
+            evidence_name = argv[argv.index("--evidence") + 1] if "--evidence" in argv else "governance/evidence.json"
+            _approver.history_for(repo).configure(monkeypatch, evidence_name)
         try:
             return main(argv)
         except SystemExit as exit_info:
@@ -617,10 +623,7 @@ def signed_record(
         "gate_id": "landing",
         "catalog_digest": "sha256:" + "e" * 64,
     }
-    (repo / "evidence.json").write_text(
-        json.dumps([{**body, "signature": sign_evidence(body, keys["private"])}]),
-        encoding="utf-8",
-    )
+    _approver.history_for(repo).write([{**body, "signature": sign_evidence(body, keys["private"])}])
 
 
 @pytest.mark.parametrize("relative", [False, True])
@@ -876,10 +879,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_keyring(
         "gate_id": "landing",
         "catalog_digest": "sha256:" + "e" * 64,
     }
-    (repo / "evidence.json").write_text(
-        json.dumps([{**body, "signature": sign_evidence(body, mallory_private)}]),
-        encoding="utf-8",
-    )
+    _approver.history_for(repo).write([{**body, "signature": sign_evidence(body, mallory_private)}])
 
     assert evaluate(repo, keys) == EXIT_FAIL, "an unregistered producer must be refused"
 

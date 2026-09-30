@@ -74,6 +74,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import _history
+import _task_history
 import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
@@ -158,12 +160,16 @@ def _git(repo: Path, *arguments: str, home: Path) -> subprocess.CompletedProcess
 def _cli(
     argv: list[str], home: Path
 ) -> subprocess.CompletedProcess[str]:
+    extra = {}
+    if argv[:2] == ["task", "judge"]:
+        worktree = Path(argv[argv.index("--emitted-worktree") + 1])
+        extra["RANEX_HISTORY_CHECKPOINT"] = str(_task_history.checkpoint(worktree))
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
         capture_output=True,
         text=True,
         check=False,
-        env=_child_env(home),
+        env=_child_env(home, extra),
     )
 
 
@@ -184,6 +190,13 @@ def _cli_in_process(
         monkeypatch.chdir(root)
         monkeypatch.setattr(cli_main, "governed_repository_root", lambda: root.resolve())
         monkeypatch.setenv("HOME", str(home))
+        _task_history.configure(monkeypatch, root, argv)
+        service = home.parent / "history-service.key"
+        monkeypatch.setenv("RANEX_VERDICT_SIGNING_KEY", str(service))
+        if argv[:1] == ["run"] and not _task_history.checkpoint(root).exists():
+            from ranex.foundation.signing import public_key_for
+            private = service.read_text().strip()
+            _history.establish(root, "governance/evidence.json", _task_history.checkpoint(root), private, public_key_for(private))
         if key is not None:
             monkeypatch.setenv("RANEX_SIGNING_KEY", str(key))
         else:
@@ -238,7 +251,7 @@ class TaskFamilyJourney:
     judged: subprocess.CompletedProcess[str]
     judged_row: dict[str, object]
     tampered_judged: subprocess.CompletedProcess[str]
-    tampered_row: dict[str, object]
+    tampered_row: dict[str, object] | None
     self_approval: tuple[int, str, str]
     self_approval_replay: tuple[int, str, str]
     stale_base: tuple[int, str, str]
@@ -278,7 +291,7 @@ def _build_target(base: Path) -> tuple[Path, Path, Path, Path, str]:
     # file `run` writes must be untracked for run's own dirty-tree exemption
     # to hold on the second run (the kernel's frozen rule).
     (target / ".gitignore").write_text(
-        "governance/journal.sqlite3\ngovernance/evidence.json\n", encoding="utf-8"
+        "governance/journal.sqlite3\ngovernance/evidence.json\ngovernance/observations.sqlite3*\n", encoding="utf-8"
     )
     (target / "app.txt").write_text("governed\n", encoding="utf-8")
     (governance / "gates.yaml").write_text(GATES, encoding="utf-8")
@@ -287,6 +300,7 @@ def _build_target(base: Path) -> tuple[Path, Path, Path, Path, str]:
         f"  reviewer: {reviewer_public}\n",
         encoding="utf-8",
     )
+    _task_history.register(target)
     assert _git(target, "add", "-A", home=home).returncode == 0
     assert _git(target, "commit", "-q", "-m", "initial governed work", home=home).returncode == 0
     assert _git(target, "branch", "-M", "main", home=home).returncode == 0
@@ -512,6 +526,7 @@ def family(tmp_path_factory: pytest.TempPathFactory) -> TaskFamilyJourney:
     assert records, "the run recorded no evidence to tamper with"
     tampered_records = json.loads(json.dumps(records))
     tampered_records[-1]["exit_code"] = 99  # alter the signed body, keep the signature
+    evidence_path.chmod(0o600)
     evidence_path.write_text(json.dumps(tampered_records), encoding="utf-8")
     tampered_judged = _judge(
         task_id=TAMPER_TASK,
@@ -519,7 +534,7 @@ def family(tmp_path_factory: pytest.TempPathFactory) -> TaskFamilyJourney:
         journal=journal,
         home=home,
     )
-    tampered_rows = [_candidate_row(journal, TAMPER_TASK)]
+    tampered_rows = [row for row in Journal(journal).entries() if row.get("type") == "task-candidate" and row.get("task_id") == TAMPER_TASK]
 
     # --- the merge journey on the same target -------------------------------
     stale_tip = _git(target, "rev-parse", "HEAD", home=home).stdout.strip()
@@ -682,7 +697,7 @@ def family(tmp_path_factory: pytest.TempPathFactory) -> TaskFamilyJourney:
         judged=judged,
         judged_row=judged_row,
         tampered_judged=tampered_judged,
-        tampered_row=tampered_rows[0],
+        tampered_row=tampered_rows[0] if tampered_rows else None,
         self_approval=self_approval,
         self_approval_replay=self_approval_replay,
         stale_base=stale_base,
@@ -764,13 +779,10 @@ def test_tampered_judge_evidence_refuses_never_a_default_pass(
     judge exits 1 — discriminated against the clean journey's exit 0 above,
     so a default PASS on tampered evidence is impossible."""
 
-    assert family.tampered_judged.returncode == 1, family.tampered_judged.stdout
-    assert "CANDIDATE" in family.tampered_judged.stdout
-    assert family.tampered_row["verdict"] == "CANDIDATE"
-    assert family.tampered_row["missing_claims"] == [FAMILY_CLAIM], (
-        "the tampered evidence must leave the claim it forged named "
-        f"missing, yet the journal says: {family.tampered_row['missing_claims']!r}"
-    )
+    assert family.tampered_judged.returncode == 1
+    assert "E-OBSERVATION-CHAIN" in family.tampered_judged.stderr
+    assert "CANDIDATE" not in family.tampered_judged.stdout
+    assert family.tampered_row is None
     assert family.tampered_judged.returncode != family.judged.returncode
 
 

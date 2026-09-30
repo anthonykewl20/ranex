@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import os
 import stat
+import sys
 import threading
 from pathlib import Path
 
@@ -47,6 +48,7 @@ TARGET = TargetEnvironment(
         "platform_python_implementation": "CPython",
         "extra": "",
     },
+    supported_tags=("cp312-cp312-manylinux_2_17_x86_64", "py3-none-any"),
 )
 
 
@@ -240,6 +242,77 @@ class TestPins:
 
 
 class TestWheelSelection:
+    def test_measured_target_retains_legacy_manylinux_abi3_wheels(self) -> None:
+        from packaging.tags import sys_tags
+
+        from ranex.provisioning.target import probe_target
+
+        legacy = next(tag for tag in sys_tags() if tag.abi == "abi3" and tag.platform == "manylinux2014_x86_64")
+        filename = f"alpha-1.0.0-{legacy}.whl"
+        target = probe_target(Path(sys.executable))
+        assert select_wheels(parse_lock(lock_text(alpha_wheel=filename, include_beta=False).encode()), "demo", target)[0].filename == filename
+
+    def test_target_probe_preserves_the_installed_packaging_tag_order(self) -> None:
+        from packaging.tags import sys_tags
+
+        from ranex.provisioning.target import probe_target
+
+        assert probe_target(Path(sys.executable)).supported_tags == tuple(str(tag) for tag in sys_tags())
+
+    def test_target_abi_tags_are_authoritative_and_approval_bound(self) -> None:
+        from dataclasses import replace
+
+        free_threaded = replace(TARGET, supported_tags=("cp312-cp312t-manylinux_2_17_x86_64", "py3-none-any"))
+        assert depset_digest(b"lock", TARGET) != depset_digest(b"lock", free_threaded)
+        native = parse_lock(lock_text(alpha_wheel="alpha-1.0.0-cp312-cp312-manylinux_2_17_x86_64.whl", include_beta=False).encode())
+        with pytest.raises(LockError, match="no wheel"):
+            select_wheels(native, "demo", free_threaded)
+        assert select_wheels(native, "demo", TARGET)
+
+    def test_actual_lock_retains_the_textual_linkify_extra_closure(self) -> None:
+        from ranex.provisioning.target import probe_target
+
+        lock = parse_lock((Path(__file__).parents[2] / "uv.lock").read_bytes())
+        selected = select_wheels(lock, "ranex", probe_target(Path(sys.executable)))
+        assert {"textual", "markdown-it-py", "linkify-it-py", "uc-micro-py"} <= {wheel.package for wheel in selected}
+
+    def test_extras_revisit_a_shared_package_and_propagate_transitively(self) -> None:
+        text = '''version = 1
+[[package]]
+name = "demo"
+version = "1"
+source = { virtual = "." }
+dependencies = [{ name = "alpha", extra = ["feature"] }, { name = "bridge" }]
+[[package]]
+name = "bridge"
+version = "1"
+source = { registry = "https://example.test" }
+dependencies = [{ name = "alpha" }]
+wheels = [{ url = "https://example.test/bridge-1-py3-none-any.whl", hash = "sha256:''' + "1" * 64 + '''" }]
+[[package]]
+name = "alpha"
+version = "1"
+source = { registry = "https://example.test" }
+wheels = [{ url = "https://example.test/alpha-1-py3-none-any.whl", hash = "sha256:''' + "2" * 64 + '''" }]
+[package.optional-dependencies]
+feature = [{ name = "beta", extra = ["nested"], marker = "extra == 'feature'" }]
+unused = [{ name = "missing" }]
+[[package]]
+name = "beta"
+version = "1"
+source = { registry = "https://example.test" }
+wheels = [{ url = "https://example.test/beta-1-py3-none-any.whl", hash = "sha256:''' + "3" * 64 + '''" }]
+[package.optional-dependencies]
+nested = [{ name = "leaf" }]
+[[package]]
+name = "leaf"
+version = "1"
+source = { registry = "https://example.test" }
+wheels = [{ url = "https://example.test/leaf-1-py3-none-any.whl", hash = "sha256:''' + "4" * 64 + '''" }]
+'''
+        selected = select_wheels(parse_lock(text.encode()), "demo", TARGET)
+        assert {wheel.package for wheel in selected} == {"alpha", "bridge", "beta", "leaf"}
+
     def test_honest_lock_selects_the_closure(self) -> None:
         lock = parse_lock(lock_text().encode())
         selected = select_wheels(lock, "demo", TARGET)

@@ -28,7 +28,8 @@ Judgement rules, all deterministic:
     empty artifact a full miss rather than a clean pass;
   * every structural error finding fails its finding ID, the file that
     carries it and the test it names, whether or not that test was frozen —
-    slop does not become legal by being new;
+    and the mandatory global structural outcome, so new-file findings
+    block even when their diagnostic IDs are outside the frozen universe;
   * a census entry no freeze names is counted `extra`, never blocked: added
     tests are the suite's business, not the census's.
 
@@ -49,7 +50,7 @@ from pathlib import Path
 from typing import Any, TypedDict, cast
 
 from ranex.foundation.antislop import RULE_CENSUS
-from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 from ranex.foundation.scan_results import (
     _SARIF_VERSION,
     SARIF_LEVELS,
@@ -60,6 +61,7 @@ from ranex.foundation.scan_results import (
 from ranex.foundation.suite_results import validate_suite_results
 
 ANTISLOP_REPORTERS = frozenset({"antislop-sarif-2.1.0"})
+ANTISLOP_STRUCTURAL_ID = "ranex/antislop-structural-integrity"
 
 _EXPECTATION_KEYS = {"scope", "tests"}
 _CENSUS_MESSAGE = re.compile(r"^(?P<test_id>.+) effective_asserts=(?P<count>\d+)$")
@@ -139,17 +141,27 @@ def load_antislop_expectations_bytes(raw: bytes) -> dict[str, object]:
 
 
 def antislop_expectations_digest(manifest: Mapping[str, object]) -> str:
-    """Digest the exact canonical expectations representation."""
+    """Bind the frozen bytes and the mandatory structural-integrity rule.
+
+    Earlier summaries did not carry the required global outcome. Their
+    manifest digest must not satisfy a claim under the repaired reduction.
+    The approved scope and assertion counts remain unchanged.
+    """
 
     validated = validate_antislop_expectations(dict(manifest))
-    return "sha256:" + hashlib.sha256(canonical_json_bytes(validated)).hexdigest()
+    material = {
+        "schema": "ranex-antislop-expectations-binding-v2",
+        "expectations": validated,
+        "required_structural_id": ANTISLOP_STRUCTURAL_ID,
+    }
+    return "sha256:" + canonical_sha256(material)
 
 
 def antislop_expected_ids(manifest: Mapping[str, object]) -> tuple[str, ...]:
-    """The frozen ID universe: every scope file, plus every frozen test."""
+    """Every frozen file/test and the required global structural outcome."""
 
     validated = validate_antislop_expectations(dict(manifest))
-    return tuple(sorted({*validated["scope"], *validated["tests"]}))
+    return tuple(sorted({ANTISLOP_STRUCTURAL_ID, *validated["scope"], *validated["tests"]}))
 
 
 def antislop_expected_skips(manifest: Mapping[str, object]) -> dict[str, str]:
@@ -161,7 +173,7 @@ def antislop_expected_skips(manifest: Mapping[str, object]) -> dict[str, str]:
 
 def _parse(
     sarif_bytes: bytes, subject_root: Path
-) -> tuple[dict[str, int], list[tuple[str, str, str]], set[str]]:
+) -> tuple[dict[str, int], list[tuple[str, str, str]], set[str] | None]:
     """`(census, findings, witnessed)` from one artifact, region-validated.
 
     The two region helpers are `scan_results`' own: one implementation of
@@ -187,7 +199,7 @@ def _parse(
 
     census: dict[str, int] = {}
     findings: list[tuple[str, str, str]] = []
-    witnessed: set[str] = set()
+    witnessed: set[str] | None = None
     for run in runs:
         if not isinstance(run, dict):
             raise ValueError("SARIF runs entries must be objects")
@@ -206,11 +218,16 @@ def _parse(
                         "SARIF invocation did not report executionSuccessful; a scan "
                         "that declares its own failure is refused, and absence blocks"
                     )
-        for artifact in run.get("artifacts", []) if isinstance(
-            run.get("artifacts"), list
-        ) else []:
-            location = artifact.get("location") if isinstance(artifact, dict) else None
-            if isinstance(location, dict):
+        if "artifacts" in run:
+            artifacts = run["artifacts"]
+            if not isinstance(artifacts, list):
+                raise ValueError("SARIF runs[].artifacts must be a list when present")
+            if witnessed is None:
+                witnessed = set()
+            for artifact in artifacts:
+                location = artifact.get("location") if isinstance(artifact, dict) else None
+                if not isinstance(location, dict):
+                    raise ValueError("SARIF artifacts entries must carry a location")
                 witnessed.add(_subject_relative(location.get("uri"), subject_root))
 
         results = run.get("results", [])
@@ -298,10 +315,10 @@ def antislop_results_from_sarif(
 ) -> dict[str, object]:
     """Summarise one antislop artifact against frozen expectations.
 
-    The same summary a suite or a scan produces, over two ID families: the
-    frozen scope files and the frozen tests, plus the finding IDs any
-    structural error contributes. `evaluate()` blocks on `non_passed` and
-    `missing` without being taught anything new.
+    The same summary a suite or a scan produces, over the frozen files/tests,
+    the global structural outcome and diagnostic finding IDs. `evaluate()`
+    blocks on required `non_passed` and `missing` IDs without being taught
+    anything new.
     """
 
     validated = validate_antislop_expectations(dict(manifest))
@@ -310,6 +327,11 @@ def antislop_results_from_sarif(
     frozen_tests = dict(validated["tests"])
 
     outcomes: dict[str, str] = {path: "passed" for path in scope}
+    # Finding IDs and new test/file IDs are outside the frozen universe and
+    # the pinned kernel intentionally ignores them. This required ID carries
+    # every structural finding across that boundary, without expanding or
+    # weakening the approved baseline.
+    outcomes[ANTISLOP_STRUCTURAL_ID] = "failed" if findings else "passed"
     for test_id, frozen_count in frozen_tests.items():
         observed = census.get(test_id)
         if observed is not None and observed < frozen_count:
@@ -324,10 +346,13 @@ def antislop_results_from_sarif(
 
     subject = subject_root.resolve()
     missing = sorted(
-        path
-        for path in scope
-        if not (subject / path).is_file() or (witnessed and path not in witnessed)
-    ) + sorted(test_id for test_id in frozen_tests if test_id not in census)
+        {
+            path
+            for path in scope
+            if not (subject / path).is_file() or (witnessed is not None and path not in witnessed)
+        }
+        | {test_id for test_id in frozen_tests if test_id not in census}
+    )
     expected = set(antislop_expected_ids(validated))
     observed_universe = set(census) | {identifier for identifier, _, _ in findings}
     counts = {
@@ -388,6 +413,8 @@ def freeze_antislop_expectations(
     """Freeze the census a real artifact of the approved tree carries."""
 
     census, findings, witnessed = _parse(sarif_bytes, subject_root)
+    if witnessed is None:
+        raise ValueError("antislop freeze requires an explicit artifacts inventory")
     return freeze_antislop_expectations_observed(census, findings, witnessed)
 
 

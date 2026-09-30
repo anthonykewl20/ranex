@@ -54,6 +54,44 @@ EXECUTABLE = sys.executable
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_real_class_and_parameter_nodeids_survive_observed_junit(tmp_path: Path) -> None:
+    from ranex.foundation.suite_results import freeze_manifest
+
+    source = '''
+    import pytest
+    class TestOuter:
+        class TestInner:
+            @pytest.mark.parametrize("value", [1, 2], ids=["one::part", "two words"])
+            def test_value(self, value, record_property):
+                record_property("ranex.pytest_nodeid", "forged.py::test_other")
+                assert value > 0
+    '''
+    run, raw = run_real_pytest_suite(tmp_path, source, pytest_args=("-p", "ranex.foundation.pytest_xpass"))
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert freeze_manifest(raw)["suite"] == [
+        "tests/unit/test_x.py::TestOuter::TestInner::test_value[one::part]",
+        "tests/unit/test_x.py::TestOuter::TestInner::test_value[two words]",
+    ]
+
+
+@pytest.mark.parametrize("nodeid", [
+    "tests/unit/test_other.py::TestExample::test_value",
+    "tests/unit/test_one.py::WrongClass::test_value",
+    "tests/unit/test_one.py::TestExample::test_other",
+    "../tests/unit/test_one.py::TestExample::test_value",
+])
+def test_junit_nodeid_metadata_cannot_substitute_an_unrelated_identity(nodeid: str) -> None:
+    from xml.sax.saxutils import escape
+
+    from ranex.foundation.suite_results import freeze_manifest
+
+    raw = ('<testsuite><testcase classname="tests.unit.test_one.TestExample" name="test_value">'
+           '<properties><property name="ranex.pytest_nodeid" value="' + escape(nodeid, {'"': '&quot;'}) +
+           '"/></properties></testcase></testsuite>').encode()
+    with pytest.raises(ValueError, match="nodeid"):
+        freeze_manifest(raw)
+
+
 def test_vitest_preserves_real_javascript_ids_and_detects_a_missing_test() -> None:
     from ranex.foundation.suite_results import freeze_manifest, suite_results_from_junitxml
 

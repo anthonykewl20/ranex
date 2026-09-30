@@ -8,7 +8,7 @@
       "relro": true,
       "type": "EXEC"
     },
-    "sha256": "ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9",
+    "sha256": "9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0",
     "successor_path": "governance/qualification/worker/slice036-worker",
     "toolchain_destination": "/ranex/toolchain/bin/slice036-worker"
   },
@@ -46,17 +46,1182 @@
       "<source>"
     ],
     "inputs": [
-      {"path": "/usr/bin/x86_64-linux-gnu-as", "role": "assembler", "sha256": "21aff249b692b5c31a44007491f922dcb49f41323e362c57d2ada3f52eddb7f0"},
-      {"path": "/usr/bin/x86_64-linux-gnu-ld.bfd", "role": "linker", "sha256": "e9ceb054c12207970f2726dfc07e9a66b411602748628baf27399f02a9bbb31b"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crt1.o", "role": "crt1", "sha256": "5cfb30db1d2c92a9a818f6c015ad7fcd6519afaa1b88148e831504fe6e299479"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crti.o", "role": "crti", "sha256": "077ccb6c68db1794da3ee262c4a16a3c6f8e902845dd0829110ad4b7065e5aa3"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginT.o", "role": "crtbegin", "sha256": "42171a80795909e1a0743f71c60b503ff2951ed40bf94cae9ca55c324a8cc26a"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/libc.a", "role": "libc-static", "sha256": "d2a01bdb5e0443c6213f96f7ed90dd13006cc6913ee1cd306de7456def86ff2f"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc.a", "role": "libgcc-static", "sha256": "d9376c55f97863a4e5fbb6c6beca2591b319bf786f3a7ca56da8964c5662171f"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc_eh.a", "role": "libgcc-eh-static", "sha256": "f853cbbf842ff8714cc8dd986e2fd5bb309d34d490b0707203223ee4d52c76bc"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/crtend.o", "role": "crtend", "sha256": "9c8b2caad195193301ef072895dc89bea1d23371d4c19accd821debe27773063"},
-      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crtn.o", "role": "crtn", "sha256": "a2266079f95b84ccc2162ebbf279bcd78858a748aa1882e0bdb912316c76a58f"}
+      {
+        "path": "/etc/ld.so.cache",
+        "realpath": "/etc/ld.so.cache",
+        "role": "observed-compiler-input",
+        "sha256": "dc2f1d179411d4141b26cf42bc918296d15e852b1332d15a2a6158e1898f36e4"
+      },
+      {
+        "path": "/usr/bin/as",
+        "realpath": "/usr/bin/x86_64-linux-gnu-as",
+        "role": "assembler",
+        "sha256": "21aff249b692b5c31a44007491f922dcb49f41323e362c57d2ada3f52eddb7f0"
+      },
+      {
+        "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "realpath": "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "role": "observed-compiler-input",
+        "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+      },
+      {
+        "path": "/usr/bin/ld",
+        "realpath": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+        "role": "linker",
+        "sha256": "e9ceb054c12207970f2726dfc07e9a66b411602748628baf27399f02a9bbb31b"
+      },
+      {
+        "path": "/usr/bin/nm",
+        "realpath": "/usr/bin/x86_64-linux-gnu-nm",
+        "role": "observed-compiler-input",
+        "sha256": "3708df3d7ce16e2c1dcdcd722784ae382d4d582276a71ab7bbe2d542f5621202"
+      },
+      {
+        "path": "/usr/bin/strip",
+        "realpath": "/usr/bin/x86_64-linux-gnu-strip",
+        "role": "observed-compiler-input",
+        "sha256": "0d980587ada7ab12193f39271f060d5663aa2f289b0e80d2a0274ce7306e4e42"
+      },
+      {
+        "path": "/usr/include/alloca.h",
+        "realpath": "/usr/include/alloca.h",
+        "role": "observed-compiler-input",
+        "sha256": "2430efb7a25b526aedff1f1e3b78c88a1aef5a3d73b2bdb9e92bda45930348ea"
+      },
+      {
+        "path": "/usr/include/arpa/inet.h",
+        "realpath": "/usr/include/arpa/inet.h",
+        "role": "observed-compiler-input",
+        "sha256": "04f7688e9c67129c9324da3315d8b5eb161700a30795340c1582be07d95db133"
+      },
+      {
+        "path": "/usr/include/asm-generic/bitsperlong.h",
+        "realpath": "/usr/include/asm-generic/bitsperlong.h",
+        "role": "observed-compiler-input",
+        "sha256": "55995b9cdfd3fcec2c6ac1f698a7405e99ff86b94ddf3124ba55485c95e6db9c"
+      },
+      {
+        "path": "/usr/include/asm-generic/errno-base.h",
+        "realpath": "/usr/include/asm-generic/errno-base.h",
+        "role": "observed-compiler-input",
+        "sha256": "2c148e92b8318deeb767fabd60822113e575ee664ff09a1873aed8f7a495793c"
+      },
+      {
+        "path": "/usr/include/asm-generic/errno.h",
+        "realpath": "/usr/include/asm-generic/errno.h",
+        "role": "observed-compiler-input",
+        "sha256": "fb7b5a504015f3a9074c641e7371b250d867d751d90e4a22a8ac17fced3d50af"
+      },
+      {
+        "path": "/usr/include/asm-generic/int-ll64.h",
+        "realpath": "/usr/include/asm-generic/int-ll64.h",
+        "role": "observed-compiler-input",
+        "sha256": "eb8b891e775ebb50af0353fdcbc625854fd98780399b3a57a404d36af6c29749"
+      },
+      {
+        "path": "/usr/include/asm-generic/posix_types.h",
+        "realpath": "/usr/include/asm-generic/posix_types.h",
+        "role": "observed-compiler-input",
+        "sha256": "8d273280f282bf9e810f00ad9905977161dec3f103ef789892ceec8c453e1398"
+      },
+      {
+        "path": "/usr/include/asm-generic/socket.h",
+        "realpath": "/usr/include/asm-generic/socket.h",
+        "role": "observed-compiler-input",
+        "sha256": "d924fd334e95aab9f6fafbab57b6cd7fa0eadae57cbad8d3cd2a639556a29694"
+      },
+      {
+        "path": "/usr/include/asm-generic/sockios.h",
+        "realpath": "/usr/include/asm-generic/sockios.h",
+        "role": "observed-compiler-input",
+        "sha256": "3e46cdcb281f87f1b532901e6388eed77fa687c3c5c56f72aceb8640696a4ef9"
+      },
+      {
+        "path": "/usr/include/asm-generic/types.h",
+        "realpath": "/usr/include/asm-generic/types.h",
+        "role": "observed-compiler-input",
+        "sha256": "09b4477d655ddd2c5657e83a0761700d6706f012c7365f310a6b0a6696936a10"
+      },
+      {
+        "path": "/usr/include/endian.h",
+        "realpath": "/usr/include/endian.h",
+        "role": "observed-compiler-input",
+        "sha256": "f6f74f790f21a27aa4ec1007c3f3235babcadeba07cc8a379478b0dfd2e128f8"
+      },
+      {
+        "path": "/usr/include/errno.h",
+        "realpath": "/usr/include/errno.h",
+        "role": "observed-compiler-input",
+        "sha256": "4e540151a30b70bb8490f8d7e530972d7e448e7e76a2732c9cc26cb25d56c761"
+      },
+      {
+        "path": "/usr/include/fcntl.h",
+        "realpath": "/usr/include/fcntl.h",
+        "role": "observed-compiler-input",
+        "sha256": "0a8ec5ef69559544b9da26b7d5ebee07f4ee43baa3cc9e9f35f8a33d4f157676"
+      },
+      {
+        "path": "/usr/include/features-time64.h",
+        "realpath": "/usr/include/features-time64.h",
+        "role": "observed-compiler-input",
+        "sha256": "345acb98767d04277e413c4951fbb199b0500be23d43cddf17c6cd9fb319a8da"
+      },
+      {
+        "path": "/usr/include/features.h",
+        "realpath": "/usr/include/features.h",
+        "role": "observed-compiler-input",
+        "sha256": "940d486d050fc87420d8ffc008e17f31ffb04467534ad1b039ed25abc52382f9"
+      },
+      {
+        "path": "/usr/include/linux/close_range.h",
+        "realpath": "/usr/include/linux/close_range.h",
+        "role": "observed-compiler-input",
+        "sha256": "54f02dee64fba028529c5265273d23a96629f3217d6abc31574ef7cce5a63f70"
+      },
+      {
+        "path": "/usr/include/linux/errno.h",
+        "realpath": "/usr/include/linux/errno.h",
+        "role": "observed-compiler-input",
+        "sha256": "a47fb2f49bce0546a1e88805cec954338abb1b2ac87de042166e8e3a74b23261"
+      },
+      {
+        "path": "/usr/include/linux/falloc.h",
+        "realpath": "/usr/include/linux/falloc.h",
+        "role": "observed-compiler-input",
+        "sha256": "8a8d8ddea75349dea5aa214a0beaa8acdf45e0004e3670d758bd37c5fc06f8eb"
+      },
+      {
+        "path": "/usr/include/linux/posix_types.h",
+        "realpath": "/usr/include/linux/posix_types.h",
+        "role": "observed-compiler-input",
+        "sha256": "bc68636a383418f235d3457e4b21cf27cefc7c7f3edea4c1f6706f1018db196f"
+      },
+      {
+        "path": "/usr/include/linux/prctl.h",
+        "realpath": "/usr/include/linux/prctl.h",
+        "role": "observed-compiler-input",
+        "sha256": "6feff68eef81225d5885ed3dd6e0644b6ec4881591e219041fcec87a67040e42"
+      },
+      {
+        "path": "/usr/include/linux/stat.h",
+        "realpath": "/usr/include/linux/stat.h",
+        "role": "observed-compiler-input",
+        "sha256": "c20889137b96f2a0a3ff3a250842fe226426cb67dce84a2354b50cab2ab348e2"
+      },
+      {
+        "path": "/usr/include/linux/stddef.h",
+        "realpath": "/usr/include/linux/stddef.h",
+        "role": "observed-compiler-input",
+        "sha256": "31850e433c9c9a8c1868eabe0ed2a8485ee5953e81a8e28bd7ff8d9ba52c2019"
+      },
+      {
+        "path": "/usr/include/linux/types.h",
+        "realpath": "/usr/include/linux/types.h",
+        "role": "observed-compiler-input",
+        "sha256": "4152b3c5d095f5cf0adf5cc13ee0670e737eb7c4efef5fa08e9d1eb87e68ed78"
+      },
+      {
+        "path": "/usr/include/netinet/in.h",
+        "realpath": "/usr/include/netinet/in.h",
+        "role": "observed-compiler-input",
+        "sha256": "3f2d0d03227c6f79d3c1543d9aa008c85ef556413cfbad1ad19663b36b6c3589"
+      },
+      {
+        "path": "/usr/include/signal.h",
+        "realpath": "/usr/include/signal.h",
+        "role": "observed-compiler-input",
+        "sha256": "a79456587f504ae8020ab7f46aceaf5859d419c003e051c8cd2d067e64f25856"
+      },
+      {
+        "path": "/usr/include/stdc-predef.h",
+        "realpath": "/usr/include/stdc-predef.h",
+        "role": "observed-compiler-input",
+        "sha256": "8db4f65e62cade8ae4d9b77960ee6aee093255acc1b637e3fb37d79179733b15"
+      },
+      {
+        "path": "/usr/include/stdint.h",
+        "realpath": "/usr/include/stdint.h",
+        "role": "observed-compiler-input",
+        "sha256": "c26c51b07feadd45ca25e9c95e393b6783d580ab318a567c119828191a80bbed"
+      },
+      {
+        "path": "/usr/include/stdio.h",
+        "realpath": "/usr/include/stdio.h",
+        "role": "observed-compiler-input",
+        "sha256": "b4f6709d12c8493e2a42f740845abe2994deb27fc78fb85fcaa6e27228a87d62"
+      },
+      {
+        "path": "/usr/include/stdlib.h",
+        "realpath": "/usr/include/stdlib.h",
+        "role": "observed-compiler-input",
+        "sha256": "21500d5cb6062df47d6507baef6111cc951ceece4e2df26289a420fcf05ebec4"
+      },
+      {
+        "path": "/usr/include/string.h",
+        "realpath": "/usr/include/string.h",
+        "role": "observed-compiler-input",
+        "sha256": "c64819b091b17d7fcf14a10da129793f2499879eacb1b361610cbec5162fc24b"
+      },
+      {
+        "path": "/usr/include/strings.h",
+        "realpath": "/usr/include/strings.h",
+        "role": "observed-compiler-input",
+        "sha256": "70b41dc65c2239cb814b5f5caa8b068b3854daedf8d6e1c0a05299cf57247536"
+      },
+      {
+        "path": "/usr/include/time.h",
+        "realpath": "/usr/include/time.h",
+        "role": "observed-compiler-input",
+        "sha256": "dba6d309d4b1ca0006342a7a1e08cfc6cb0a210610ff5ad1577d232ddaa10431"
+      },
+      {
+        "path": "/usr/include/unistd.h",
+        "realpath": "/usr/include/unistd.h",
+        "role": "observed-compiler-input",
+        "sha256": "b7c94e0f780fccf2fffd9b2888e698f5519a75be6113e97141b1c5a082433381"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/bitsperlong.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/bitsperlong.h",
+        "role": "observed-compiler-input",
+        "sha256": "8ef5efeb3f25ae47ce03ba892f5caf77631b1257715fc12de72c21e61db17e43"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/errno.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/errno.h",
+        "role": "observed-compiler-input",
+        "sha256": "4ee384515a4325315992e61dd957f0fa91f3858fe7c079de59f56edded51de86"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/posix_types.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/posix_types.h",
+        "role": "observed-compiler-input",
+        "sha256": "983090c7e5e7eaff27114ec216889a8ad26e40ad8fbb78b8ae6c09391dc61543"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/posix_types_64.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/posix_types_64.h",
+        "role": "observed-compiler-input",
+        "sha256": "5cdabc01dac0a3e9731ac16353210a615ca44e85b6ec9eafd2e79206e0b26c76"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/socket.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/socket.h",
+        "role": "observed-compiler-input",
+        "sha256": "48e0940e8a6e8861eaaaf90853a685fa803c4e039166060a3c921c8d79001e3c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/sockios.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/sockios.h",
+        "role": "observed-compiler-input",
+        "sha256": "ac496b3bcc37452f0caa104b2205a8a19dde0196a7791988b3b74e23c2174c1e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/asm/types.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/asm/types.h",
+        "role": "observed-compiler-input",
+        "sha256": "b6bdcd528bce555b2ecb58e8a1624e3e13e09312c31318023c4e86b957e2b01f"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h",
+        "role": "observed-compiler-input",
+        "sha256": "ed3a79c28629d75907ef498b30f8db2b6a433d7a49be3a752bad01007599b976"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/byteswap.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/byteswap.h",
+        "role": "observed-compiler-input",
+        "sha256": "3c1abaa571e19f9b3148b46d0fe2a764a3254d9163a398d71006d6b839e5ab84"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/confname.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/confname.h",
+        "role": "observed-compiler-input",
+        "sha256": "873794f4472ddcc7b95e69ac923897decc10bb731223c4fadb7bab0d86cf8804"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/endian.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/endian.h",
+        "role": "observed-compiler-input",
+        "sha256": "0add7af26d2f4529d28506f0af6506ef687e507e4eddc946171d3e6805e9b9fe"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/endianness.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/endianness.h",
+        "role": "observed-compiler-input",
+        "sha256": "659a7060004eda113671a38852c4d1e9cb97a35932bcd1d8540f98c09c180747"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/environments.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/environments.h",
+        "role": "observed-compiler-input",
+        "sha256": "a11ec37187827c2f57d8227f8455d1ce29ee7ce22604db0a5e20f29fb3905b97"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/errno.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/errno.h",
+        "role": "observed-compiler-input",
+        "sha256": "5484af7e4dec9029686f27eb08f5f33208a3e03e66574aee9ab9d377599783db"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h",
+        "role": "observed-compiler-input",
+        "sha256": "8d50bc7737bcc76f42b1f406244acb287bcf0463d180b6b0566d27d1f23b3e98"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/fcntl.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/fcntl.h",
+        "role": "observed-compiler-input",
+        "sha256": "dd4dfce9d1624326b478f1ad3405b15f637f1419d8b04c88fe83556753285a73"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/fcntl2.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/fcntl2.h",
+        "role": "observed-compiler-input",
+        "sha256": "d58813b1dd96737b565353ea71b0bab60813c4a70129770392fc016302646a80"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/floatn-common.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/floatn-common.h",
+        "role": "observed-compiler-input",
+        "sha256": "b31050f2b142f1b5bedfa97158b1baa06575dd0d12dde4531b3815b57069e3da"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/floatn.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/floatn.h",
+        "role": "observed-compiler-input",
+        "sha256": "273e3eac154e0fd777b8e7c6edd9cd64af69a0d215370da12243d5b22378c2dc"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/getopt_core.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/getopt_core.h",
+        "role": "observed-compiler-input",
+        "sha256": "16640bdef5ecba29e7a79f21878a24dea4455e996a0bfd0c211b0adea60a6c92"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/getopt_posix.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/getopt_posix.h",
+        "role": "observed-compiler-input",
+        "sha256": "a2ad1205e94a340a1ae72e939b2f3d4d1ff5de75d9bebe5cf17e546ed6d91256"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/in.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/in.h",
+        "role": "observed-compiler-input",
+        "sha256": "d578529989cc10e4166906a9f195594be6eaff2971f9ea2e8347ef6850c86e05"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h",
+        "role": "observed-compiler-input",
+        "sha256": "e86638082f9ce98c82e3022018fa5be175473445c824fe17bd32bf9668582368"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/long-double.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/long-double.h",
+        "role": "observed-compiler-input",
+        "sha256": "40367287cd437d78a05313f6ec52cb0f0a711e1b6711fdcc3699bf2bf28e810f"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/mman-linux.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/mman-linux.h",
+        "role": "observed-compiler-input",
+        "sha256": "c2c3c4ed99567f102ea1eaec1253b59b8bd4658f43ca85df4c6fda616bad4ab7"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/mman-map-flags-generic.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/mman-map-flags-generic.h",
+        "role": "observed-compiler-input",
+        "sha256": "5f89076a5312f6ee10b8bcf6c0bf55c12627e8f92f330435889d4353f4079e18"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/mman-shared.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/mman-shared.h",
+        "role": "observed-compiler-input",
+        "sha256": "4c1f3bb4536b96b3418b220fe4e30b651dc0c429e078a6003c4b241841fbff25"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/mman.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/mman.h",
+        "role": "observed-compiler-input",
+        "sha256": "0a78a69a61f06a5e8537d1205242d21334ba96c7fcfc09fb3a790392d04e9c54"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/mman_ext.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/mman_ext.h",
+        "role": "observed-compiler-input",
+        "sha256": "0475023a4b9f140ba0673a9c5e5ee473204e62d4ba7313eb1d34a229c5f6e2be"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/posix_opt.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/posix_opt.h",
+        "role": "observed-compiler-input",
+        "sha256": "3cbbbf49bd3a49fe120b420eec6183803b17d7cb04f840c929455063f6ab7499"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h",
+        "role": "observed-compiler-input",
+        "sha256": "adf5a36ccf71cf7252c97627b133285f53d3d66b499838bb717845dcd8d93571"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+        "role": "observed-compiler-input",
+        "sha256": "c47d28c26504ebda1e15d82b9ae74d288c9d68e757c7f37456dc39b131131035"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/select-decl.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/select-decl.h",
+        "role": "observed-compiler-input",
+        "sha256": "7abad9cff45a26b298eab3b740977ece93eb6e0f5b4dc2aa22d2b6cd1a8ee066"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/select.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/select.h",
+        "role": "observed-compiler-input",
+        "sha256": "e046dd5c0b229550a439556bd2ca018b9652325ba7e8d6ac5c3ca9b014448e1e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/select2.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/select2.h",
+        "role": "observed-compiler-input",
+        "sha256": "b8b26d025598e1477d7a4ed292df32a799c49f3fd6152dbd79f2f462a6d24a57"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sigaction.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sigaction.h",
+        "role": "observed-compiler-input",
+        "sha256": "b2f76a26bbfa3668859e8e8a93af9321e14083914df0aa0367cdffaabf4ece81"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sigcontext.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sigcontext.h",
+        "role": "observed-compiler-input",
+        "sha256": "4f0f2517d7d2ae6a132312e7c88e4f10a36700045b239346deed0ffa9e681c82"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sigevent-consts.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sigevent-consts.h",
+        "role": "observed-compiler-input",
+        "sha256": "e681d251d9a7090118233baaf64ae08ca518d3d8ca6dbab6d11ef5564d4720b0"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/siginfo-arch.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/siginfo-arch.h",
+        "role": "observed-compiler-input",
+        "sha256": "0839bdc7af291182ff9822a7b6419659fb26a49af5e4264857a71af4ccb12213"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/siginfo-consts-arch.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/siginfo-consts-arch.h",
+        "role": "observed-compiler-input",
+        "sha256": "56e019330b859cc4e28af30854df4d29be120ec4bff74849301bb3c40c9f19ca"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/siginfo-consts.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/siginfo-consts.h",
+        "role": "observed-compiler-input",
+        "sha256": "5eda010ce0233e02cea7c1b8679d42ab61eba23c369702661249eec8fd25785b"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/signal_ext.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/signal_ext.h",
+        "role": "observed-compiler-input",
+        "sha256": "94e633b9433baed6f4b10bb52e3f5cb3895f116a57d30eea729159efcd337ea7"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/signum-arch.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/signum-arch.h",
+        "role": "observed-compiler-input",
+        "sha256": "ef1475e1546024be5b12edea07ed215ce3a9b004b1266ba7a3b5e40fb7bbe986"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/signum-generic.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/signum-generic.h",
+        "role": "observed-compiler-input",
+        "sha256": "0a27898a4f720aeabcafb45eba42b0cd6b9593a6e77bd87019969eda94cf435b"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sigstack.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sigstack.h",
+        "role": "observed-compiler-input",
+        "sha256": "0bc9d6eb37a657ac4fe8e637a331b2728f1d438c446352d9f8f64f366c757b29"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sigstksz.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sigstksz.h",
+        "role": "observed-compiler-input",
+        "sha256": "a2af66001d4a2f27d828112b04661282b7ff7d075158440e6649f396baea6d78"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sigthread.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sigthread.h",
+        "role": "observed-compiler-input",
+        "sha256": "e15690707a51a98e5ed5dffa07ace93d2eaf7e06cdf7e73dace990106da940a4"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/sockaddr.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/sockaddr.h",
+        "role": "observed-compiler-input",
+        "sha256": "5822392d80071a660264fd2b9ad2fe556ca1feae5d29aeb3e31d0285cefd0473"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/socket.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/socket.h",
+        "role": "observed-compiler-input",
+        "sha256": "0d54fcf79ed8111df5d3580eb4bb662b744f8ffae03206c624ebec84d43f0ea0"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/socket2.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/socket2.h",
+        "role": "observed-compiler-input",
+        "sha256": "c78a45098104884476ae3acd5585001d8661dd2c492937b21e7d582cd94ccaf1"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/socket_type.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/socket_type.h",
+        "role": "observed-compiler-input",
+        "sha256": "189018b45921558a3650c0a9db42d0ba31f265b792ca568c9282ce0014bc0da1"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/ss_flags.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/ss_flags.h",
+        "role": "observed-compiler-input",
+        "sha256": "064391807d78836b4e0915f5f8a0d0a875ed23c2c40da2e853fcf4ee5dacc408"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stat.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stat.h",
+        "role": "observed-compiler-input",
+        "sha256": "94cb3b45d5826d7d5ce6d81e9eb8b053dedd43dd9cde5b074e47c3a28d47bd8d"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/statx-generic.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/statx-generic.h",
+        "role": "observed-compiler-input",
+        "sha256": "2cab536381a2e5b16ec63266830890d948012e0ef2ee7e607c5500e25d8abf44"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/statx.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/statx.h",
+        "role": "observed-compiler-input",
+        "sha256": "aa197c11709c0ab300b5c9feb8ea06d173725fa45cf4fcb7a93080f3496c5314"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdint-intn.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdint-intn.h",
+        "role": "observed-compiler-input",
+        "sha256": "94286e42e4970304da5cbef69de6695c84132ff8fbd4b6d72d29aeb7406dc5ff"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdint-least.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdint-least.h",
+        "role": "observed-compiler-input",
+        "sha256": "5bf66871bfc18ae6d22c91d03e392c1a4cc5969ca74c5fa31b7510703a496844"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h",
+        "role": "observed-compiler-input",
+        "sha256": "aeee224a19434556ef4a9a4afad553736789274656ca12463122300b557ce78c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdio.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdio.h",
+        "role": "observed-compiler-input",
+        "sha256": "bb9b0feccc1b326b8aee69fd00059b715947fee86b8638e27d07710f2c2895df"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdio2-decl.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdio2-decl.h",
+        "role": "observed-compiler-input",
+        "sha256": "c3acb8208277348f1e7df5b44ca92a253947041a6c79e5a04db9d5ffa96327db"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "role": "observed-compiler-input",
+        "sha256": "e553964cc1a45a330dc65224bae4e81299a6c4662985926f80151b4ea902cbf6"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdio_lim.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdio_lim.h",
+        "role": "observed-compiler-input",
+        "sha256": "509fc0d1fba9f06fe85d61b6b9c0b2208c8fe8e63af55fcfdd7e4ad5eabe6927"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h",
+        "role": "observed-compiler-input",
+        "sha256": "4c5e9e9b5f53c543ef6c8c933232e8a9aae0c2a93ef57d178c4edce76fd53531"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdlib-float.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdlib-float.h",
+        "role": "observed-compiler-input",
+        "sha256": "ba3d25100d93a324122c4c8121759c689607656aedf0efa148f0bfe8826c9794"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/stdlib.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/stdlib.h",
+        "role": "observed-compiler-input",
+        "sha256": "1b70f2c7745d3ed2f4dff21b6d8afb8f9618441ca5c57ec3420d6173de500f8a"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/string_fortified.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/string_fortified.h",
+        "role": "observed-compiler-input",
+        "sha256": "0cfa3c530938891615ab64ab5dfb72ebd8d02077d29d4410774b8a8ceff628fb"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/strings_fortified.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/strings_fortified.h",
+        "role": "observed-compiler-input",
+        "sha256": "26836e33fbedd8672b087a148df3035b5d52a6a9fd05d486ab6f3a457700fc3e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/struct_mutex.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/struct_mutex.h",
+        "role": "observed-compiler-input",
+        "sha256": "ec8b2058d4ac8e98ebaf6bdcb078000dd4df92b584e2ce6ae79546fb4219cde2"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h",
+        "role": "observed-compiler-input",
+        "sha256": "4b55d768919e8183816e4cdf910f62c7ac5313e70e370b287157e503bd2c26d1"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/struct_stat.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/struct_stat.h",
+        "role": "observed-compiler-input",
+        "sha256": "00b3b33c165454470de0f21b324867ec6e9b43e34f5d503121adf021cad8202e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h",
+        "role": "observed-compiler-input",
+        "sha256": "21f6f60e8a28e6e0166f0b3685d939774b553a27d1f221559f2d8176b8fb2358"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/time.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/time.h",
+        "role": "observed-compiler-input",
+        "sha256": "458eb529d0a451d27dfa294b6da982be2f1300f46884da2fa9bee5ad8efc7063"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/time64.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/time64.h",
+        "role": "observed-compiler-input",
+        "sha256": "2be9170ce3621ea6062f10edef68bbc2db09bb454ec4397534263dd37b8f1f6a"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/timesize.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/timesize.h",
+        "role": "observed-compiler-input",
+        "sha256": "8b686ad5fec2c4d6f759a6594d7c216337774d059623677547b7e182cc5269ae"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/timex.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/timex.h",
+        "role": "observed-compiler-input",
+        "sha256": "1a214847fbda711b4a14f211961593fcb2f5879b16f2f7115b2069dcca83acd3"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/FILE.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/FILE.h",
+        "role": "observed-compiler-input",
+        "sha256": "37515f78be386f2edad4746f2947c928f480728c56d9a94e25302ebbdaef3c96"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__FILE.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__FILE.h",
+        "role": "observed-compiler-input",
+        "sha256": "26c909942e8a6bc82725e9c402f393aed9e32d94190257ddf71e1b5f819b4e5e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "8afae3abf006beb39fd9d4d4bae38745cdf08a91e6217ddf25833c8d4b04751b"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "603e58ab31ed75b7e0ab09a2ca94e99955f7fbc63310466321ce27c906227eb4"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "0edc68d4ae8fd45f8127c6a8fe6936b6312f2835951a3157e51ad8b5dbcb46ad"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "c561df72d5b987ccbd022059fdb1bcb6899c3e94b403997a0576ef3e1afb0f94"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "05291a7d38bb1d0da1ed01c09fe85fa2b1f4d5bc708e06bb930efec672db08d5"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "f0556deb7a832bc9bcc600ada0da3d15c99aad85b2ea2729c4d7c5830e40cc0c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/clock_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/clock_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "81e60e8a8d99b28bc723c14b156d7f7fc8ff663d98a857a3f5aea90431f577e3"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "dcd64d184855b245e5c7acf21910a0aaca590f1faf094e400da5d30551d11eb0"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "aa4c25db20daf845f5d3e57d8aeba4011419c4ed1881992b73229a3f66a5c5c4"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/error_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/error_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "f8fcd12a0bf9a17df83fd497c7d8e60e85e1594103642de1d6d7dbb5478ac9a0"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/idtype_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/idtype_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "749f4d26f0d851e1fa4056d28c57e9fa8c664a99ee852857e530f1c4e60148cf"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/locale_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/locale_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "1f98dd4e58defd8d3a8b5f7e20d59f6cf1b728bbfb4102578234b822db8e6853"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "8c44b91c2eb6e509905e1becec6b98f8ac006709bfa5d85d86e34a46eb9013cc"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "7125083b8096dd146e6498a61f38bf3bc7215c1c9237e92469550bb355545bab"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "88b1392b88af3a08d908866f4e9c5650c5cddb0c8e021b0a3f8293cef6616feb"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "3db5ded9d98a694e8c7196a06690b2e816ec6bb82689940d281f6504533f37e1"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/sigval_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/sigval_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "7d94a894bed0b9490967e8dbcd53725c0f2af9559e58d4b19bd14d3707974ee3"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/stack_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/stack_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "02b6bb18391305b9311776f1c11b5b9788f3f9ebf804913f7691dd669b568b0b"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h",
+        "role": "observed-compiler-input",
+        "sha256": "79ad5bbe87e2be78d83990f8e28e0b20163e7ee03b733dc7cbea4eed94b8314f"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h",
+        "role": "observed-compiler-input",
+        "sha256": "a78a5793a7cfa80ddd258a6cee637385e67b2b230500a24c1ded4060d604fe37"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h",
+        "role": "observed-compiler-input",
+        "sha256": "d6299fbc46fc57e7d14635cd5cf69125710ed021ab7305586c84644a03a39f8e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h",
+        "role": "observed-compiler-input",
+        "sha256": "63619500aa6095b881f62d7a255bd31eeeab9a829cf34ec40e20a62729323efc"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h",
+        "role": "observed-compiler-input",
+        "sha256": "2f56e65bbf7ad26a8eb5d73f772b7e3c7ece935bb4a9f7e92ae5a4a05d22984c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_statx.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_statx.h",
+        "role": "observed-compiler-input",
+        "sha256": "d414d628034f1efb33effd2bbc85d2c0d1be9ea46d52cdc48fd99a93ecaa8acd"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h",
+        "role": "observed-compiler-input",
+        "sha256": "b6b2d9c9110816ecbed3a6e1b7db6a581d62f8abb93b250a308ece977fe01d7c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h",
+        "role": "observed-compiler-input",
+        "sha256": "8e7e964087b9c7638be2b5fb0fa01ceab43e4af8393b805b54ac2bd8642a1b98"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h",
+        "role": "observed-compiler-input",
+        "sha256": "d2fbcbcb4cc072a11380c826e3c8d58ca08df21e8a2436a3fd9a64ad8b4acd0c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h",
+        "role": "observed-compiler-input",
+        "sha256": "e7bdda3f42eb0633850ed150fef0a0cf6193cbba8fa740e7505925424a595566"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/time_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/time_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "721a557cff3ed308c69719a44ba8f7cd9536f6c602fb8f1b1eea8ed6749ee37d"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types/timer_t.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types/timer_t.h",
+        "role": "observed-compiler-input",
+        "sha256": "d96a2452da0d933941273d11d1048ea525f033306892835b0a7a0999b13853aa"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/types.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/types.h",
+        "role": "observed-compiler-input",
+        "sha256": "371847ed3adab1c19db392034f6a22407d321b1dc5f2440563f4b0b8b6c5386b"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/typesizes.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/typesizes.h",
+        "role": "observed-compiler-input",
+        "sha256": "047ee5ab17a95364c4b0f14c3eb0750e84e457c408f9a65a6c225ece585e0c14"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/uintn-identity.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/uintn-identity.h",
+        "role": "observed-compiler-input",
+        "sha256": "f67180898ee0ea2b0d521d38d06eb80f9a28b931399ad37ffcec2c9bcbd24f37"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/unistd-decl.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/unistd-decl.h",
+        "role": "observed-compiler-input",
+        "sha256": "012f7472dc39ca52b30cc9f6ad6e6c0f06f5591c07880061b32cc86cee622f5b"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/unistd.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/unistd.h",
+        "role": "observed-compiler-input",
+        "sha256": "dd205e3ecb4183cf169ea1ee85233e968c50e3fc332f25bc71d5876dc822fde7"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/unistd_ext.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/unistd_ext.h",
+        "role": "observed-compiler-input",
+        "sha256": "cbc2c3c1c89817f865595773d14f6554f88ce8a6a6cae99f2791c0d00a2ca60a"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/waitflags.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/waitflags.h",
+        "role": "observed-compiler-input",
+        "sha256": "c1f4b1268f7ed37c33b42020ae59934d7c8073f9fef0740312cc80cdf40b08b8"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/waitstatus.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/waitstatus.h",
+        "role": "observed-compiler-input",
+        "sha256": "16aa0bd73a56cbb6cbc18095bd7a665bf9795196d056b0ec307b049f3871186c"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/wchar.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/wchar.h",
+        "role": "observed-compiler-input",
+        "sha256": "893fa450527ce645f17922788097d5fe331e2a53012bab4e724d8a1f63e21aa2"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/bits/wordsize.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/bits/wordsize.h",
+        "role": "observed-compiler-input",
+        "sha256": "716d8459074e2a082d65a28192b32eddbfd7587348372395b1c283a723ae4c18"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h",
+        "role": "observed-compiler-input",
+        "sha256": "0b6ab3e2ed3ba79b30fe6ba81a68fc41f57965b8d56662763633431b703c9289"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/gnu/stubs.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/gnu/stubs.h",
+        "role": "observed-compiler-input",
+        "sha256": "ef444295a0a9e8f5c40918399a00cc91ba0bd79774110cdf6e652baa6cfadb2e"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/cdefs.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/cdefs.h",
+        "role": "observed-compiler-input",
+        "sha256": "173afb522c6877dda3be1c93742c2061cd6e748ce395d2b3ae833fb49bfbfc4f"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/mman.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/mman.h",
+        "role": "observed-compiler-input",
+        "sha256": "20f2c67c85a131e3302b2c951bec0b6c65375ade5c706df1c518dd65d0c20dd8"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/prctl.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/prctl.h",
+        "role": "observed-compiler-input",
+        "sha256": "a76908ae4f9cc728b69720ede3630ed2df5462e85d03fe949b48f269ad3dade6"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/select.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/select.h",
+        "role": "observed-compiler-input",
+        "sha256": "0cb0fc7af2948c2b02d01268796af8a5992985ee593866e70fd1c08e9c844ebc"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/socket.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/socket.h",
+        "role": "observed-compiler-input",
+        "sha256": "7d2e4c6165f4c5a21de573b76ee3ee3ae1d649e43236a4136ce47f0967dc1362"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/stat.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/stat.h",
+        "role": "observed-compiler-input",
+        "sha256": "9449fcba5bdec5bfe162da24d67fc3ed57cedb5c8c801f1bb29958e6f550d9b7"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/types.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/types.h",
+        "role": "observed-compiler-input",
+        "sha256": "049fc3ed84e810730a0b56e2084f9c190f7fbb582de6b55d7aa416dc41b17cd3"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
+        "role": "observed-compiler-input",
+        "sha256": "4485d0daa586733fd121554bf5eef304076cc01b3bd59c9df8bb35d3d067ae84"
+      },
+      {
+        "path": "/usr/include/x86_64-linux-gnu/sys/wait.h",
+        "realpath": "/usr/include/x86_64-linux-gnu/sys/wait.h",
+        "role": "observed-compiler-input",
+        "sha256": "d351f360526c195c0e52158a56bc0af00f959b5f1ffeb457d226a38716676c8f"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginT.o",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginT.o",
+        "role": "crtbegin",
+        "sha256": "42171a80795909e1a0743f71c60b503ff2951ed40bf94cae9ca55c324a8cc26a"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/crtend.o",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/crtend.o",
+        "role": "crtend",
+        "sha256": "9c8b2caad195193301ef072895dc89bea1d23371d4c19accd821debe27773063"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h",
+        "role": "observed-compiler-input",
+        "sha256": "5a443943e67d7bab17203591b4ccb508757587d9b955ee883a053d755ed09321"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h",
+        "role": "observed-compiler-input",
+        "sha256": "68b898fc39d5d2a450df9b7263d984e7d2ad4c02675f4043a62e762f169e4b85"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h",
+        "role": "observed-compiler-input",
+        "sha256": "9efc696d6c7eb8bb1831b149c6a92f88a775809cd63e4007312b617915f81188"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h",
+        "role": "observed-compiler-input",
+        "sha256": "86a7914ab7d6a18465a6fb9a7b54f945cad604fdbf3ca0d10e4e0254e0037911"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc.a",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc.a",
+        "role": "libgcc-static",
+        "sha256": "d9376c55f97863a4e5fbb6c6beca2591b319bf786f3a7ca56da8964c5662171f"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc_eh.a",
+        "realpath": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc_eh.a",
+        "role": "libgcc-eh-static",
+        "sha256": "f853cbbf842ff8714cc8dd986e2fd5bb309d34d490b0707203223ee4d52c76bc"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crt1.o",
+        "realpath": "/usr/lib/x86_64-linux-gnu/crt1.o",
+        "role": "crt1",
+        "sha256": "5cfb30db1d2c92a9a818f6c015ad7fcd6519afaa1b88148e831504fe6e299479"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crti.o",
+        "realpath": "/usr/lib/x86_64-linux-gnu/crti.o",
+        "role": "crti",
+        "sha256": "077ccb6c68db1794da3ee262c4a16a3c6f8e902845dd0829110ad4b7065e5aa3"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crtn.o",
+        "realpath": "/usr/lib/x86_64-linux-gnu/crtn.o",
+        "role": "crtn",
+        "sha256": "a2266079f95b84ccc2162ebbf279bcd78858a748aa1882e0bdb912316c76a58f"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libbfd-2.42-system.so",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libbfd-2.42-system.so",
+        "role": "observed-compiler-input",
+        "sha256": "11f084bc6ff5fc64e91c0b6422040fab1245419e7ff29560a95c1176ce1b9ff4"
+      },
+      {
+        "path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/libc.a",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libc.a",
+        "role": "libc-static",
+        "sha256": "a40c7eae7581f977b65eddb81cbc799213a695749e039d966db55bdee4ac9621"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libc.so.6",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "role": "observed-compiler-input",
+        "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libctf.so.0",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libctf.so.0.0.0",
+        "role": "observed-compiler-input",
+        "sha256": "25c8f765c259d05b59a3dc3634d711912a7f5ce9be8a28ace081507b925b3ad1"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libgmp.so.10",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libgmp.so.10.5.0",
+        "role": "observed-compiler-input",
+        "sha256": "0ccdfb6d6f5c039465f6d002cf7e4c072d48ac6a2cffc8dd6c748dec31592804"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libisl.so.23",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libisl.so.23.3.0",
+        "role": "observed-compiler-input",
+        "sha256": "db4f717fd1678b48e5dddea1cbdd2d239594a70b57e96d0923bfd9533351efa8"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libjansson.so.4",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libjansson.so.4.14.0",
+        "role": "observed-compiler-input",
+        "sha256": "c49935a4b3ac599064281b1f257576087806d0dad7ec46f353bd983b052c5e26"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libm.so.6",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "role": "observed-compiler-input",
+        "sha256": "fce00b6f25f459cf4ae0b7fae4257909a1a8a86f9149e7c029a5d617baf1ccd0"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libmpc.so.3",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libmpc.so.3.3.1",
+        "role": "observed-compiler-input",
+        "sha256": "91d2b2b0b794028c733431e01acc227ff39ee289384fdf22869c8b42ad3aaa3b"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libmpfr.so.6",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libmpfr.so.6.2.1",
+        "role": "observed-compiler-input",
+        "sha256": "2156351fa3dedd04a7381c6ac7a8a26efa2d6fb08b80f8a2d644ccdd653710ae"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libsframe.so.1",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libsframe.so.1.0.0",
+        "role": "observed-compiler-input",
+        "sha256": "1693a2dbd77c909d279ae34aa9b5d8d08d97f116f8d0ed724063df11151b3c69"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libz.so.1",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libz.so.1.3",
+        "role": "observed-compiler-input",
+        "sha256": "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892"
+      },
+      {
+        "path": "/lib/x86_64-linux-gnu/libzstd.so.1",
+        "realpath": "/usr/lib/x86_64-linux-gnu/libzstd.so.1.5.5",
+        "role": "observed-compiler-input",
+        "sha256": "0a2128bc10841fb29e76d08d945864dfb0b6a66da5df6df5d8299197439e54bb"
+      },
+      {
+        "path": "/usr/libexec/gcc/x86_64-linux-gnu/13/cc1",
+        "realpath": "/usr/libexec/gcc/x86_64-linux-gnu/13/cc1",
+        "role": "observed-compiler-input",
+        "sha256": "5d1679131184e2de4435b426eb264bf13472fe026db8e5c6bc97445814e8e2f4"
+      },
+      {
+        "path": "/usr/libexec/gcc/x86_64-linux-gnu/13/collect2",
+        "realpath": "/usr/libexec/gcc/x86_64-linux-gnu/13/collect2",
+        "role": "observed-compiler-input",
+        "sha256": "4d1f341ae5b763b513258ee2812422a45e063c30a2f1924a0cf63d3699f3a158"
+      },
+      {
+        "path": "/usr/libexec/gcc/x86_64-linux-gnu/13/liblto_plugin.so",
+        "realpath": "/usr/libexec/gcc/x86_64-linux-gnu/13/liblto_plugin.so",
+        "role": "observed-compiler-input",
+        "sha256": "14469ff8498fca3871c29dbf678c2330123207fffb8308151314a08395309ddf"
+      },
+      {
+        "path": "/usr/libexec/gcc/x86_64-linux-gnu/13/lto-wrapper",
+        "realpath": "/usr/libexec/gcc/x86_64-linux-gnu/13/lto-wrapper",
+        "role": "observed-compiler-input",
+        "sha256": "f6d39bcfb1c2798c704e275a4ed2c1fe6374ebfb6aa0c5f3f3b6c669e1ff2e13"
+      }
     ],
+    "observer": {
+      "path": "/usr/bin/strace",
+      "sha256": "28f957c227012de0b18d1bd7fff2d396cb693ea60ed8013be68de071e84b5001",
+      "version": "strace -- version 6.8"
+    },
     "source": {
       "sha256": "093bc85cac9e780ae50649977d9fcfc880704729628761b53fc6ff4ce535a929",
       "spec_path": "tests/e2e/fixtures/slice036-worker.c",

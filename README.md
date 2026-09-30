@@ -89,11 +89,25 @@ provisioned dependencies and configured the signing key, the core loop is:
 
 ```sh
 export RANEX_APPROVER_SIGNING_KEY=$HOME/.config/ranex/approver.key
+export RANEX_VERDICT_SIGNING_KEY=$HOME/.config/ranex/verdict.key
+export RANEX_HISTORY_CHECKPOINT=$HOME/.local/state/ranex/my-repository-history.json
+uv run --frozen ranex history bootstrap
 uv run --frozen ranex run \
   --claim tests-executed --producer worker -- uv run pytest -q
 uv run --frozen ranex gate evaluate HEAD --approver release-approver
 uv run --frozen ranex journal verify
 ```
+
+The committed keyring must register the separate `kernel-verdict-signer`
+public key. `history bootstrap` creates a new external checkpoint for empty
+history; existing observation logs require explicit `history migrate`.
+`history recover` repairs an interrupted append/publication under the trusted
+service key. These operations refuse to reset an existing checkpoint.
+Legacy signature-only verdicts remain readable as archives and cannot authorize
+current acceptance. `suite freeze --evidence PATH` names a custom evidence
+projection and its paired runtime log. `task stop-hook --loop-id ID` keeps a
+repair budget across source commits; the default uses the harness session ID,
+then repository/gate/claim scope.
 
 These commands use this repository’s command binding and identities
 (`release-approver` is the catalogued approver; possession is required before
@@ -259,7 +273,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none.
+**Active slice:** [SLICE-104 — audit remediation and qualification](docs/slices/SLICE-104-audit-remediation-and-qualification.md).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting

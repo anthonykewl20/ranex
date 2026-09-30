@@ -28,9 +28,10 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed25519
 
 from ranex.foundation import atomic_writer
-from ranex.foundation.dsse import PAYLOAD_TYPE_VERDICT_V2, sign_envelope
+from ranex.foundation.dsse import sign_envelope
 from ranex.foundation.merkle import leaf_hash, verify_inclusion
 from ranex.foundation.signing import _decode
+from ranex.foundation.verdict_signing import PAYLOAD_TYPE
 
 DEFAULT_WITNESS_URL = "https://rekor.sigstore.dev"
 WITNESS_URL_VARIABLE = "RANEX_WITNESS_URL"
@@ -224,7 +225,7 @@ def witness_verdict(
     """
 
     envelope = sign_envelope(
-        payload_type=PAYLOAD_TYPE_VERDICT_V2,
+        payload_type=PAYLOAD_TYPE,
         payload=verdict_bytes,
         private_key=private_key,
     )

@@ -162,9 +162,11 @@ def _scan_bytes(relative: str, raw: bytes) -> list[MarkerFinding]:
         # Located from the comment prefix, never from the snippet's start: a
         # string earlier on the line may quote the convention before the real
         # comment carries it.
-        payload = snippet.find("ranex:", offset)
+        payload = line.find(MARKER, offset)
         assert payload != -1
-        rule_id, level, _message = _classify(snippet[payload + len("ranex:") :])
+        rule_id, level, _message = _classify(
+            line[payload + len(MARKER) :].decode("utf-8", errors="replace")
+        )
         findings.append(
             MarkerFinding(
                 rule_id=rule_id,

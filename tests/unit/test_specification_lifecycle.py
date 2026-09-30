@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from ranex.foundation.specification_abc import payload_digest, sign_approval_payload
@@ -185,3 +186,50 @@ def test_no_preapproval_authority_is_exposed() -> None:
     assert all("capability" not in name.lower() for name in specification.__all__)
     assert all("producer" not in name.lower() for name in specification.__all__)
     assert draft(clarification()).state is LifecycleState.DRAFT
+
+
+def test_mapping_refuses_a_specification_substituted_after_validation() -> None:
+    request = clarification()
+    validated = advance(draft(request), request)
+    packet = copy.deepcopy(request.spec_packet)
+    packet["semantics"] = ["different scope than the validated specification"]
+    manifest = copy.deepcopy(request.manifest)
+    manifest["a_digest"] = payload_digest(packet)
+
+    result = advance(validated.session, replace(request, target=LifecycleState.TESTS_MAPPED, spec_packet=packet, manifest=manifest))
+
+    assert not result.accepted
+    assert result.code is RefusalCode.CHAIN_MISMATCH
+    assert result.session == validated.session
+
+
+def test_approval_refuses_a_new_manifest_even_with_a_valid_new_signature() -> None:
+    request = clarification()
+    validated = advance(draft(request), request)
+    mapped = advance(validated.session, replace(request, target=LifecycleState.TESTS_MAPPED))
+    restored = LifecycleSession.from_record(mapped.session.as_record())
+    manifest = copy.deepcopy(request.manifest)
+    manifest["artifacts"]["invocation"]["argv"] = ["pytest", "--collect-only"]
+    approval = copy.deepcopy(request.approval_envelope)
+    approval["payload"]["b_digest"] = payload_digest(manifest)
+    approval["signature"] = sign_approval_payload(approval["payload"], "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=")
+
+    result = advance(restored, replace(request, target=LifecycleState.APPROVAL_PENDING, manifest=manifest, approval_envelope=approval))
+
+    assert not result.accepted
+    assert result.code is RefusalCode.CHAIN_MISMATCH
+    assert result.session == restored
+    assert advance(restored, replace(request, target=LifecycleState.APPROVAL_PENDING)).accepted
+
+
+def test_reconstructed_cached_retry_cannot_bypass_retained_artifact_bindings() -> None:
+    request = clarification()
+    result = advance(draft(request), request)
+    record = result.session.as_record()
+    record["semantic_digest"] = "sha256:" + "f" * 64
+    restored = LifecycleSession.from_record(record)
+
+    repeated = advance(restored, request)
+
+    assert not repeated.accepted
+    assert repeated.code is RefusalCode.CHAIN_MISMATCH

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -246,3 +247,58 @@ def test_a_declared_selftest_red_is_not_mistaken_for_a_finding() -> None:
     )
     unmarked = [case for case in (intentional, genuine) if case.get("expected_outcome") is None]
     assert unmarked == [genuine], "an unmarked FALSE-PASS must be exactly the genuine one"
+
+
+@pytest.mark.parametrize("repeats", [0, -1, False])
+def test_calibration_rejects_nonpositive_repeat_counts_before_observation(tmp_path, repeats) -> None:
+    module = _calibration()
+    with pytest.raises(ValueError, match="positive integer"):
+        module.Calibration(out=tmp_path / "receipt", repeats=repeats)
+    assert not (tmp_path / "receipt").exists()
+
+
+def test_empty_calibration_inventory_cannot_claim_verified(tmp_path) -> None:
+    module = _calibration()
+    runner = module.Calibration(out=tmp_path / "receipt")
+    assert runner.worst is module.Status.UNVERIFIED
+    assert runner.exit_code() != 0
+    with pytest.raises(ValueError, match="no controls"):
+        runner.save()
+    assert not (tmp_path / "receipt").exists()
+
+
+
+def test_real_calibration_receipt_roundtrip_bounds_recall_at_each_control(tmp_path) -> None:
+    module = _calibration()
+    journal = tmp_path / "journal.sqlite3"
+    with sqlite3.connect(journal) as connection:
+        connection.execute("CREATE TABLE evaluations(seq INTEGER)")
+        connection.executemany("INSERT INTO evaluations VALUES(?)", [(1,), (2,)])
+    first = module.Calibration(out=tmp_path / "history" / "first", journal=journal)
+    control = module.Control("first", "paired", lambda: _observation(module, True),
+                             lambda: _observation(module, False))
+    first.run(control)
+    with sqlite3.connect(journal) as connection:
+        connection.executemany("INSERT INTO evaluations VALUES(?)", [(3,), (4,)])
+    first.run(module.Control("later", "paired", lambda: _observation(module, True),
+                             lambda: _observation(module, False)))
+    # Saving another control advances the receipt's overall head, not the first proof.
+    saved = json.loads((first.out / "calibration.json").read_text())
+    assert saved["journal_head"] == 4
+    later = module.Calibration(out=tmp_path / "later", journal=journal,
+                               history=tmp_path / "history")
+    assert later.recall_window("first")["suspect_from"] == 2
+    assert later.recall_window("first")["suspect_positions"] == [3, 4]
+    assert later.recall_window("later")["suspect_positions"] == []
+
+
+def test_legacy_receipt_top_level_head_remains_readable(tmp_path) -> None:
+    module = _calibration()
+    history = tmp_path / "history"
+    history.mkdir()
+    (history / "calibration.json").write_text(json.dumps({
+        "schema": module.SCHEMA, "journal_head": 2,
+        "cases": [{"control": "paired", "status": "VERIFIED"}],
+    }))
+    runner = module.Calibration(out=tmp_path / "later", history=history)
+    assert runner._last_verified_head("paired") == 2

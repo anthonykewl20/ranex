@@ -29,12 +29,13 @@ import time
 import tomllib
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from contextlib import ExitStack
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from importlib import import_module
 from pathlib import Path
 from typing import Any, TypeVar, cast, overload
 
 from ranex.bootstrap.composition import (
+    GateEvaluator,
     build_gate_evaluator,
     catalog_digest_for,
     claim_definition_for,
@@ -78,9 +79,9 @@ from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
 from ranex.foundation.confinement_result import validate_confinement_result
 from ranex.foundation.scan_results import (
+    REVIEW_REPORTER,
     SCAN_REPORTERS,
     ScanManifest,
-    claim_expectations,
     freeze_scan_manifest,
     load_scan_manifest_bytes,
     observed_findings,
@@ -102,6 +103,17 @@ from ranex.foundation.suite_results import (
     parse_results_artifact,
     read_results_artifact,
 )
+from ranex.governed_execution.adapters.persistence.history import (
+    HistoryLock,
+    bootstrap_history,
+    checkpoint_path,
+    history_lock,
+    log_id,
+    migrate_history,
+    reconcile_anchored,
+    record_anchored,
+    recover_history,
+)
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.adapters.persistence.sqlite.observations import (
     OBSERVATION_CHAIN_ERROR,
@@ -110,9 +122,7 @@ from ranex.governed_execution.adapters.persistence.sqlite.observations import (
     reconcile,
 )
 from ranex.governed_execution.api import (
-    Claim,
     Evidence,
-    Gate,
     Verdict,
 )
 from ranex.governed_execution.domain.admission import (
@@ -141,7 +151,8 @@ from ranex.governed_execution.repair_envelope import (
     envelope_from_projection,
     envelope_packet_bytes,
 )
-from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
+from ranex.governed_execution.verdict_presentation import render_verdict_stdout
+from ranex.governed_execution.verdict_projection import project_verdict
 from ranex.governed_execution.verdict_publication import publish_verdict
 from ranex.governed_execution.verdict_reader import ReadState, read_verdict_unbound
 from ranex.governed_execution.witness import (
@@ -373,7 +384,8 @@ def admitted_evidence(
     caller asking "did this record verify" wants.
     """
 
-    return admit_records(path, load_keyring(keyring_path), repository_root)
+    return admit_records(path, load_keyring(keyring_path), repository_root,
+                         allow_unanchored_history=True)
 
 
 
@@ -414,6 +426,10 @@ def admit_records(
     *,
     gate_id: str | None = None,
     catalog_digest: str | None = None,
+    history_public_key: str | None = None,
+    history_checkpoint_path: Path | None = None,
+    allow_unanchored_history: bool = False,
+    held_history_lock: HistoryLock | None = None,
 ) -> Admission:
     """The same, from a keyring already in hand rather than a path to one.
 
@@ -428,8 +444,20 @@ def admit_records(
     narrower question than a gate is.
     """
 
-    records, _removed = load_reconciled_records(path)
-    admission = admit(records, keyring)
+    if allow_unanchored_history:
+        records, removed = load_reconciled_records(path)
+        admission = replace(admit(records, keyring), removed_observations=tuple(removed))
+    else:
+        if history_public_key is None or repository_root is None:
+            raise ValueError("E-OBSERVATION-ANCHOR: trusted service key and repository root are required")
+        result = reconcile_anchored(path, history_checkpoint_path, history_public_key, repository_root,
+                                    held_lock=held_history_lock)
+        records = result.records
+        admission = replace(
+            admit(records, keyring), history_verified=True,
+            observation_checkpoint=(log_id(path), result.head, result.position),
+            removed_observations=result.removed,
+        )
     if repository_root is not None:
         admission = refuse_executables_inside(admission, len(records), repository_root)
     if gate_id is None or catalog_digest is None:
@@ -457,21 +485,20 @@ def refuse_foreign_policy_context(
 
     Read from the raw records rather than from admitted `Evidence`, because the
     kernel dataclass carries no policy fields and adding them would move the
-    kernel for a check that does not need it. `admit` produces exactly one
-    outcome per record, so the admitted evidence lines up in order with the
-    record positions no rejection claimed — the same alignment
-    `refuse_executables_inside` relies on.
+    kernel for a check that does not need it. Admission carries each evidence
+    item's raw record index through every filter. Qualification freshness may
+    reorder evidence, so its tuple position cannot identify its signed context.
 
     Refused rather than dropped. The record exists and is signed; reporting it
     as absence would file "work done under other rules" as work never done.
     """
 
-    already_refused = {rejection.index for rejection in admission.rejections}
-    positions = [i for i in range(len(records)) if i not in already_refused]
-
+    if any(index >= len(records) for index in admission.evidence_indices):
+        raise ValueError("admitted record index lies outside the signed records")
     kept: list[Evidence] = []
+    kept_indices: list[int] = []
     added: list[Rejection] = []
-    for index, item in zip(positions, admission.evidence, strict=True):
+    for index, item in zip(admission.evidence_indices, admission.evidence, strict=True):
         record = records[index]
         record_gate = record.get("gate_id") if isinstance(record, Mapping) else None
         record_catalog = record.get("catalog_digest") if isinstance(record, Mapping) else None
@@ -510,6 +537,7 @@ def refuse_foreign_policy_context(
             )
         else:
             kept.append(item)
+            kept_indices.append(index)
             continue
         added.append(
             Rejection(
@@ -521,8 +549,9 @@ def refuse_foreign_policy_context(
             )
         )
 
-    return Admission(
-        evidence=tuple(kept),
+    return replace(
+        admission, evidence=tuple(kept),
+        evidence_indices=tuple(kept_indices),
         rejections=tuple(
             sorted(admission.rejections + tuple(added), key=lambda r: r.index)
         ),
@@ -547,17 +576,17 @@ def refuse_executables_inside(
     Refused rather than quietly dropped. The record exists and is signed, so
     reporting it as absence would file an attack under work never done.
 
-    `admit` produces exactly one outcome per record, so the admitted evidence
-    lines up in order with the record positions no rejection claimed. That is
-    what lets a rejection raised here still name the record a human must open.
+    Each admitted item carries its raw record index, so a rejection names
+    the record a human must open even when qualification freshness reordered
+    evidence or an earlier filter rejected another item.
     """
 
-    already_refused = {rejection.index for rejection in admission.rejections}
-    positions = [i for i in range(record_count) if i not in already_refused]
-
+    if any(index >= record_count for index in admission.evidence_indices):
+        raise ValueError("admitted record index lies outside the input records")
     kept: list[Evidence] = []
+    kept_indices: list[int] = []
     added: list[Rejection] = []
-    for index, item in zip(positions, admission.evidence, strict=True):
+    for index, item in zip(admission.evidence_indices, admission.evidence, strict=True):
         executable = Path(item.executable_path)
         if not executable.is_absolute():
             detail = (
@@ -572,6 +601,7 @@ def refuse_executables_inside(
             )
         else:
             kept.append(item)
+            kept_indices.append(index)
             continue
         added.append(
             Rejection(
@@ -583,8 +613,9 @@ def refuse_executables_inside(
             )
         )
 
-    return Admission(
-        evidence=tuple(kept),
+    return replace(
+        admission, evidence=tuple(kept),
+        evidence_indices=tuple(kept_indices),
         rejections=tuple(
             sorted(admission.rejections + tuple(added), key=lambda r: r.index)
         ),
@@ -948,15 +979,11 @@ def require_catalogued_approver(
 def refuse_unwritable_evidence(path: Path) -> None:
     """Refuse now if the record could not be written afterwards.
 
-    Probes without creating anything: an existing file must be writable, and an
-    absent one needs a directory that accepts it, since `record_evidence` creates
-    the missing parents itself.
+    Publication replaces the projection atomically, including a read-only
+    previous projection. Its directory must accept the replacement; write
+    permission on the old file is neither necessary nor sufficient.
     """
 
-    if path.exists():
-        if not os.access(path, os.W_OK):
-            raise ValueError(f"evidence file at {path} cannot be written to")
-        return
     directory = nearest_existing_directory(path.parent)
     if not os.access(directory, os.W_OK | os.X_OK):
         raise ValueError(
@@ -964,35 +991,16 @@ def refuse_unwritable_evidence(path: Path) -> None:
         )
 
 
-def record_evidence(path: Path, record: dict[str, object]) -> None:
-    """Write one record, replacing any earlier one for the same claim+producer.
-
-    Replacing rather than appending keeps one producer's latest observation of a
-    claim authoritative. Records from other claims or other producers are left
-    untouched — this file is shared. The same signed record is also appended to
-    the hash-chained observation log (RISK-11 / ADR-068) so a later delete from
-    this projection cannot vanish without a trace.
-    """
-
-    kept: list[dict[str, object]] = []
-    if path.exists():
-        existing = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(existing, list):
-            raise ValueError("evidence file must contain a JSON array")
-        kept = [
-            item
-            for item in existing
-            if not (
-                isinstance(item, dict)
-                and item.get("claim_id") == record["claim_id"]
-                and item.get("producer_id") == record["producer_id"]
-            )
-        ]
-
-    kept.append(record)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(kept, indent=2) + "\n", encoding="utf-8")
-    ObservationLog(observations_path_for(path)).append_record(dict(record))
+def record_evidence(
+    path: Path, record: dict[str, object], *, repository_root: Path | None = None,
+    history_public_key: str | None = None, history_private_key: str | None = None,
+    history_checkpoint_path: Path | None = None,
+) -> None:
+    """Durably certify one observation before updating its current projection."""
+    if repository_root is None or history_public_key is None or history_private_key is None:
+        raise ValueError("E-OBSERVATION-ANCHOR: recording requires the trusted history service key")
+    record_anchored(path, record, history_checkpoint_path, history_private_key,
+                    history_public_key, repository_root)
 
 
 def _command_repository(args: argparse.Namespace) -> Path:
@@ -1018,6 +1026,26 @@ def _command_repository(args: argparse.Namespace) -> Path:
     if root != governed_root:
         raise ValueError(f"second-repository targets are refused: {args.repository!r}")
     return root
+
+
+def cmd_history_setup(args: argparse.Namespace) -> int:
+    """Explicit service-key ceremony, never a judgment or synthetic verdict."""
+    try:
+        root = _command_repository(args)
+        evidence = resolve_within_repository(root, args.evidence)
+        keyring_path = resolve_within_repository(root, args.producers)
+        source = committed_trust_root(root, args.ref, args.producers, keyring_path, "producer keyring")
+        trusted = load_trust_keyring_text(source.decode("utf-8"), keyring_path)
+        private = private_signing_key(root, variable=VERDICT_SIGNING_KEY_VARIABLE)
+        checkpoint = checkpoint_path(getattr(args, "history_checkpoint", None), root)
+        operation = {"bootstrap": bootstrap_history, "migrate": migrate_history,
+                     "recover": recover_history}[args.action]
+        operation(evidence, checkpoint, private, trusted.verdict_signer_public_key, root)
+    except (ValueError, OSError, sqlite3.Error) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+    print(f"HISTORY ESTABLISHED  {checkpoint}")
+    return EXIT_PASS
 
 
 def cmd_gate_evaluate(args: argparse.Namespace) -> int:
@@ -1107,6 +1135,10 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             root,
             gate_id=args.gate,
             catalog_digest=catalog_digest_for(catalog_source),
+            history_public_key=load_trust_keyring_text(
+                keyring_source.decode("utf-8"), keyring_path
+            ).verdict_signer_public_key,
+            history_checkpoint_path=getattr(args, "history_checkpoint", None),
         )
         evaluator = build_gate_evaluator(
             catalog_source,
@@ -1120,19 +1152,17 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             subject_digest=subject,
             approver_id=args.approver,
         )
-        _records, removed_observations = load_reconciled_records(evidence_path)
-        del _records
         projected = project_verdict(
             result, admission,
             required_claims=tuple(claim.claim_id for claim in definition.required_claims),
             journal_head=journal_head,
-            removed_observations=removed_observations,
+            removed_observations=admission.removed_observations,
         )
         verdict_key_path = os.environ.get(VERDICT_SIGNING_KEY_VARIABLE)
         verdict_dir_value = os.environ.get(VERDICT_DIR_VARIABLE)
-        if (verdict_key_path is None) != (verdict_dir_value is None):
+        if verdict_dir_value is not None and verdict_key_path is None:
             raise ValueError(
-                f"{VERDICT_SIGNING_KEY_VARIABLE} and {VERDICT_DIR_VARIABLE} must be configured together"
+                f"{VERDICT_DIR_VARIABLE} requires {VERDICT_SIGNING_KEY_VARIABLE}"
             )
         witness = bool(getattr(args, "witness", False))
         if witness and (verdict_key_path is None or verdict_dir_value is None):
@@ -1218,108 +1248,8 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
-    if result.verdict is Verdict.PASS:
-        print(f"PASS  gate={result.gate_id}  subject={result.subject_digest}")
-    else:
-        print(f"FAIL  gate={result.gate_id}  rule={result.failing_rule}")
-
-    # Reported whatever the verdict. A forgery the gate happened to pass without
-    # is still a forgery, and returning early on PASS made a probe that leaves no
-    # trace — which is a probe worth repeating.
-    for rejection in admission.rejections:
-        print(
-            f"      REFUSED record {rejection.index} "
-            f"[{rejection.reason}] {rejection.detail}"
-        )
-
-    if result.verdict is Verdict.PASS:
-        return EXIT_PASS
-
-    # Three different events arrive as `missing_claims`, and the operator must
-    # not have to guess which one happened: a record was refused (an attack), a
-    # record describes another tree (a replay), or the work was never done. The
-    # kernel names them in one sentence because it judges claims, not causes;
-    # partitioning per claim here is what keeps a forgery from being printed
-    # under the phrasing reserved for honest absence.
-
-    # A rejection carries the claim it names, and `claim_id` is read off the
-    # record with `_text_or_none` — so changing that one field to a non-string
-    # produces a rejection naming no claim at all. None intersects no required
-    # claim, so the claim used to fall through into `absent` and print under the
-    # kernel's phrasing for honest absence: the attacker chose the wording of
-    # the report by choosing which field to tamper with. Counted separately, and
-    # the absence sentence is withheld while any of them exist.
-    # A claim some admitted record names is not work never done, whatever else
-    # is wrong with that record: it may describe another tree, another command,
-    # or a run that failed. Each of those is an event an operator must be able
-    # to tell from silence, and the kernel already names which one it was — so
-    # the absence sentence is spent only on claims nothing was recorded for, and
-    # the kernel's diagnosis is printed for the rest. A digest mismatch reported
-    # as absence is the reporting defect SLICE-002 was reopened to fix, one
-    # field further along.
-    unattributable, refused, absent, observed = presentation_partition(projected, admission)
-    missing = set(result.missing_claims)
-
-    # The absence sentence this block prints, verbatim, when it prints one.
-    # The kernel's own diagnosis follows and restates that same absence as its
-    # final clause; a sentence printed twice reads as two separate problems.
-    absence_sentence: str | None = None
-    if refused:
-        print(
-            f"      {len(admission.rejections)} record(s) were refused above; "
-            f"no verifying evidence remains for: {', '.join(refused)}"
-        )
-    if absent and unattributable:
-        print(
-            f"      {unattributable} record(s) above were refused without a usable "
-            "claim_id, so these required claims cannot be called work never "
-            f"done: {', '.join(absent)}"
-        )
-    elif absent:
-        absence_sentence = f"no evidence for required claim: {', '.join(absent)}"
-        print(f"      {absence_sentence}")
-    # RISK-11: name restored deletions before the kernel's own diagnosis so an
-    # operator cannot read a vanished FAIL as work never done.
-    for cause in projected["causes"]:
-        if cause.get("cause") != "removed-observation":
-            continue
-        detail = cause.get("detail")
-        suffix = f"  {detail}" if isinstance(detail, str) and detail else ""
-        print(f"      removed-observation: {cause['claim_id']}{suffix}")
-    if result.reason and (observed or not missing):
-        # The kernel's own diagnosis, kept whenever it says something the
-        # partition cannot: which of the four ways a record failed to satisfy
-        # the claim it names, a contradiction between two records, or a
-        # self-approval refusal that names no claim at all. Withheld when every
-        # missing claim is genuinely absent, because then it would only repeat
-        # the sentence printed above — possibly for claims that were refused.
-        #
-        # That withholding covered the all-absent case only. In the mixed case
-        # — one claim stale, another genuinely absent — the reason carries both
-        # clauses and the absence one was already printed above, so it appeared
-        # twice in a single verdict. The genuine absence clause is always the
-        # reason's FINAL clause (_diagnosis appends it last), so the repeat is
-        # removed by anchored suffix comparison — never by splitting the
-        # reason, whose "; " separator a claim ID may legally contain. When
-        # any missing claim ID carries "; ", the string is ambiguous and dedup
-        # steps aside entirely: the full reason prints verbatim, duplicate and
-        # all — fail toward repetition, never toward loss. The reason string
-        # itself is unchanged — it is the recorded diagnosis and what the
-        # journal and verdict record carry. This is presentation only.
-        reason = result.reason
-        if absence_sentence is not None and not any(
-            "; " in claim_id for claim_id in missing
-        ):
-            suffix = f"; {absence_sentence}"
-            if reason == absence_sentence:
-                reason = ""
-            elif reason.endswith(suffix):
-                reason = reason[: -len(suffix)]
-        if reason:
-            print(f"      {reason}")
-
-    print(f"      subject={result.subject_digest}")
-    return EXIT_FAIL
+    print(render_verdict_stdout(result, admission, projected), end="")
+    return EXIT_PASS if result.verdict is Verdict.PASS else EXIT_FAIL
 
 
 def _journal_first_broken_row(journal_path: Path) -> tuple[int, int, int] | None:
@@ -1372,7 +1302,8 @@ def _journal_first_broken_row(journal_path: Path) -> tuple[int, int, int] | None
 
 
 def _verified_verdict_journal_head(
-    root: Path, verdict_path: str, args: argparse.Namespace
+    root: Path, verdict_path: str, args: argparse.Namespace, *,
+    observation_path: Path | None = None,
 ) -> str:
     """The anchor a signed verdict fixed, or a refusal (ADR-057).
 
@@ -1405,7 +1336,13 @@ def _verified_verdict_journal_head(
         raise ValueError(
             f"refusing anchor: verdict at {path} did not verify ({result.state})"
         )
-    head = result.journal_head
+    if observation_path is not None:
+        checkpoint = result.observation_checkpoint
+        if checkpoint is None or checkpoint["log_id"] != str(observation_path.absolute()):
+            raise ValueError("refusing anchor: verdict certifies no matching observation history")
+        head = checkpoint["head"]
+    else:
+        head = result.journal_head
     if head is None:
         # Two ways to get here and one consequence: a v1 record predating the
         # anchor, or a v2 record signed with no journal configured. Neither
@@ -1465,7 +1402,8 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
             # journal can also edit an unverified file next to it, and reading
             # the head out of that would anchor the chain to itself.
             expected_head = _verified_verdict_journal_head(
-                root, against_verdict, args
+                root, against_verdict, args,
+                observation_path=journal_path if observations_mode else None,
             )
             anchor_source = "signed-verdict"
         witnessed = bool(getattr(args, "witnessed", False))
@@ -1720,6 +1658,34 @@ def cmd_task_dispatch(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def _task_gate_evaluator(
+    repository_root: Path,
+    commit: str,
+    catalog_source: bytes,
+    gate_id: str,
+    suite_manifest: str = DEFAULT_SUITE_MANIFEST,
+) -> GateEvaluator:
+    """Build the same evaluator from immutable task policy and manifest bytes."""
+
+    definition = load_gate_text(catalog_source.decode("utf-8"), gate_id)
+    suite_source = None
+    scan_sources: dict[str, bytes] = {}
+    for claim in definition.required_claims:
+        if claim.results_artifact is None:
+            continue
+        if claim.results_manifest is None:
+            suite_source = _task_committed_blob(
+                repository_root, commit, suite_manifest, "suite manifest"
+            )
+        else:
+            scan_sources[claim.results_manifest] = _task_committed_blob(
+                repository_root, commit, claim.results_manifest, "scan manifest"
+            )
+    return build_gate_evaluator(
+        catalog_source, suite_manifest=suite_source, scan_manifests=scan_sources
+    )
+
+
 def cmd_task_judge(args: argparse.Namespace) -> int:
     """Materialise a candidate from the dispatched worktree without approving it."""
 
@@ -1785,60 +1751,28 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
             args.evidence if args.evidence is not None else DEFAULT_EVIDENCE,
         )
         keyring = load_keyring_text(keyring_source.decode("utf-8"), args.producers)
-        admission = admit_records(evidence_path, keyring, worktree)
-        definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
-        expectations: dict[str, tuple[str, tuple[str, ...], dict[str, str]]] = {}
-        for claim in definition.required_claims:
-            if claim.results_artifact is None:
-                continue
-            name = claim.results_manifest or args.suite_manifest
-            description = "scan manifest" if claim.results_manifest else "suite manifest"
-            expectations[claim.claim_id] = claim_expectations(
-                _task_committed_blob(worktree, base_commit, name, description),
-                claim.results_reporter,
-            )
-        for claim in definition.required_claims:
-            if claim.results_artifact is not None and claim.results_reporter == "pytest-junit":
-                # ADR-056. `task judge` builds its own Gate rather than going
-                # through the composition root, so the refusal has to be here
-                # too — a second construction site is a second way for an
-                # XPASS-blind claim to reach a verdict.
-                reject_pytest_xfail_blindness(
-                    definition.gate_id, claim.claim_id, list(claim.command)
-                )
-        gate = Gate(
-            gate_id=definition.gate_id,
-            rule_id=definition.rule_id,
-            required_claims=tuple(
-                Claim(
-                    claim_id=claim.claim_id,
-                    command_digest=claim.command_digest,
-                    results_required=claim.results_artifact is not None,
-                    manifest_digest=expectations[claim.claim_id][0]
-                    if claim.claim_id in expectations
-                    else None,
-                    expected_ids=expectations[claim.claim_id][1]
-                    if claim.claim_id in expectations
-                    else None,
-                    expected_skips=expectations[claim.claim_id][2]
-                    if claim.claim_id in expectations
-                    else None,
-                )
-                for claim in definition.required_claims
-            ),
-            blocking=definition.blocking,
+        admission = admit_records(
+            evidence_path, keyring, worktree,
+            gate_id=args.gate, catalog_digest=catalog_digest_for(catalog_source),
+            history_public_key=load_trust_keyring_text(
+                keyring_source.decode("utf-8"), args.producers,
+            ).verdict_signer_public_key,
         )
         subject = subject_digest_for(worktree, commit)
-        missing = tuple(
-            sorted(
-                claim.claim_id
-                for claim in gate.required_claims
-                if not any(
-                    item.satisfies(claim, subject) for item in admission.evidence
-                )
-            )
+        evaluator = _task_gate_evaluator(
+            worktree, base_commit, catalog_source, args.gate, args.suite_manifest
         )
-        journal.append(TaskCandidate(args.task_id, gate.gate_id, subject, missing))
+        pending_approver = "task-judge"
+        while pending_approver in keyring:
+            pending_approver += ":"
+        result = evaluator.evaluate(
+            args.gate,
+            admission.evidence,
+            subject_digest=subject,
+            approver_id=pending_approver,
+        )
+        missing = result.missing_claims
+        journal.append(TaskCandidate(args.task_id, args.gate, subject, missing))
     except (
         KeyringError,
         SubjectError,
@@ -1853,7 +1787,7 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_FAIL
 
-    print(f"CANDIDATE  task={args.task_id}  gate={gate.gate_id}  subject={subject}")
+    print(f"CANDIDATE  task={args.task_id}  gate={args.gate}  subject={subject}")
     return EXIT_PASS if not missing else EXIT_FAIL
 
 
@@ -2168,6 +2102,7 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
     intent: TaskMergeIntent | None = None
     current_check = "policy_approval"
     cas_succeeded = False
+    history_transaction = ExitStack()
     try:
         repository_root = governed_repository_root()
         journal_path = (
@@ -2249,6 +2184,7 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
                 return _merge_refuse(journal, intent, "policy_approval", reason)
 
         if args.evidence is not None:
+            evidence_root = repository_root
             evidence_path = resolve_within_repository(repository_root, args.evidence)
         else:
             dispatch = _latest_task_dispatch(entries, args.task_id)
@@ -2258,7 +2194,21 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
                 else repository_root
             )
             evidence_path = resolve_within_repository(evidence_root, DEFAULT_EVIDENCE)
-        admission = admit_records(evidence_path, keyring, repository_root)
+        gate_id = candidate_record.get("gate_id")
+        if not isinstance(gate_id, str) or not gate_id:
+            return _merge_refuse(journal, intent, "policy_approval", "candidate gate missing")
+        held_history_lock = history_transaction.enter_context(
+            history_lock(checkpoint_path(getattr(args, "history_checkpoint", None), evidence_root))
+        )
+        admission = admit_records(
+            evidence_path, keyring, evidence_root,
+            gate_id=gate_id, catalog_digest=catalog_digest_for(catalog_source),
+            history_checkpoint_path=held_history_lock.path,
+            held_history_lock=held_history_lock,
+            history_public_key=load_trust_keyring_text(
+                keyring_source.decode("utf-8"), "producer keyring",
+            ).verdict_signer_public_key,
+        )
         if any(item.producer_id == approver_id for item in admission.evidence):
             return _merge_refuse(journal, intent, "policy_approval", "sad-path-14 self-approval")
         candidate_tree = git(repository_root, "rev-parse", f"{candidate}^{{tree}}")
@@ -2298,9 +2248,13 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         actual_subject = subject_digest_for(repository_root, candidate)
         if actual_subject != subject:
             return _merge_refuse(journal, intent, "digest_evidence", "sad-path-5 subject-digest-mismatch")
-        if candidate_record.get("missing_claims") or not any(
-            item.subject_digest == subject for item in admission.evidence
-        ):
+        result = _task_gate_evaluator(
+            repository_root, candidate, catalog_source, gate_id
+        ).evaluate(
+            gate_id, admission.evidence,
+            subject_digest=actual_subject, approver_id=approver_id,
+        )
+        if candidate_record.get("missing_claims") or result.verdict != Verdict.PASS:
             return _merge_refuse(journal, intent, "digest_evidence", "sad-path-5 satisfying-evidence-missing")
         raw = load_records(evidence_path)
         rejected = {rejection.index for rejection in admission.rejections}
@@ -2358,6 +2312,7 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         if updated.returncode != 0:
             return _merge_refuse(journal, intent, "cas", "sad-path-1 ref-moved")
         cas_succeeded = True
+        history_transaction.close()
         journal.append(
             TaskMergeCheck(
                 args.task_id, "cas", "passed", "expected-old ref update succeeded"
@@ -2441,6 +2396,8 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
             )
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_FAIL
+    finally:
+        history_transaction.close()
 
     print(f"PUBLISHED  task={args.task_id}  candidate={candidate}  target={args.target_ref}")
     return EXIT_PASS
@@ -3796,7 +3753,9 @@ def _host_qualification_resolution(root: Path, command: Sequence[str]) -> Resolu
     return Resolution(executable=executable, route=walked_route(executable))
 
 
-def _scan_freeze_reader(artifact_relative: Path) -> Callable[[Path], object]:
+def _scan_freeze_reader(
+    artifact_relative: Path, *, reporter: str = "sarif-2.1.0"
+) -> Callable[[Path], object]:
     """Read a SARIF artifact and its findings inside the materialisation.
 
     The freeze needs the finding IDs a real run produced, and an ID is bound to
@@ -3809,13 +3768,16 @@ def _scan_freeze_reader(artifact_relative: Path) -> Callable[[Path], object]:
 
     def read(path: Path) -> object:
         raw = read_results_artifact(path)
-        return observed_findings(raw, path.parents[depth])
+        return observed_findings(
+            raw, path.parents[depth], require_review=reporter == REVIEW_REPORTER
+        )
 
     return read
 
 
 def _scan_artifact_reader(
-    manifest: Mapping[str, object], artifact_relative: Path
+    manifest: Mapping[str, object], artifact_relative: Path,
+    *, reporter: str = "sarif-2.1.0"
 ) -> Callable[[Path], object]:
     """Reduce a SARIF artifact where it was produced: inside the materialisation.
 
@@ -3830,7 +3792,10 @@ def _scan_artifact_reader(
     depth = len(artifact_relative.parts) - 1
 
     def read(path: Path) -> object:
-        return parse_scan_artifact(path, manifest, subject_root=path.parents[depth])
+        return parse_scan_artifact(
+            path, manifest, subject_root=path.parents[depth],
+            require_review=reporter == REVIEW_REPORTER,
+        )
 
     return read
 
@@ -4068,6 +4033,16 @@ def cmd_run(args: argparse.Namespace) -> int:
         # having done so.
         load_records(evidence_path)
         refuse_unwritable_evidence(evidence_path)
+        history_public_key = history_private_key = None
+        if strict_local_sources is None:
+            history_public_key = load_trust_keyring_text(
+                keyring_source.decode("utf-8"), keyring_path
+            ).verdict_signer_public_key
+            history_private_key = private_signing_key(root, variable=VERDICT_SIGNING_KEY_VARIABLE)
+            if public_key_for(history_private_key) != history_public_key:
+                raise ValueError("E-OBSERVATION-ANCHOR: history key does not match trusted verdict signer")
+            reconcile_anchored(evidence_path, getattr(args, "history_checkpoint", None),
+                               history_public_key, root)
 
         # An operator courtesy since ADR-005, not the guarantee it used to be:
         # the observation is built from committed bytes, so an uncommitted edit
@@ -4081,13 +4056,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # and the exemption then lands on whatever that link chose (D16).
         dirty = uncommitted_paths(
             root,
-            ignoring=(
-                named_within_repository(root, args.evidence),
-                named_within_repository(root, DEFAULT_JOURNAL),
-                named_within_repository(
-                    root, str(observations_path_for(Path(args.evidence)))
-                ),
-            ),
+            ignoring=_runtime_output_paths(root, args.evidence),
         )
         if dirty:
             raise ValueError(
@@ -4118,7 +4087,9 @@ def cmd_run(args: argparse.Namespace) -> int:
         elif results_artifact is not None and results_reporter in SCAN_REPORTERS:
             if scan_manifest is None or artifact_relative is None:
                 raise ValueError("scan claim has no loaded manifest")
-            artifact_reader = _scan_artifact_reader(scan_manifest, artifact_relative)
+            artifact_reader = _scan_artifact_reader(
+                scan_manifest, artifact_relative, reporter=results_reporter
+            )
         elif results_artifact is not None:
             if suite_manifest is None:
                 raise ValueError("suite-results claim has no loaded manifest")
@@ -4214,7 +4185,11 @@ def cmd_run(args: argparse.Namespace) -> int:
         }
         signed_record = {**content, "signature": sign_evidence(content, private_key)}
         if strict_local_sources is None:
-            record_evidence(evidence_path, signed_record)
+            record_evidence(
+                evidence_path, signed_record, repository_root=root,
+                history_public_key=history_public_key, history_private_key=history_private_key,
+                history_checkpoint_path=getattr(args, "history_checkpoint", None),
+            )
         else:
             # The v2 approved-batch caller owns durable child evidence.  Return
             # the exact legacy evidence bytes over the controller channel so a
@@ -4250,6 +4225,16 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
     print(f"          subject={subject}")
     return int(completed.returncode)
+
+
+def _runtime_output_paths(root: Path, evidence: str) -> tuple[Path, ...]:
+    """Name bookkeeping outputs; tracked paths still refuse in the Git check."""
+
+    return (
+        named_within_repository(root, evidence),
+        named_within_repository(root, DEFAULT_JOURNAL),
+        named_within_repository(root, str(observations_path_for(Path(evidence)))),
+    )
 
 
 def cmd_suite_freeze(args: argparse.Namespace) -> int:
@@ -4320,7 +4305,10 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
         )
         dirty = uncommitted_paths(
             root,
-            ignoring=(named_within_repository(root, args.output),),
+            ignoring=(
+                named_within_repository(root, args.output),
+                *_runtime_output_paths(root, args.evidence),
+            ),
         )
         if dirty:
             raise ValueError(
@@ -4340,7 +4328,7 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             artifact_reader=(
                 _antislop_freeze_reader(artifact_relative)
                 if antislop_reporter
-                else _scan_freeze_reader(artifact_relative)
+                else _scan_freeze_reader(artifact_relative, reporter=args.results_reporter)
                 if scan_reporter
                 else read_results_artifact
             ),
@@ -4601,6 +4589,8 @@ def cmd_github_check_publish(args: argparse.Namespace) -> int:
             catalog_digest=catalog_digest,
             approver_id=args.approver,
             approvers=trust_keyring.approvers,
+            repository_root=root,
+            history_checkpoint_path=getattr(args, "history_checkpoint", None),
         )
         moment = time.time()
         decision, _ = publish_check(
@@ -4693,6 +4683,7 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
                 Path(os.environ[VERDICT_SIGNING_KEY_VARIABLE]),
                 resolve_within_repository(root, args.state_dir),
                 approver_key=Path(os.environ[APPROVER_SIGNING_KEY_VARIABLE]),
+                history_checkpoint_path=getattr(args, "history_checkpoint", None),
             )
         config = ReceiverConfig(
             repo_root=root,
@@ -4710,6 +4701,7 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
             client=client,
             state_dir=resolve_within_repository(root, args.state_dir),
             evaluator=evaluator,
+            history_checkpoint_path=getattr(args, "history_checkpoint", None),
         )
     except (ClientRefusal, ValueError, TypeError, OSError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
@@ -5119,6 +5111,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"ranex {display_version}")
     sub = parser.add_subparsers(dest="group", required=True)
 
+    history = sub.add_parser("history", help="establish or recover externally retained signed history").add_subparsers(
+        dest="action", required=True
+    )
+    for action in ("bootstrap", "migrate", "recover"):
+        setup = history.add_parser(action, help="explicit trusted service-key history ceremony")
+        setup.add_argument("--repository", default=".")
+        setup.add_argument("--external-repository")
+        setup.add_argument("--ref", default="HEAD")
+        setup.add_argument("--evidence", default="governance/evidence.json")
+        setup.add_argument("--producers", default=DEFAULT_PRODUCERS)
+        setup.add_argument("--history-checkpoint", type=Path)
+        setup.set_defaults(func=cmd_history_setup)
+
     gate = sub.add_parser("gate", help="gate operations").add_subparsers(
         dest="action", required=True
     )
@@ -5154,6 +5159,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="anchor the published verdict in a Rekor transparency log (ADR-067)",
     )
     ev.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
+    ev.add_argument("--history-checkpoint", type=Path, help="external signed history checkpoint (or RANEX_HISTORY_CHECKPOINT)")
     ev.set_defaults(func=cmd_gate_evaluate)
 
     journal = sub.add_parser("journal", help="journal operations").add_subparsers(
@@ -5282,6 +5288,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="the command to run, after --",
     )
     rn.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
+    rn.add_argument("--history-checkpoint", type=Path, help="external signed history checkpoint (or RANEX_HISTORY_CHECKPOINT)")
     rn.set_defaults(func=cmd_run)
 
     host = sub.add_parser("host", help="strict-local host operator workflow").add_subparsers(
@@ -5338,6 +5345,10 @@ def build_parser() -> argparse.ArgumentParser:
     freeze = suite.add_parser("freeze", help="freeze junitxml test IDs")
     freeze.add_argument("--repository", default=".", help="repository root")
     freeze.add_argument("--artifact", required=True, help="junitxml artifact path")
+    freeze.add_argument(
+        "--evidence", default=DEFAULT_EVIDENCE,
+        help="untracked evidence output and paired observation log from run",
+    )
     freeze.add_argument(
         "--output",
         default=DEFAULT_SUITE_MANIFEST,
@@ -5480,6 +5491,7 @@ def build_parser() -> argparse.ArgumentParser:
     gpublish.add_argument("--gate-catalog", default=DEFAULT_GATE_CATALOG, help="committed gate catalog")
     gpublish.add_argument("--producers", default=DEFAULT_PRODUCERS, help="committed producer keyring")
     gpublish.add_argument("--approver", required=True, help="approver identity the verdict names")
+    gpublish.add_argument("--history-checkpoint", type=Path, help="external signed history checkpoint (or RANEX_HISTORY_CHECKPOINT)")
     gpublish.set_defaults(func=cmd_github_check_publish)
 
     glisten = github.add_parser(
@@ -5497,6 +5509,7 @@ def build_parser() -> argparse.ArgumentParser:
     glisten.add_argument("--gate-catalog", default=DEFAULT_GATE_CATALOG, help="committed gate catalog")
     glisten.add_argument("--producers", default=DEFAULT_PRODUCERS, help="committed producer keyring")
     glisten.add_argument("--approver", required=True, help="approver identity the verdict names")
+    glisten.add_argument("--history-checkpoint", help="independently retained external observation checkpoint")
     glisten.add_argument("--evaluate-evidence", action="store_true",
                          help="automatically judge signed evidence; never execute PR code")
     glisten.add_argument("--evidence", default=DEFAULT_EVIDENCE, help="observer evidence file")

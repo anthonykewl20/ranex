@@ -38,6 +38,7 @@ def _record() -> dict[str, object]:
         "rejections": [], "self_approval": False,
         "reason": "no evidence for required claim: tests",
         "journal_head": "sha256:" + "c" * 64,
+        "history_verified": False, "observation_checkpoint": None,
     }
     return {**body, "record_digest": "sha256:" + canonical_sha256(body)}
 

@@ -17,7 +17,6 @@ full recorded reason prints verbatim — fail toward repetition, never loss.
 
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -82,6 +81,7 @@ def _make_repo(tmp_path: Path, signing: Signing, gates: str) -> Path:
         ["git", "-C", str(repository), "config", "user.name", "Test"], check=True
     )
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
+    (repository / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\ngovernance/observations.sqlite3*\n")
     signing.write_keyring(repository)
     attach(repository, signing)
     # Committed, like the keyring beside it: the trust root must be carried by
@@ -91,6 +91,7 @@ def _make_repo(tmp_path: Path, signing: Signing, gates: str) -> Path:
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
     )
+    signing.establish_history(repository)
     return repository
 
 
@@ -124,9 +125,7 @@ def stale_evidence(repo: Path, claim_id: str) -> None:
     admitted but satisfies nothing here. Nothing is recorded for lint-clean.
     """
 
-    (repo / "evidence.json").write_text(
-        json.dumps(
-            [
+    signing_for(repo).write_records(repo, [
                 signing_for(repo).sign(
                     {
                         "claim_id": claim_id,
@@ -139,10 +138,7 @@ def stale_evidence(repo: Path, claim_id: str) -> None:
                     },
                     "worker",
                 )
-            ]
-        ),
-        encoding="utf-8",
-    )
+            ])
 
 
 def run(repo: Path, *extra: str) -> int:
@@ -157,6 +153,7 @@ def run(repo: Path, *extra: str) -> int:
             "RANEX_APPROVER_SIGNING_KEY",
             str(signing_for(repo).approver_path("owner")),
         )
+        signing_for(repo).configure_history(monkeypatch, repo)
         return main(
             [
                 "gate",

@@ -10,11 +10,13 @@ from pathlib import Path
 from typing import Any
 
 from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.history_checkpoint import validate_checkpoint
 from ranex.foundation.verdict_signing import (
     VERSIONS,
     signed_fields_for,
     verify_verdict,
 )
+from ranex.governed_execution.adapters.persistence.history import verify_bound_history
 
 
 class ReadState(StrEnum):
@@ -28,6 +30,7 @@ class ReadState(StrEnum):
     CONTEXT_MISMATCH = "context-mismatch"
     UNKNOWN_CAUSE = "unknown-cause"
     UNAPPROVED = "unapproved"
+    UNANCHORED = "unanchored"
     VERIFIED = "verified"
 
 
@@ -42,6 +45,7 @@ STATE_PRESENTATION = {
     ReadState.CONTEXT_MISMATCH: "The verdict belongs to another judgment context.",
     ReadState.UNKNOWN_CAUSE: "The verdict contains an unclassified blocking cause.",
     ReadState.UNAPPROVED: "The verdict names a catalogued approver whose signature it does not carry.",
+    ReadState.UNANCHORED: "The verdict does not certify an independently retained observation history.",
     ReadState.VERIFIED: "The verdict is verified; freshness is unestablished.",
 }
 
@@ -68,6 +72,13 @@ class ReadResult:
         head = self.record.get("journal_head")
         return head if isinstance(head, str) else None
 
+    @property
+    def observation_checkpoint(self) -> Mapping[str, Any] | None:
+        if self.record is None or self.record.get("history_verified") is not True:
+            return None
+        checkpoint = self.record.get("observation_checkpoint")
+        return checkpoint if validate_checkpoint(checkpoint) else None
+
 
 def read_verdict_unbound(
     path: Path, keyring: Mapping[str, str],
@@ -90,17 +101,22 @@ def read_verdict(
     path: Path, keyring: Mapping[str, str], *, subject_digest: str,
     gate_id: str, catalog_digest: str | None, approver_id: str,
     approvers: Mapping[str, tuple[str, ...]] | None = None,
+    repository_root: Path | None = None,
+    history_checkpoint_path: Path | None = None,
 ) -> ReadResult:
     return _read(path, keyring, context=(
         ("subject_digest", subject_digest), ("gate_id", gate_id),
         ("catalog_digest", catalog_digest), ("approver_id", approver_id),
-    ), approvers=approvers)
+    ), approvers=approvers, repository_root=repository_root,
+        history_checkpoint_path=history_checkpoint_path)
 
 
 def _read(
     path: Path, keyring: Mapping[str, str],
     *, context: tuple[tuple[str, str | None], ...] | None,
     approvers: Mapping[str, tuple[str, ...]] | None,
+    repository_root: Path | None = None,
+    history_checkpoint_path: Path | None = None,
 ) -> ReadResult:
     try:
         value = json.loads(
@@ -195,6 +211,21 @@ def _read(
                 signature["signer_id"] == record_approver for signature in signatures[1:]
             ):
                 return ReadResult(ReadState.UNAPPROVED, record, payload_type)
+        if "history_verified" in record:
+            certified = record["history_verified"]
+            checkpoint = record["observation_checkpoint"]
+            if type(certified) is not bool or (certified and not validate_checkpoint(checkpoint)):
+                return ReadResult(ReadState.MALFORMED)
+            if not certified and checkpoint is not None:
+                return ReadResult(ReadState.MALFORMED)
+        if context is not None and (record.get("history_verified") is not True
+                                    or not validate_checkpoint(record.get("observation_checkpoint"))):
+            return ReadResult(ReadState.UNANCHORED, record, payload_type)
+        if context is not None and (repository_root is None or not verify_bound_history(
+            record["observation_checkpoint"], keyring[signer], repository_root,
+            history_checkpoint_path,
+        )):
+            return ReadResult(ReadState.UNANCHORED, record, payload_type)
         return ReadResult(ReadState.VERIFIED, record, payload_type)
     except (OSError, UnicodeError, ValueError, TypeError):
         return ReadResult(ReadState.MALFORMED)

@@ -123,6 +123,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     (repository / SCOPE).write_text(CLEAN, encoding="utf-8")
     (repository / "governance").mkdir()
     (repository / "gates.yaml").write_text(catalog(scan_command(ruff_binary())), encoding="utf-8")
+    (repository / ".gitignore").write_text("observations.sqlite3*\n", encoding="utf-8")
     signing.write_keyring(repository)
     attach(repository, signing)
     commit(repository, "initial")
@@ -147,6 +148,7 @@ def invoke(
                 _approver.APPROVER_ENV,
                 str(signing_for(repo).approver_path(approver)),
             )
+        signing_for(repo).configure_history(monkeypatch, repo)
         return main(argv)
 
 
@@ -156,6 +158,7 @@ def freeze(repo: Path, *declarations: str, exit_zero: bool = False) -> int:
         [
             "suite", "freeze",
             "--repository", ".",
+            "--evidence", "evidence.json",
             "--artifact", ARTIFACT,
             "--output", MANIFEST,
             "--results-reporter", "sarif-2.1.0",
@@ -471,3 +474,53 @@ def test_repeats_on_identical_input_reduce_identically(repo: Path) -> None:
         assert run(repo) == 0
         digests.append(records(repo)[-1]["suite_results"]["outcome_digest"])
     assert len(set(digests)) == 1, digests
+
+
+@pytest.mark.parametrize("operation", ["run", "freeze"])
+@pytest.mark.parametrize("reporter,metadata,expected", [
+    ("delegated-review-sarif-2.1.0", False, 2),
+    ("delegated-review-sarif-2.1.0", True, 0),
+    ("sarif-2.1.0", False, 0),
+])
+def test_committed_review_reporter_governs_real_worker_dispatch(
+    repo, capsys, operation, reporter, metadata, expected
+):
+    import sys
+
+    from ranex.foundation.delegated_review import (
+        build_packet,
+        empty_handbook_digest,
+        packet_bytes,
+        packet_digest,
+    )
+    packet = build_packet(subject_digest="sha256:" + "a" * 64,
+                          range_base="b" * 40, range_head="c" * 40,
+                          handbook_digest=empty_handbook_digest(), chapters=[])
+    (repo / "governance/review-packet.json").write_bytes(packet_bytes(packet))
+    document = {"version": "2.1.0", "runs": [{
+        "tool": {"driver": {"name": "review-worker"}},
+        "artifacts": [{"location": {"uri": SCOPE}}], "results": [],
+    }]}
+    if metadata:
+        document["runs"][0]["properties"] = {"packet_digest": packet_digest(packet)}
+    # Real subprocess emits pinned bytes; it does not import a stale checkout.
+    code = "import sys; open(sys.argv[-1].split('=',1)[1], 'w').write(" + repr(json.dumps(document)) + ")"
+    command = [sys.executable, "-c", code, "--output-format=sarif", f"--output-file={ARTIFACT}"]
+    (repo / "gates.yaml").write_text(catalog(command).replace("sarif-2.1.0", reporter))
+    (repo / MANIFEST).write_bytes(canonical_json_bytes({
+        "scope": [SCOPE], "rules": ["review"], "blocking_levels": ["error"], "accepted": {},
+    }))
+    commit(repo, "bind trusted review reporter and packet")
+    if operation == "run":
+        actual = run(repo, command)
+    else:
+        actual = invoke(repo, ["suite", "freeze", "--repository", ".",
+                              "--evidence", "evidence.json", "--artifact", ARTIFACT,
+                              "--output", MANIFEST, "--results-reporter", reporter,
+                              "--scan-scope", SCOPE, "--scan-rule", "review", "--", *command])
+    captured = capsys.readouterr()
+    assert actual == expected, captured
+    if expected:
+        assert "packet_digest" in captured.err
+    elif operation == "run":
+        assert evaluate(repo) == 0

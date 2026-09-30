@@ -63,15 +63,33 @@ _STOPPED = "stopped"
 _WALK_CEILING = 50_000
 
 
+def _private_stream(fd: int) -> int:
+    """Open an independent nonblocking description without changing the caller."""
+
+    before = os.fstat(fd)
+    held = os.open(
+        f"/proc/self/fd/{fd}",
+        os.O_WRONLY | os.O_APPEND | os.O_NONBLOCK | os.O_CLOEXEC,
+    )
+    after = os.fstat(held)
+    if (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
+        os.close(held)
+        raise OSError("stream changed during trace admission")
+    return held
+
+
 def _warn(message: str) -> None:
-    """One operator-facing line, unconditional, independent of any target."""
+    """One best-effort operator line; a full stderr stream drops the warning."""
 
-    line = f"{WARNING_PREFIX} {message}\n"
+    descriptor: int | None = None
     try:
-        os.write(2, line.encode("utf-8", "replace"))
+        descriptor = _private_stream(2)
+        os.write(descriptor, f"{WARNING_PREFIX} {message}\n".encode("utf-8", "replace"))
     except OSError:
-        pass  # never crash the governed run for a trace problem
-
+        pass
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
 
 def parse_target(value: str | None) -> tuple[str, object]:
     """Classify one variable's value. Never echoes the value back.
@@ -232,13 +250,19 @@ class _Target:
 class _StderrTarget(_Target):
     def __init__(self, variable: str) -> None:
         self.variable = variable
+        try:
+            self.fd = _private_stream(2)
+        except OSError as exc:
+            raise ValueError("stderr cannot be opened as a private nonblocking stream") from exc
 
     def write_line(self, line: bytes) -> str:
         try:
-            os.write(2, line)
-            return _WRITTEN
+            return _WRITTEN if os.write(self.fd, line) == len(line) else _FAILED
         except OSError:
             return _FAILED
+
+    def close(self) -> None:
+        os.close(self.fd)
 
     def describe(self) -> str:
         return f"{self.variable} (stderr)"
@@ -253,7 +277,8 @@ class _FdTarget(_Target):
     undo that narrowing). Regular files, character devices, and pipes are the
     admissible streams.
 
-    At admission the fd is set non-blocking and non-inheritable. Non-blocking
+    At admission a private non-blocking, non-inheritable description is opened;
+    the operator's shared descriptor flags remain unchanged. Non-blocking
     is the never-block guarantee (ADR-031 sad path 3): a full or stalled
     stream raises instead of parking the governed run — the write failure
     path (one warning, target disabled, never a retry) then applies to
@@ -300,10 +325,8 @@ class _FdTarget(_Target):
                     raise ValueError(
                         f"fd {fd} aliases a file inside {root} by device and inode"
                     )
-            # Admission is the one moment the emitter may adjust the stream:
-            # never block the run, never leak the fd across exec.
-            os.set_blocking(fd, False)
-            os.set_inheritable(fd, False)
+            self.source_fd = fd
+            self.fd = _private_stream(fd)
         except OSError as exc:
             raise ValueError(f"fd {fd} cannot be inspected ({exc.strerror}); fail closed") from exc
 
@@ -311,8 +334,10 @@ class _FdTarget(_Target):
         if self.disabled:
             return _STOPPED
         try:
-            os.write(self.fd, line)
-            return _WRITTEN
+            if os.write(self.fd, line) == len(line):
+                return _WRITTEN
+            self.disabled = True
+            return _FAILED
         except OSError:
             # BlockingIOError (EAGAIN/EWOULDBLOCK on the full, non-blocking
             # stream) lands here like any write failure: disable, one warning
@@ -320,8 +345,11 @@ class _FdTarget(_Target):
             self.disabled = True
             return _FAILED
 
+    def close(self) -> None:
+        os.close(self.fd)
+
     def describe(self) -> str:
-        return f"fd {self.fd}"
+        return f"fd {self.source_fd}"
 
 
 class _FileTarget(_Target):

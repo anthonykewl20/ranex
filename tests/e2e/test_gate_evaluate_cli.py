@@ -6,7 +6,6 @@ change, not merely be capable of blocking one.
 
 from __future__ import annotations
 
-import json
 import os
 import sqlite3
 import subprocess
@@ -50,6 +49,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
         ["git", "-C", str(repository), "config", "user.name", "Test"], check=True
     )
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
+    (repository / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\ngovernance/observations.sqlite3*\n")
     signing.write_keyring(repository)
     attach(repository, signing)
     # Committed, like the keyring beside it. Both are the trust root, and since
@@ -61,6 +61,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
     )
+    signing.establish_history(repository)
     return repository
 
 
@@ -76,6 +77,7 @@ def run(repo: Path, *extra: str) -> int:
             "RANEX_APPROVER_SIGNING_KEY",
             str(signing_for(repo).approver_path("owner")),
         )
+        signing_for(repo).configure_history(monkeypatch, repo)
         return main(
             [
                 "gate",
@@ -113,9 +115,7 @@ def test_passes_once_real_evidence_exists(repo: Path, capsys) -> None:
     from ranex.foundation.canonical import canonical_sha256
 
     subject = "sha256:" + canonical_sha256({"tree": tree})
-    (repo / "evidence.json").write_text(
-        json.dumps(
-            [
+    signing_for(repo).write_records(repo, [
                 signing_for(repo).sign(
                     {
                         "claim_id": "tests-executed",
@@ -128,10 +128,7 @@ def test_passes_once_real_evidence_exists(repo: Path, capsys) -> None:
                     },
                     "worker",
                 )
-            ]
-        ),
-        encoding="utf-8",
-    )
+            ])
     assert run(repo) == 0
     assert "PASS" in capsys.readouterr().out
 
@@ -139,9 +136,7 @@ def test_passes_once_real_evidence_exists(repo: Path, capsys) -> None:
 def test_evidence_from_a_different_commit_does_not_satisfy(repo: Path, capsys) -> None:
     """Stale evidence is not evidence — the whole point of subject binding."""
 
-    (repo / "evidence.json").write_text(
-        json.dumps(
-            [
+    signing_for(repo).write_records(repo, [
                 signing_for(repo).sign(
                     {
                         "claim_id": "tests-executed",
@@ -154,10 +149,7 @@ def test_evidence_from_a_different_commit_does_not_satisfy(repo: Path, capsys) -
                     },
                     "worker",
                 )
-            ]
-        ),
-        encoding="utf-8",
-    )
+            ])
     assert run(repo) == 1
     assert "different subject" in capsys.readouterr().out
 
@@ -177,9 +169,7 @@ def test_evidence_without_subject_digest_is_refused_and_named(repo: Path, capsys
     reported with a reason rather than inferred from an exit code.
     """
 
-    (repo / "evidence.json").write_text(
-        json.dumps(
-            [
+    signing_for(repo).write_records(repo, [
                 {
                     "claim_id": "tests-executed",
                     "producer_id": "worker",
@@ -188,10 +178,7 @@ def test_evidence_without_subject_digest_is_refused_and_named(repo: Path, capsys
                     "executable_path": EXECUTABLE,
                     "exit_code": 0,
                 }
-            ]
-        ),
-        encoding="utf-8",
-    )
+            ])
     assert run(repo) == 1
     captured = capsys.readouterr()
     assert "PASS" not in captured.out
@@ -225,9 +212,7 @@ def test_empty_journal_path_is_a_usage_error_not_an_unrecorded_pass(
         check=True,
     ).stdout.strip()
     subject = "sha256:" + canonical_sha256({"tree": tree})
-    (repo / "evidence.json").write_text(
-        json.dumps(
-            [
+    signing_for(repo).write_records(repo, [
                 signing_for(repo).sign(
                     {
                         "claim_id": "tests-executed",
@@ -240,10 +225,7 @@ def test_empty_journal_path_is_a_usage_error_not_an_unrecorded_pass(
                     },
                     "worker",
                 )
-            ]
-        ),
-        encoding="utf-8",
-    )
+            ])
     assert run(repo, "--journal", "") == 2
     captured = capsys.readouterr()
     assert "journal" in captured.err

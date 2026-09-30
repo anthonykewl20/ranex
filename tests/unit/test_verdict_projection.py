@@ -26,9 +26,11 @@ def test_projection_matches_extended_kernel_first_wire_shape() -> None:
         "verdict", "gate_id", "subject_digest", "subject_lane", "catalog_digest",
         "approver_id", "failing_rule", "missing_claims", "considered", "causes",
         "rejections", "self_approval", "reason", "record_digest",
-        "journal_head",
+        "journal_head", "history_verified", "observation_checkpoint",
     }
     assert record["self_approval"] is False
+    assert record["history_verified"] is False
+    assert record["observation_checkpoint"] is None
     assert record["rejections"] == [{
         "index": 0, "reason": "bad-signature", "detail": "bad",
         "claim_id": "tests", "producer_id": "worker",

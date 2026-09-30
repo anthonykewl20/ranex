@@ -67,6 +67,8 @@ def resolve_acceptance(
     catalog_digest: str | None,
     approver_id: str,
     approvers: Mapping[str, tuple[str, ...]] | None = None,
+    repository_root: Path | None = None,
+    history_checkpoint_path: Path | None = None,
 ) -> Acceptance:
     """Map the reader's closed state machine onto outward outcomes.
 
@@ -84,5 +86,7 @@ def resolve_acceptance(
         catalog_digest=catalog_digest,
         approver_id=approver_id,
         approvers=approvers,
+        repository_root=repository_root,
+        history_checkpoint_path=history_checkpoint_path,
     )
     return Acceptance(code_for_state(result.state), result.state, result.record)

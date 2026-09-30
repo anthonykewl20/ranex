@@ -33,6 +33,7 @@ import sys
 import time
 from pathlib import Path
 
+import _history
 import pytest
 
 import ranex.observability  # noqa: F401 — the module's existence is the contract
@@ -98,9 +99,13 @@ class _Subject:
             f"      - key: {approver_public}\n        status: active\n",
             encoding="utf-8",
         )
-        (root / ".gitignore").write_text("evidence.json\n", encoding="utf-8")
+        self.service_private, self.service_public, self.service_key = _history.mint_service(root.parent)
+        self.checkpoint = root.parent / "history.json"
+        _history.register_service(root / "producers.yaml", self.service_public)
+        (root / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n", encoding="utf-8")
         shutil.copytree(PROJECT / "src" / "ranex", root / "src" / "ranex")
         _commit_repo(root)
+        _history.establish(root, "evidence.json", self.checkpoint, self.service_private, self.service_public)
 
     def base_env(self) -> dict[str, str]:
         env = {
@@ -110,6 +115,8 @@ class _Subject:
             "PYTHONDONTWRITEBYTECODE": "1",
             "RANEX_SIGNING_KEY": str(self.key),
             "RANEX_APPROVER_SIGNING_KEY": str(self.approver),
+            "RANEX_VERDICT_SIGNING_KEY": str(self.service_key),
+            "RANEX_HISTORY_CHECKPOINT": str(self.checkpoint),
         }
         for name in TRACE_VARIABLES:
             env.pop(name, None)
@@ -709,3 +716,33 @@ def test_traced_strict_local_run_chains_the_controller_and_keeps_the_descriptor_
     assert not (session_root / "result.json").exists(), (
         "a refused descriptor must never reach a spawn or a result"
     )
+
+
+def test_task_assignment_wrapper_survives_a_real_governed_run(tmp_path: Path) -> None:
+    sys.path.insert(0, str(PROJECT / "tools" / "dogfood"))
+    from cmdparse import governed_argv
+
+    subject = _Subject(tmp_path / "subject")
+    command = governed_argv(
+        "AUDIT_TASK_FLAG='one two=three' AUDIT_TASK_FLAG=last /usr/bin/python3 -c "
+        '"import os,sys; print(os.environ.get(\'AUDIT_TASK_FLAG\')); '
+        'sys.exit(os.environ.get(\'AUDIT_TASK_FLAG\')!=\'last\')"'
+    )
+    (subject.root / "gates.yaml").write_text(
+        "gates:\n  - gate_id: landing\n    rule_id: TESTS_EXECUTED\n"
+        "    blocking: true\n    required_claims:\n      - claim_id: tests-executed\n"
+        f"        command: {json.dumps(command)}\n", encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(subject.root), "add", "gates.yaml"], check=True)
+    subprocess.run(["git", "-C", str(subject.root), "commit", "-qm", "bound task assignments"],
+                   check=True)
+    observed = subject.cli(["run", "--claim", "tests-executed", "--producer", "worker",
+                            "--producers", "producers.yaml", "--gate-catalog", "gates.yaml",
+                            "--evidence", "evidence.json", "--", *command])
+    assert observed.returncode == 0, observed.stderr
+    assert "last" in observed.stdout.splitlines()
+    judged = subject.cli(["gate", "evaluate", "HEAD", "--approver", "reviewer",
+                          "--producers", "producers.yaml", "--gate-catalog", "gates.yaml",
+                          "--evidence", "evidence.json"])
+    assert judged.returncode == 0, judged.stderr
+    assert judged.stdout.startswith("PASS")

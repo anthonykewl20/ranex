@@ -99,8 +99,6 @@ def advance(session: LifecycleSession, request: ClarificationInput) -> Transitio
 
     try:
         request_digest = _request_digest(request)
-        if session.last_request_digest == request_digest:
-            return TransitionResult(True, session, request.actor_id, semantic_digest=session.semantic_digest)
         if not isinstance(request.target, LifecycleState):
             return _refuse(session, request, RefusalCode.INVALID_INPUT)
         if not request.actor_id:
@@ -114,18 +112,28 @@ def advance(session: LifecycleSession, request: ClarificationInput) -> Transitio
         question_code = _question_refusal(request)
         if question_code is not None:
             return _refuse(session, request, question_code)
+        if session.state is not LifecycleState.DRAFT:
+            if payload_digest(request.spec_packet) != session.semantic_digest:
+                return _refuse(session, request, RefusalCode.CHAIN_MISMATCH, cause="E-ABC-017")
+            if session.state in (LifecycleState.TESTS_MAPPED, LifecycleState.APPROVAL_PENDING):
+                if payload_digest(request.manifest) != session.manifest_digest:
+                    return _refuse(session, request, RefusalCode.CHAIN_MISMATCH, cause="E-ABC-019")
+        if session.last_request_digest == request_digest:
+            return TransitionResult(True, session, request.actor_id, semantic_digest=session.semantic_digest)
         destination = TRANSITION_TABLE.get(session.state)
         if destination is None or request.target is not destination:
             return _refuse(session, request, RefusalCode.OUT_OF_ORDER)
     except (TypeError, AttributeError, KeyError, IndexError, ValueError):
         return _refuse(session, request, RefusalCode.INVALID_INPUT)
 
+    manifest_digest = session.manifest_digest
     try:
         if session.state is LifecycleState.DRAFT:
             semantic_digest = _validated_specification(request)
         elif session.state is LifecycleState.SPEC_VALIDATED:
             validate_generated_artifact_manifest(request.manifest, spec_packet=request.spec_packet)
             semantic_digest = session.semantic_digest
+            manifest_digest = payload_digest(request.manifest)
         else:
             # SLICE-032 owns durable nonce tracking; this lifecycle has no nonce state.
             validate_approval_envelope(request.approval_envelope, used_nonces=())
@@ -159,6 +167,7 @@ def advance(session: LifecycleSession, request: ClarificationInput) -> Transitio
         base_digest=session.base_digest,
         semantic_digest=semantic_digest,
         last_request_digest=request_digest,
+        manifest_digest=manifest_digest,
     )
     return TransitionResult(True, advanced, request.actor_id, semantic_digest=semantic_digest)
 

@@ -27,6 +27,7 @@ from ranex.foundation.canonical import (
 from ranex.foundation.signing import _decode, _encode, generate_keypair, sign_evidence
 from ranex.foundation.suite_results import validate_suite_results
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
+from tests import _task_history
 
 TARGET_MAIN = "refs/heads/main"
 TARGET_RELEASE = "refs/heads/release"
@@ -96,6 +97,7 @@ def add_and_commit(worktree: Path, name: str, message: str) -> None:
 
 def invoke(repo: Path, argv: list[str]) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
+        _task_history.configure(monkeypatch, repo, argv)
         monkeypatch.chdir(repo)
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
@@ -153,8 +155,9 @@ class RealRepository:
             encoding="utf-8",
         )
         (governance / "evidence.json").write_text("[]\n", encoding="utf-8")
+        _task_history.register(repo)
         (repo / ".gitignore").write_text(
-            "governance/journal.sqlite3\napproval-*.json\n", encoding="utf-8"
+            "governance/journal.sqlite3\ngovernance/observations.sqlite3*\napproval-*.json\n", encoding="utf-8"
         )
         (repo / "base.txt").write_text("base\n", encoding="utf-8")
         git(repo, "add", "-A")
@@ -270,7 +273,7 @@ def dispatch_judge(
             "confinement_profile_digest": "sha256:" + "d" * 64,
             "envelope_type": "ranex-evidence-envelope-v1",
             "gate_id": "landing",
-            "catalog_digest": "sha256:" + "e" * 64,
+            "catalog_digest": catalog_digest_for(CATALOG),
         }
         evidence_document = {
             **evidence_body,
@@ -280,8 +283,8 @@ def dispatch_judge(
     else:
         evidence_documents = [evidence_document]
     evidence_bytes = json.dumps(evidence_documents).encode()
-    (worktree / "governance" / "evidence.json").write_bytes(evidence_bytes)
-    (scenario.repo / "governance" / "evidence.json").write_bytes(evidence_bytes)
+    _task_history.record(worktree, json.loads(evidence_bytes))
+    _task_history.record(scenario.repo, json.loads(evidence_bytes))
     assert invoke(
         scenario.repo,
         [
@@ -357,14 +360,14 @@ def run_concurrent_merges(
             Path(__file__).resolve().parents[2] / "src" / "ranex",
             subprocess_source / "ranex",
         )
-    environment = os.environ | {"PYTHONPATH": str(subprocess_source)}
+    environment = os.environ | {"PYTHONPATH": str(subprocess_source), "RANEX_HISTORY_CHECKPOINT": str(_task_history.checkpoint(repo))}
 
     def run(index: int) -> None:
         barrier.wait()
         results[index] = subprocess.run(
             [sys.executable, "-m", "ranex.cli.main", *attempts[index].merge_args()],
             cwd=repo,
-            env=environment,
+            env=environment | {"RANEX_HISTORY_CHECKPOINT": str(_task_history.checkpoint(repo.parent / "worktrees" / attempts[index].task_id))},
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -397,7 +400,7 @@ def signed_evidence_record(
         "confinement_profile_digest": "sha256:" + "d" * 64,
         "envelope_type": "ranex-evidence-envelope-v1",
         "gate_id": "landing",
-        "catalog_digest": "sha256:" + "e" * 64,
+        "catalog_digest": catalog_digest_for(CATALOG),
     }
     return {**body, "signature": sign_evidence(body, scenario.producer_private)}
 
@@ -437,8 +440,8 @@ def dispatch_rejudge(scenario: RealRepository, task_id: str) -> RealRejudge:
     def judge(candidate: str, subject: str) -> dict[str, object]:
         evidence = [signed_evidence_record(scenario, subject, "/usr/bin/pytest")]
         evidence_bytes = json.dumps(evidence).encode()
-        (worktree / "governance" / "evidence.json").write_bytes(evidence_bytes)
-        (scenario.repo / "governance" / "evidence.json").write_bytes(evidence_bytes)
+        _task_history.record(worktree, json.loads(evidence_bytes))
+        _task_history.record(scenario.repo, json.loads(evidence_bytes))
         assert invoke(
             scenario.repo,
             [
@@ -868,14 +871,13 @@ def test_multiple_satisfying_evidence_records_one_claim(tmp_path: Path) -> None:
     positive_root = tmp_path / "positive"
     positive_root.mkdir()
     scenario = RealRepository.create(positive_root)
-    other_subject = "sha256:" + "0" * 64
     records: list[dict[str, object]] = []
 
     def positive_evidence(subject: str) -> list[dict[str, object]]:
         records.extend(
             [
                 signed_evidence_record(scenario, subject, "/usr/bin/pytest"),
-                signed_evidence_record(scenario, other_subject, "/opt/bin/pytest"),
+                signed_evidence_record(scenario, subject, "/opt/bin/pytest"),
             ]
         )
         return records
@@ -892,9 +894,10 @@ def test_multiple_satisfying_evidence_records_one_claim(tmp_path: Path) -> None:
         and entry.get("task_id") == attempt.task_id
         and entry.get("check") == "digest_evidence"
     )
-    assert digest_check["evidence_ids"] == [
-        canonical_sha256(record) for record in records
-    ]
+    assert digest_check["evidence_ids"] == [canonical_sha256(records[-1])]
+    from ranex.governed_execution.adapters.persistence.sqlite.observations import ObservationLog
+    retained = ObservationLog(scenario.repo / "governance/observations.sqlite3").snapshot()
+    assert [record for _, record in retained.records] == records
     assert Journal(scenario.journal).verify() is True
 
     negative_root = tmp_path / "negative"
@@ -971,7 +974,7 @@ def test_evidence_suite_results_present_vs_absent_irrelevant_to_merge(
                 "confinement_profile_digest": "sha256:" + "d" * 64,
                 "envelope_type": "ranex-evidence-envelope-v1",
                 "gate_id": "landing",
-                "catalog_digest": "sha256:" + "e" * 64,
+                "catalog_digest": catalog_digest_for(CATALOG),
             }
             return [{**body, "signature": sign_evidence(body, _scenario.producer_private)}]
 
@@ -1142,9 +1145,7 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
     )
     assert len({attempt.candidate for attempt in attempts}) == 3
     assert len({attempt.task_id for attempt in attempts}) == 3
-    (scenario.repo / "governance" / "evidence.json").write_text(
-        json.dumps([attempt.evidence_document for attempt in attempts]), encoding="utf-8"
-    )
+    _task_history.record(scenario.repo, [attempt.evidence_document for attempt in attempts])
 
     published_winners: list[dict[str, object]] = []
     race_loser_task_ids: set[str] = set()

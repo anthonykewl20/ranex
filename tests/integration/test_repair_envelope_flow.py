@@ -23,6 +23,7 @@ import pytest
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.foundation.suite_results import validate_suite_results
+from ranex.governed_execution.adapters.persistence.history import bootstrap_history
 from ranex.governed_execution.repair_envelope import validate_repair_envelope
 
 KERNEL = Path(__file__).resolve().parents[2]
@@ -49,6 +50,8 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
         if not name.startswith(("RANEX_", "GIT_", "PYTHON"))
     }
     environment["PYTHONPATH"] = str(KERNEL / "src")
+    environment["RANEX_HISTORY_CHECKPOINT"] = str(repo.parent / "history-checkpoint.json")
+    environment["RANEX_VERDICT_SIGNING_KEY"] = str(repo.parent / "verdict.key")
     if key is not None:
         environment["RANEX_SIGNING_KEY"] = str(key)
     if verdict_key is not None:
@@ -84,7 +87,7 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str, Path]:
     (repo / "governance").mkdir()
     (repo / ".gitignore").write_text(
         "governance/evidence.json\ngovernance/suite_results.xml\n"
-        "governance/journal.sqlite3*\ngovernance/verdicts/\n"
+        "governance/journal.sqlite3*\ngovernance/observations.sqlite3*\ngovernance/verdicts/\n"
         "__pycache__/\n.pytest_cache/\n"
     )
     private, public = generate_keypair()
@@ -116,6 +119,7 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str, Path]:
         "        results_artifact: governance/suite_results.xml\n"
     )
     commit(repo)
+    bootstrap_history(repo / "governance/evidence.json", repo.parent / "history-checkpoint.json", signing, verifying, repo)
     return repo, worker, signer, verifying, approver
 
 
@@ -243,6 +247,7 @@ def test_envelope_bytes_offered_as_evidence_are_refused(application) -> None:
         "catalog_digest": "sha256:" + "1" * 64,
     }
     forged = [{**content, "signature": sign_evidence(content, private)}]
+    (repo / "governance/evidence.json").chmod(0o600)
     (repo / "governance/evidence.json").write_bytes(
         canonical_json_bytes(forged) + b"\n"
     )

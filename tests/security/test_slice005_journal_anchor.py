@@ -191,6 +191,7 @@ def _record(journal_head: str | None) -> dict[str, object]:
         "self_approval": False,
         "reason": "ok",
         "journal_head": journal_head,
+        "observation_checkpoint": None, "history_verified": False,
     }
     assert set(content) == set(SIGNED_FIELDS)
     return content
@@ -215,8 +216,8 @@ def test_journal_head_is_inside_the_signed_bytes(tmp_path: Path) -> None:
 def test_the_signing_domain_moved_so_a_v1_verifier_refuses_a_v2_record() -> None:
     """Old readers must refuse, not silently read a record missing the anchor."""
 
-    assert VERDICT_DOMAIN == b"ranex-verdict-v2\n"
-    assert PAYLOAD_TYPE == "application/vnd.ranex.verdict.v2+json"
+    assert VERDICT_DOMAIN == b"ranex-verdict-v3\n"
+    assert PAYLOAD_TYPE == "application/vnd.ranex.verdict.v3+json"
     assert "journal_head" in SIGNED_FIELDS
 
 

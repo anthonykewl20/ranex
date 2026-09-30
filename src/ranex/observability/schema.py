@@ -71,6 +71,9 @@ MODULES: frozenset[str] = frozenset({"cli", "observability"})
 CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "run",
     "gate.evaluate",
+    "history.bootstrap",
+    "history.migrate",
+    "history.recover",
     "journal.verify",
     "promotion.evaluate",
     "suite.freeze",

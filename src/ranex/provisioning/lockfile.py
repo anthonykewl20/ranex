@@ -5,14 +5,14 @@ from __future__ import annotations
 import re
 import tomllib
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Any
 from urllib.parse import unquote, urlparse
 
 from packaging.markers import Marker
-from packaging.tags import compatible_tags, cpython_tags
-from packaging.utils import parse_wheel_filename
+from packaging.tags import compatible_tags
+from packaging.utils import canonicalize_name, parse_wheel_filename
 
 from ranex.provisioning.errors import ProvisioningError
 
@@ -30,6 +30,7 @@ class TargetEnvironment:
     python_version: tuple[int, int]
     platforms: tuple[str, ...]
     marker_environment: Mapping[str, str]
+    supported_tags: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +51,7 @@ class Dependency:
     # "the one version there is", and a name with several versions and no
     # version on the edge is resolved by resolution markers instead.
     version: str | None = None
+    extras: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +67,7 @@ class Package:
     # only on a package it locked at several versions; one of them must hold
     # for the target, or this entry is not the one that target installs.
     resolution_markers: tuple[str, ...] = ()
+    optional_dependencies: Mapping[str, tuple[Dependency, ...]] = field(default_factory=dict)
 
     @property
     def key(self) -> tuple[str, str]:
@@ -98,7 +101,13 @@ def _dependencies(value: Any, package: str) -> tuple[Dependency, ...]:
         version = item.get("version")
         if version is not None and (not isinstance(version, str) or not version):
             raise LockError(f"package {package} has malformed dependency version")
-        result.append(Dependency(item["name"], marker, version))
+        extras = item.get("extra", [])
+        if not isinstance(extras, list) or any(
+            not isinstance(extra, str) or not extra.strip() for extra in extras
+        ):
+            raise LockError(f"package {package} has malformed dependency extras")
+        result.append(Dependency(item["name"], marker, version,
+                                 tuple(canonicalize_name(extra) for extra in extras)))
     return tuple(result)
 
 
@@ -146,6 +155,13 @@ def parse_lock(data: bytes) -> Lock:
             group: _dependencies(dependencies, name)
             for group, dependencies in dev_value.items()
         }
+        optional_value = record.get("optional-dependencies", {})
+        if not isinstance(optional_value, dict):
+            raise LockError(f"package {name} has malformed optional-dependencies")
+        optional_dependencies = {
+            canonicalize_name(group): _dependencies(dependencies, name)
+            for group, dependencies in optional_value.items()
+        }
         wheels_value = record.get("wheels", [])
         if not isinstance(wheels_value, list) or any(not isinstance(wheel, dict) for wheel in wheels_value):
             raise LockError(f"package {name} has malformed wheels")
@@ -159,16 +175,19 @@ def parse_lock(data: bytes) -> Lock:
                 tuple(wheels_value),
                 "sdist" in record,
                 tuple(markers),
+                optional_dependencies,
             )
         )
     return Lock(tuple(packages))
 
 
-def _edge_enabled(edge: Dependency, target: TargetEnvironment, owner: str) -> bool:
+def _edge_enabled(edge: Dependency, target: TargetEnvironment, owner: str, extra: str = "") -> bool:
     if edge.marker is None:
         return True
     try:
-        return Marker(edge.marker).evaluate(environment=dict(target.marker_environment))
+        environment = dict(target.marker_environment)
+        environment["extra"] = extra
+        return Marker(edge.marker).evaluate(environment=environment)
     except Exception as exc:
         raise LockError(f"package {owner} has invalid marker {edge.marker!r}: {exc}") from exc
 
@@ -239,24 +258,25 @@ def select_wheels(lock: Lock, root: str, target: TargetEnvironment) -> tuple[Whe
         *root_package.dependencies,
         *(edge for group in root_package.dev_dependencies.values() for edge in group),
     )
-    work: list[tuple[str, Dependency]] = [(root, edge) for edge in root_edges]
+    active_extras: dict[tuple[str, str], set[str]] = {}
+    work: list[tuple[str, Dependency, str]] = [(root, edge, "") for edge in root_edges]
     while work:
-        owner, edge = work.pop()
-        if not _edge_enabled(edge, target, owner):
+        owner, edge, owner_extra = work.pop()
+        if not _edge_enabled(edge, target, owner, owner_extra):
             continue
         package = _resolve_edge(lock, edge, target)
-        if package.key in reachable:
-            continue
-        reachable[package.key] = package
-        for dependency in package.dependencies:
-            work.append((package.name, dependency))
-    supported = tuple(
-        cpython_tags(
-            python_version=target.python_version,
-            abis=None,
-            platforms=target.platforms,
-        )
-    ) + tuple(
+        if package.key not in reachable:
+            reachable[package.key] = package
+            active_extras[package.key] = set()
+            work.extend((package.name, dependency, "") for dependency in package.dependencies)
+        for extra in set(edge.extras) - active_extras[package.key]:
+            active_extras[package.key].add(extra)
+            work.extend((package.name, dependency, extra) for dependency in package.dependencies)
+            work.extend((package.name, dependency, extra)
+                        for dependency in package.optional_dependencies.get(extra, ()))
+    # Measured tags are authoritative. Without a probe, only ABI-independent
+    # tags are safe; this process's ABI says nothing about another interpreter.
+    supported = target.supported_tags or tuple(str(tag) for tag in
         compatible_tags(
             python_version=target.python_version,
             interpreter=(
@@ -287,7 +307,7 @@ def select_wheels(lock: Lock, root: str, target: TargetEnvironment) -> tuple[Whe
                 _, _, _, tags = parse_wheel_filename(filename)
             except Exception as exc:
                 raise LockError(f"package {package.name} has invalid wheel {filename!r}") from exc
-            ranks = [order[tag] for tag in tags if tag in order]
+            ranks = [order[str(tag)] for tag in tags if str(tag) in order]
             if ranks:
                 candidates.append((min(ranks), WheelArtifact(package.name, package.version, filename, url, match.group(1).lower())))
         if not candidates:

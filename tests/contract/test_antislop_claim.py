@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from ranex.foundation.antislop_results import ANTISLOP_STRUCTURAL_ID
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.scan_results import claim_expectations
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate
@@ -145,7 +146,9 @@ def test_claim_expectations_answers_the_three_questions() -> None:
         raw, "antislop-sarif-2.1.0"
     )
     assert digest.startswith("sha256:")
-    assert expected_ids == ("test_six.py", "test_six.py::TestX::test_add_doc")
+    assert expected_ids == (
+        ANTISLOP_STRUCTURAL_ID, "test_six.py", "test_six.py::TestX::test_add_doc"
+    )
     # No acceptance vocabulary exists in this family: a slop shape or a
     # count shortfall is never review-waved, so there are no expected skips.
     assert expected_skips == {}

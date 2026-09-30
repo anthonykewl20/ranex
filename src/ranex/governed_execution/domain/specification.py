@@ -102,12 +102,14 @@ class LifecycleSession:
     base_digest: str
     semantic_digest: str | None = None
     last_request_digest: str | None = None
+    manifest_digest: str | None = None
 
     def as_record(self) -> dict[str, object]:
         return {
             "actor_id": self.actor_id,
             "base_digest": self.base_digest,
             "last_request_digest": self.last_request_digest,
+            "manifest_digest": self.manifest_digest,
             "semantic_digest": self.semantic_digest,
             "state": str(self.state),
         }
@@ -123,6 +125,7 @@ class LifecycleSession:
                 base_digest=record["base_digest"],
                 semantic_digest=record.get("semantic_digest"),
                 last_request_digest=record.get("last_request_digest"),
+                manifest_digest=record.get("manifest_digest"),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("invalid lifecycle session") from exc

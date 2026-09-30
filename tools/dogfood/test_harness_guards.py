@@ -89,7 +89,7 @@ def test_summary_excludes_committed_harness_faults() -> None:
 
 def test_timeout_detection_uses_the_exception_type() -> None:
     try:
-        subprocess.run(["sleep", "2"], timeout=0.05)
+        subprocess.run(["sleep", "2"], timeout=0.05, check=False)
     except subprocess.TimeoutExpired as exc:
         assert _is_timeout(exc)
         assert "TimeoutExpired" not in str(exc)
@@ -154,3 +154,128 @@ def test_ranex_exports_absolute_key_and_pythonpath(
     assert "nested/repo/nested/keys" not in key_env
     assert Path(key_env) == key.resolve()
     assert Path(py_env) == (repo / "src").resolve()
+
+
+
+def test_governed_task_assignment_command_matches_real_child_semantics(tmp_path: Path) -> None:
+    import json
+
+    from run_baseline import claim_commands_for
+
+    command = "AUDIT_TASK_FLAG='one two=three' AUDIT_TASK_FLAG=last /usr/bin/python3 -c " + (
+        '\"import os,sys; sys.exit(os.environ.get(\'AUDIT_TASK_FLAG\')!=\'last\')\"'
+    )
+    (tmp_path / "metadata.json").write_text(json.dumps({
+        "tests": {"fail_to_pass": [{"name": "assigned", "cmd": command}]}
+    }))
+    _, argv = claim_commands_for(tmp_path)[0]
+    completed = subprocess.run(argv, env={"PATH": "/usr/bin:/bin"},
+                               capture_output=True, timeout=10, check=False)
+    assert completed.returncode == 0
+    assert argv[:3] == ["/usr/bin/env", "AUDIT_TASK_FLAG=one two=three", "AUDIT_TASK_FLAG=last"]
+
+
+def test_calibration_controls_use_independent_anchored_histories(tmp_path: Path) -> None:
+    from calibration import Subject
+
+    subject = Subject(tmp_path / 'calibration', sys.executable)
+    subject.build()
+    assert subject.observe(subject.good).ok
+    assert not subject.observe(subject.bad).ok
+    # This must exercise absence, rather than restore a previous good observation.
+    absent = subject.observe(subject.good, evidence=False)
+    assert not absent.ok
+    assert absent.facts['verdict'] == 'FAIL'
+    assert subject.observe(subject.good).ok
+
+
+def test_governed_benchmark_real_assignment_has_signed_history(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import json
+
+    import two_arm
+    from run_baseline import claim_commands_for
+
+    monkeypatch.setattr(two_arm, 'RANEX_PY', Path(sys.executable))
+    task = tmp_path / 'task'
+    (task / 'repo').mkdir(parents=True)
+    (task / 'tests').mkdir()
+    (task / 'repo' / 'README').write_text('task\n')
+    (task / 'metadata.json').write_text(json.dumps({'tests': {'fail_to_pass': [{
+        'name': 'assigned', 'cmd': "AUDIT_TASK_FLAG=last /usr/bin/python3 -c \"import os,sys;sys.exit(os.environ.get('AUDIT_TASK_FLAG')!='last')\"",
+    }]}}))
+    claims = claim_commands_for(task)
+    repo, key = two_arm.build_governed_repo(task, tmp_path / 'out', None, claims)
+    result = two_arm.governed_cycle(repo, key, claims)
+    assert result['gate_verdict'] == 'PASS', result
+    assert result['journal_verified']
+    env = two_arm._governed_environment(repo, key)
+    assert Path(env['RANEX_HISTORY_CHECKPOINT']).is_file()
+    assert env['RANEX_SIGNING_KEY'] != env['RANEX_VERDICT_SIGNING_KEY']
+    assert 'RANEX_HISTORY_CHECKPOINT' not in two_arm.bare_environment()
+
+
+def test_external_proof_checks_actual_history_cli_and_cleans_ambient_authority(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import shutil
+
+    import external_proof
+
+    kernel = tmp_path / 'kernel'
+    (kernel / '.venv' / 'bin').mkdir(parents=True)
+    (kernel / '.venv' / 'bin' / 'python').symlink_to(sys.executable)
+    repo = tmp_path / 'subject'
+    shutil.copytree(REPO_ROOT / 'src', repo / 'src')
+    key = tmp_path / 'producer.key'
+    assert external_proof.history_capability(kernel, repo, key)
+    monkeypatch.setenv('RANEX_HISTORY_CHECKPOINT', '/ambient/checkpoint')
+    monkeypatch.setenv('RANEX_VERDICT_SIGNING_KEY', '/ambient/service')
+    monkeypatch.setenv('RANEX_APPROVER_SIGNING_KEY', '/ambient/approver')
+    env = external_proof._kernel_env(repo, key)
+    assert 'RANEX_HISTORY_CHECKPOINT' not in env
+    assert 'RANEX_VERDICT_SIGNING_KEY' not in env
+    assert 'RANEX_APPROVER_SIGNING_KEY' not in env
+
+
+def test_external_proof_legacy_capability_is_explicit_and_other_errors_refuse(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import external_proof
+
+    monkeypatch.setattr(external_proof, '_ranex', lambda *a, **k:
+        subprocess.CompletedProcess([], 2, '', "invalid choice: 'history' (choose from 'run', 'gate')"))
+    assert not external_proof.history_capability(tmp_path, tmp_path, tmp_path / 'key')
+    monkeypatch.setattr(external_proof, '_ranex', lambda *a, **k:
+        subprocess.CompletedProcess([], 1, '', 'cannot import kernel'))
+    with pytest.raises(external_proof.StepFailure, match='history-capability'):
+        external_proof.history_capability(tmp_path, tmp_path, tmp_path / 'key')
+
+
+def test_external_proof_current_onboarding_bootstraps_real_checkpoint(tmp_path: Path) -> None:
+    import shutil
+
+    import external_proof
+
+    kernel = tmp_path / 'kernel'
+    shutil.copytree(REPO_ROOT / 'src', kernel / 'src', ignore=shutil.ignore_patterns('__pycache__'))
+    (kernel / '.venv' / 'bin').mkdir(parents=True)
+    (kernel / '.venv' / 'bin' / 'python').symlink_to(sys.executable)
+    repo = tmp_path / 'subject'
+    repo.mkdir()
+    (repo / 'test_control.py').write_text('def test_control():\n    assert True\n')
+    for directory in (kernel, repo):
+        for args in [('init', '-q'), ('config', 'user.email', 'tool-test@example.invalid'),
+                     ('config', 'user.name', 'Tool test'), ('add', 'src' if directory == kernel else '.'),
+                     ('commit', '-qm', 'fixture')]:
+            subprocess.run(['git', '-C', str(directory), *args], check=True,
+                           capture_output=True)
+    scratch = tmp_path / 'state'
+    scratch.mkdir()
+    setup = external_proof.onboard_governance(kernel, repo, scratch, 'HEAD',
+                                             ['test_control.py::test_control'], 1)
+    assert setup['history_mode'] == 'signed-external-checkpoint'
+    assert (scratch / 'history.checkpoint.json').is_file()
+    cycle = external_proof.governed_cycle(kernel, repo, setup['key'], setup['argv'])
+    assert cycle['gate_verdict'] == 'PASS', cycle

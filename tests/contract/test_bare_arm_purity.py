@@ -49,7 +49,10 @@ def _fake_task(tmp_path: Path) -> Path:
     (task / "repo").mkdir(parents=True)
     (task / "repo" / "README.md").write_text("task\n")
     (task / "tests").mkdir()
-    (task / "gold_patch.diff").write_text("")
+    (task / "gold_patch.diff").write_text(
+        "diff --git a/README.md b/README.md\n"
+        "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-task\n+gold\n"
+    )
     (task / "metadata.json").write_text(json.dumps({
         "id": "unit-fake-task",
         "tests": {"fail_to_pass": [
@@ -234,3 +237,79 @@ def test_governed_environment_stays_deliberately_governed(
     env = two_arm._governed_environment(repo, str(key))
     assert env["PYTHONPATH"] == str(repo / "src")
     assert env["RANEX_SIGNING_KEY"] == str(key)
+
+
+@pytest.mark.parametrize("patch", ["invalid patch", ""])
+def test_failed_gold_patch_never_returns_ground_truth(
+    tmp_path: Path, two_arm_hermetic: types.ModuleType, patch: str,
+) -> None:
+    task = _fake_task(tmp_path)
+    (task / "gold_patch.diff").write_text(patch)
+    with pytest.raises(RuntimeError, match="gold patch"):
+        two_arm_hermetic.run_bare_arm(
+            task, [{"name": "t1", "cmd": "python -c pass"}], python=sys.executable
+        )
+
+
+def test_applied_gold_patch_provenance_and_empty_baseline_are_measured(
+    tmp_path: Path, two_arm_hermetic: types.ModuleType,
+) -> None:
+    task = _fake_task(tmp_path)
+    ground = two_arm_hermetic.run_bare_arm(
+        task, [{"name": "t1", "cmd":
+                '/usr/bin/python3 -c "from pathlib import Path; import sys; '
+                'sys.exit(Path(\'README.md\').read_text()!=\'gold\\n\')"'}],
+        python=sys.executable,
+    )
+    assert ground["gold"] == [{"name": "t1", "exit": 0}]
+    assert ground["empty"] == [{"name": "t1", "exit": 1}]
+    assert ground["gold_patch"] == {
+        "applied": True,
+        "sha256": "sha256:" + hashlib.sha256((task / "gold_patch.diff").read_bytes()).hexdigest(),
+    }
+
+
+def test_mode_tasks_gold_failure_writes_no_ground_truth(
+    tmp_path: Path, two_arm_hermetic: types.ModuleType, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    task = _fake_task(tmp_path)
+    (task / "gold_patch.diff").write_text("invalid patch")
+    out = tmp_path / "out"
+    out.mkdir()
+    monkeypatch.setattr(two_arm_hermetic, "pinned_python_has_pytest", lambda: (True, "ready"))
+    assert two_arm_hermetic.mode_tasks(task, out) != 0
+    assert not (out / "bare_ground_truth.json").exists()
+
+
+
+def test_bare_task_assignments_reach_only_their_command_and_canary(
+    tmp_path: Path, two_arm_hermetic: types.ModuleType,
+) -> None:
+    task = _fake_task(tmp_path)
+    base = two_arm_hermetic.bare_environment()
+    entries = [
+        {"name": "assigned", "cmd":
+         "AUDIT_TASK_FLAG='one two=three' AUDIT_TASK_FLAG=last "
+         '/usr/bin/python3 -c "import os,sys; sys.exit(os.environ.get(\'AUDIT_TASK_FLAG\')!=\'last\')"'},
+        {"name": "unassigned", "cmd":
+         '/usr/bin/python3 -c "import os,sys; sys.exit(\'AUDIT_TASK_FLAG\' in os.environ)"'},
+    ]
+    ground = two_arm_hermetic.run_bare_arm(task, entries, env=base, python=sys.executable)
+    assert all(row["exit"] == 0 for arm in ("gold", "empty") for row in ground[arm])
+    assert "AUDIT_TASK_FLAG" not in base
+    records = ground["environment"]["commands"]
+    assert len(records) == 4
+    assert [row["child_env"].get("AUDIT_TASK_FLAG") for row in records] == [
+        "last", None, "last", None
+    ]
+
+
+def test_bare_task_assignment_cannot_bypass_contamination_canary(
+    tmp_path: Path, two_arm_hermetic: types.ModuleType,
+) -> None:
+    task = _fake_task(tmp_path)
+    with pytest.raises(two_arm_hermetic.BareArmContaminated):
+        two_arm_hermetic.run_bare_arm(
+            task, [{"name": "contaminated", "cmd": "RANEX_TRACE=1 python -c pass"}],
+            python=sys.executable,
+        )
