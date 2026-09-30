@@ -163,3 +163,13 @@ retained. Twenty-two undeclared skips exposed PATH-only resolver discovery
 (#210) and missing marker console fixture routing (#211). These fixture blind
 spots are being repaired to execute their real controls; no skip declarations
 were added to hide them. Final full qualification and golden update remain open.
+
+### R59 — resolver fixture qualification (#210)
+
+Eighteen provisioning refusal controls were skipped because their fixture
+searched only PATH. Discovery now consumes the committed dependency pins and
+the existing immutable, digest-verified binary descriptor. Missing exact
+artifacts remain named prerequisites; malformed pins, drift or writability
+fail rather than selecting another executable. Actual public sealed freeze:
+19 passed, zero skips, run_exit=0. Root existing and new controls: 19 passed.
+No new skip declarations were added. One new ID needs actual refreeze.
