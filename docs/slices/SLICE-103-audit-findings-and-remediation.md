@@ -220,6 +220,10 @@ anywhere, and all 29 CLI commands / 281 flags real (zero parsed-and-ignored).
 
 ## Remediation queue (priority order)
 
+Progress: 2026-10-01 — the #105 OCR-subject gap is closed (static
+entrypoint v3 admission + proof arms 0/1/2/3/5 VERIFIED; arm 4 GAP by
+owner decision); see `tools/dogfood/audits/2026-09-30-ocr-subject-v2/`.
+
 1. C1: order-preserving admission so policy-context binding cannot fail open.
    Acceptance: mixed qualification + foreign-policy records refuse the foreign
    record; new security test covers the mixed ordering.
