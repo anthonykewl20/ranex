@@ -3,7 +3,7 @@
 **Status:** open
 
 Tracking issue: #186. Defect issues: #151–#185,
-#187–#211. No final-commit full-suite PASS claimed.
+#187–#211 and #213. No final-commit full-suite PASS claimed.
 
 This change repairs the executable paths identified by the code audit:
 admission retains record identity through qualification; task judge and
@@ -185,3 +185,27 @@ package cannot supply the scanner. All four original controls execute,
 including the refusal of an in-tree script. Actual public sealed freeze:
 five passed, zero skips, run_exit=0; root installed controls: five passed.
 No new skip declarations were added. One new ID needs actual refreeze.
+
+### Actual green sealed inventory and CI typing
+
+Full sealed freeze on 6932ec7: 2789 passed, 127 skipped in 486.42 seconds.
+The actual generated 2916-ID/158-declaration manifest was loaded before
+integration; its normalized FROZEN golden records run_exit=0. Complete
+XML agrees with the manifest. The production skip cross-check reports
+zero hard findings in both directions. Stage12 now carries an honest
+operator-self-gate context declaration: its sealed pass checks the recursion
+boundary, not execution of the outer operator self-gate. All 31 unobserved
+declarations are context-tier; 114 context reason drifts remain informational.
+
+Pinned pyrefly 1.2.0 exposed two remediation typing errors. Explicit approval
+identity narrowing preserves the existing missing-approver refusal, and the
+extras map declares its string-key type. The unchanged main-byte contract was
+repinned to the actual amended entrypoint. The pinned checker now reports
+zero errors; Ruff is clean and 56 approval/provisioning/kernel checks passed.
+These amendments require final committed-tree verification.
+
+A fresh actual CLI qualification found worker/reader coverage mismatch (#213).
+The deterministic delegated-review worker reads its anchor file but omits the
+explicit artifact coverage required by ingestion. Its own valid advisory
+output is therefore blocked. This wiring correction and its regressions
+remain open; no final production acceptance is claimed.

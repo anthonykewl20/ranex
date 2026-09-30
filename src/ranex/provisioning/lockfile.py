@@ -158,7 +158,7 @@ def parse_lock(data: bytes) -> Lock:
         optional_value = record.get("optional-dependencies", {})
         if not isinstance(optional_value, dict):
             raise LockError(f"package {name} has malformed optional-dependencies")
-        optional_dependencies = {
+        optional_dependencies: dict[str, tuple[Dependency, ...]] = {
             canonicalize_name(group): _dependencies(dependencies, name)
             for group, dependencies in optional_value.items()
         }

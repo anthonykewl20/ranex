@@ -2166,7 +2166,9 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         if envelope.get("candidate_row_hash") != candidate_row_hash(candidate_record):
             return _merge_refuse(journal, intent, "policy_approval", "sad-path-12 candidate-row-hash-mismatch")
         approver_id = envelope.get("approver_id")
-        approver_key = keyring.get(approver_id) if isinstance(approver_id, str) else None
+        if not isinstance(approver_id, str):
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-13 approver-absent")
+        approver_key = keyring.get(approver_id)
         if approver_key is None:
             return _merge_refuse(journal, intent, "policy_approval", "sad-path-13 approver-absent")
         if not verify_approval(envelope, signature, approver_key):
