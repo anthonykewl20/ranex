@@ -1,6 +1,7 @@
 """Bounded subject snapshots owned by one SARIF interpretation, never a run cache."""
 from __future__ import annotations
 
+import os
 import sys
 from collections import OrderedDict
 from dataclasses import dataclass, fields, replace
@@ -70,11 +71,16 @@ class SubjectReader:
             raise ValueError("subject cache byte budget must be a non-negative integer")
         if not isinstance(max_entries, int) or isinstance(max_entries, bool) or max_entries < 0:
             raise ValueError("subject cache entry budget must be a non-negative integer")
-        self.subject_root = subject_root
+        self._subject_root = Path(os.path.abspath(subject_root))
         self.max_cache_bytes = max_cache_bytes
         self.max_entries = max_entries
         self._entries: OrderedDict[str, tuple[_View, int]] = OrderedDict()
         self._entry_bytes = 0
+
+    @property
+    def subject_root(self) -> Path:
+        """The normalized absolute context captured at creation, never cwd-relative."""
+        return self._subject_root
 
     @property
     def retained_bytes(self) -> int:
@@ -134,3 +140,13 @@ class SubjectReader:
             self._remember(path, view)
         assert view.compact is not None
         return view.compact
+
+
+def reader_for(subject_root: Path, reader: SubjectReader | None = None) -> SubjectReader:
+    """Validate a supplied context before any helper can consume cached bytes."""
+    context = Path(os.path.abspath(subject_root))
+    if reader is None:
+        return SubjectReader(context)
+    if not isinstance(reader, SubjectReader) or reader.subject_root != context:
+        raise ValueError("subject reader context does not match the requested subject root")
+    return reader

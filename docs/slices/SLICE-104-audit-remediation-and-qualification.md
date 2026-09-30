@@ -130,3 +130,13 @@ fixture trust: the exact seven previously failing controls executed with
 This selected run does not establish full manifest acceptance. The root
 unit/contract run was 1620 passed, 8 skipped, 1 known stale-manifest failure
 for the three new prerequisite test IDs. Those IDs require actual refreeze.
+
+### R58 — optional reader context (#209)
+
+An optional reader for another subject could supply that subject's content to
+an explicitly named root. Current CLI contexts already matched; this was a
+reproduced helper API wiring defect. Reader roots now bind normalized absolute
+paths at creation and cannot rebind with cwd. All six optional reader entrypoints
+refuse different contexts. Seven mismatch/cwd cases were red before the fix;
+matching normalized paths remain accepted. Root context/cache/architecture/kernel
+checks: 81 passed. No canonical summary or interpretation binding changed.

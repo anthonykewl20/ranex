@@ -55,7 +55,7 @@ from typing import Any, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
-from ranex.foundation.subject_reader import SubjectReader
+from ranex.foundation.subject_reader import SubjectReader, reader_for
 from ranex.foundation.suite_results import (
     probe_results_artifact,
     read_results_artifact,
@@ -355,7 +355,7 @@ def _region_bytes(
     """
 
     try:
-        lines = (reader or SubjectReader(subject_root)).lines(path)
+        lines = reader_for(subject_root, reader).lines(path)
     except OSError as exc:
         raise ValueError(
             f"SARIF result names {path!r}, which the materialised subject does not carry"
@@ -383,7 +383,7 @@ def _findings(
 ) -> tuple[list[tuple[str, str, str]], set[str] | None]:
     """Every result as `(finding_id, path, level)`, plus the witnessed paths."""
 
-    reader = reader or SubjectReader(subject_root)
+    reader = reader_for(subject_root, reader)
     _validate_sarif_core(sarif)
 
     if sarif.get("version") != _SARIF_VERSION:
@@ -504,7 +504,7 @@ def _materialised_packet_digest(subject_root: Path, *, reader: SubjectReader | N
 
     packet_path = "governance/review-packet.json"
     try:
-        raw = (reader or SubjectReader(subject_root)).read(packet_path)
+        raw = reader_for(subject_root, reader).read(packet_path)
     except ValueError as exc:
         if isinstance(exc.__cause__, FileNotFoundError):
             return None

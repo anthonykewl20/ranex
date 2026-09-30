@@ -46,7 +46,7 @@ from ranex.foundation.scan_results import (
     _validate_sarif_core,
     validate_scan_manifest,
 )
-from ranex.foundation.subject_reader import SubjectReader, _normalise_excerpt
+from ranex.foundation.subject_reader import SubjectReader, _normalise_excerpt, reader_for
 
 DELEGATED_REVIEW_REPORTERS = frozenset({"delegated-review-sarif-2.1.0"})
 
@@ -175,10 +175,11 @@ def resolve_anchor(subject_root: Path, path: str, excerpt: str, *, reader: Subje
     absence returns None — callers treat that as absence (ADR-060 rule 6).
     """
 
+    reader = reader_for(subject_root, reader)
     if not isinstance(excerpt, str) or not excerpt.strip():
         return None
     try:
-        compact = (reader or SubjectReader(subject_root)).compact_lines(path)
+        compact = reader.compact_lines(path)
     except ValueError as exc:
         if isinstance(exc.__cause__, FileNotFoundError):
             return None
@@ -249,7 +250,7 @@ def rederive_findings(
     if not isinstance(runs, list) or not runs:
         raise ValueError("SARIF artifact carries no runs")
 
-    reader = reader or SubjectReader(subject_root)
+    reader = reader_for(subject_root, reader)
     _validate_sarif_core(sarif)
     findings: list[tuple[str, str, str]] = []
     base_counts: dict[str, int] = {}
@@ -391,7 +392,7 @@ def validated_review_findings(
             "delegated-review SARIF properties.packet_digest does not match the "
             f"bound packet ({claimed} != {expected_packet_digest}); substitution refused"
         )
-    reader = reader or SubjectReader(subject_root)
+    reader = reader_for(subject_root, reader)
     rewritten = copy.deepcopy(dict(document))
     findings = rederive_findings(document, subject_root, reader=reader, _rewritten=rewritten)
     # Generic validation checks coverage and the actual re-derived regions;
