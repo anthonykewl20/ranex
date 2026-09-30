@@ -3,7 +3,7 @@
 **Status:** open
 
 Tracking issue: #186. Defect issues: #151–#185,
-#187–#204. No final-commit full-suite PASS claimed.
+#187–#205. No final-commit full-suite PASS claimed.
 
 This change repairs the executable paths identified by the code audit:
 admission retains record identity through qualification; task judge and
@@ -70,5 +70,13 @@ require a new committed-tree run; targeted passes do not replace that result.
 Duplicate rule identifiers refuse before severity reduction (#202). Subject
 regions, packets and artifacts share bounded regular-file reads confined by
 directory descriptors (#203); metadata-only coverage probes avoid rereading
-file contents. Missing scanner coverage remains a production qualification
-blocker (#204), reproduced through authenticated public commands with real Ruff.
+file contents. Missing scanner coverage now prevents qualification (#204),
+including successful commands selecting a different target. Freeze refuses
+uncovered scope. The actual Ruff test adapter derives coverage from its real
+file discovery, preserves exit status, and bounds time and output; it does not
+claim controller-observed file reads.
+
+The next full run at b3b9ccc finished with 2691 passed, 37 skipped and 6 failed.
+Sealed nested fixture assumptions, captured output and manifest drift are still
+being investigated. Repeated per-finding source reads also need improvement
+(#205); the review reducer read 400 MiB for 100 findings in a 1 MiB file.

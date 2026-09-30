@@ -19,6 +19,7 @@ import os
 import pwd
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import _approver
@@ -42,6 +43,59 @@ FORGER = (
     "out = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\n"
     "open(out, 'w').write(open('forged.json').read())\n"
 )
+
+# These reviewed inline bytes are part of the bound catalog command. Coverage
+# comes from Ruff's real discovery, never from the frozen manifest. This is a
+# producer coverage declaration; it does not claim controller-observed reads.
+RUFF_DISCOVERY_ADAPTER = """\
+import json, pathlib, resource, subprocess, sys, tempfile
+LIMIT = 1024 * 1024
+def bounded(argv):
+    def limits():
+        resource.setrlimit(resource.RLIMIT_FSIZE, (LIMIT, LIMIT))
+    with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
+        result = subprocess.run(argv, stdout=out, stderr=err, timeout=30, preexec_fn=limits)
+        out.seek(0); err.seek(0)
+        stdout, stderr = out.read(LIMIT + 1), err.read(LIMIT + 1)
+        if len(stdout) > LIMIT or len(stderr) > LIMIT:
+            raise ValueError('Ruff output exceeds discovery adapter limit')
+        if stderr:
+            sys.stderr.buffer.write(stderr)
+        return result.returncode, stdout
+binary, target = sys.argv[1], sys.argv[-1]
+status, version = bounded([binary, '--version'])
+if status or version.strip() != b'ruff 0.16.2':
+    raise ValueError('discovery adapter requires actual Ruff 0.16.2')
+base = [binary, 'check', '--no-cache', '--isolated', '--select=F401']
+status, discovered = bounded(base + ['--show-files', target])
+if status:
+    sys.exit(status)
+root = pathlib.Path.cwd().resolve()
+paths = sorted(set(pathlib.Path(line).resolve().relative_to(root).as_posix()
+                   for line in discovered.decode('utf-8').splitlines()))
+if any(not (root / path).is_file() for path in paths):
+    raise ValueError('discovered Ruff path does not exist in the subject')
+output = next(arg.split('=', 1)[1] for arg in sys.argv if arg.startswith('--output-file='))
+args = base + (['--exit-zero'] if '--exit-zero' in sys.argv else [])
+args += ['--output-format=sarif', '--output-file=' + output]
+# Empty discovery remains an actual empty-target Ruff check, with artifacts [].
+status, _ = bounded(args + (paths or [target]))
+if status not in (0, 1):
+    sys.exit(status)
+artifact = pathlib.Path(output)
+if not artifact.is_file() or artifact.stat().st_size > LIMIT:
+    raise ValueError('Ruff did not produce a bounded SARIF report')
+document = json.loads(artifact.read_bytes())
+if len(document['runs']) != 1:
+    raise ValueError('Ruff discovery adapter requires one report run')
+document['runs'][0]['artifacts'] = [{'location': {'uri': path}} for path in paths]
+document['runs'][0]['invocations'] = [{'executionSuccessful': status in (0, 1)}]
+encoded = json.dumps(document).encode('utf-8')
+if len(encoded) > LIMIT:
+    raise ValueError('augmented Ruff report exceeds discovery adapter limit')
+artifact.write_bytes(encoded)
+sys.exit(status)
+"""
 
 
 def ruff_binary() -> str:
@@ -103,7 +157,7 @@ def scan_command(binary: str, *, exit_zero: bool = False) -> list[str]:
     whole point of the producer evidence plane.
     """
 
-    return [binary, "check", "--no-cache", "--isolated", "--select=F401",
+    return [sys.executable, "-c", RUFF_DISCOVERY_ADAPTER, binary,
             *(["--exit-zero"] if exit_zero else []),
             "--output-format=sarif", f"--output-file={ARTIFACT}", "pkg"]
 
@@ -561,3 +615,75 @@ def test_real_worker_malformed_sarif_core_refuses(repo, capsys, operation, malfo
                               "--scan-scope", SCOPE, "--scan-rule", "security", "--", *command])
     assert actual == 2, capsys.readouterr()
     assert evaluate(repo) != 0
+
+
+@pytest.mark.parametrize("target", ["empty", "other"])
+@pytest.mark.parametrize("operation", ["run", "freeze"])
+def test_real_ruff_target_outside_frozen_scope_never_satisfies(repo, target, operation, capsys):
+    """A genuine zero-exit Ruff invocation cannot certify an unscanned file."""
+    frozen(repo)
+    (repo / target).mkdir()
+    (repo / target / (".keep" if target == "empty" else "clean.py")).write_text(CLEAN)
+    (repo / SCOPE).write_text(VIOLATION)
+    command = scan_command(ruff_binary())
+    command[-1] = target
+    (repo / "gates.yaml").write_text(catalog(command))
+    commit(repo, "bind genuine scanner to a target outside the frozen scope")
+    if operation == "run":
+        assert run(repo, command) == 0
+        assert records(repo)[-1]["suite_results"]["missing"] == [SCOPE]
+        assert evaluate(repo) != 0
+    else:
+        assert invoke(repo, ["suite", "freeze", "--repository", ".", "--evidence", "evidence.json",
+                             "--artifact", ARTIFACT, "--output", "governance/uncovered.json",
+                             "--results-reporter", "sarif-2.1.0", "--scan-scope", SCOPE,
+                             "--scan-rule", "F401", "--", *command]) == 2
+        assert "coverage missing frozen scope" in capsys.readouterr().err
+        assert not (repo / "governance/uncovered.json").exists()
+
+
+@pytest.mark.parametrize("reporter", ["sarif-2.1.0", "delegated-review-sarif-2.1.0"])
+@pytest.mark.parametrize("coverage", ["absent", "empty", "other"])
+@pytest.mark.parametrize("operation", ["run", "freeze"])
+def test_reporter_without_frozen_scope_coverage_never_satisfies(repo, reporter, coverage, operation, capsys):
+    """A packet binding or successful invocation does not witness file coverage."""
+    import sys
+
+    from ranex.foundation.delegated_review import (
+        build_packet,
+        empty_handbook_digest,
+        packet_bytes,
+        packet_digest,
+    )
+    document = {"version": "2.1.0", "runs": [{
+        "tool": {"driver": {"name": "coverage-probe"}}, "results": [],
+        "invocations": [{"executionSuccessful": True}],
+    }]}
+    if reporter == "delegated-review-sarif-2.1.0":
+        packet = build_packet(subject_digest="sha256:" + "a" * 64,
+                              range_base="b" * 40, range_head="c" * 40,
+                              handbook_digest=empty_handbook_digest(), chapters=[])
+        (repo / "governance/review-packet.json").write_bytes(packet_bytes(packet))
+        document["runs"][0]["properties"] = {"packet_digest": packet_digest(packet)}
+    if coverage != "absent":
+        document["runs"][0]["artifacts"] = (
+            [] if coverage == "empty" else [{"location": {"uri": "other.py"}}]
+        )
+    code = "import sys; open(sys.argv[-1].split('=',1)[1], 'w').write(" + repr(json.dumps(document)) + ")"
+    command = [sys.executable, "-c", code, "--output-format=sarif", f"--output-file={ARTIFACT}"]
+    (repo / "gates.yaml").write_text(catalog(command).replace("sarif-2.1.0", reporter))
+    (repo / MANIFEST).write_bytes(canonical_json_bytes({
+        "scope": [SCOPE], "rules": ["review"], "blocking_levels": ["error"], "accepted": {},
+    }))
+    commit(repo, "bind uncovered report with authentic producer and trusted history")
+    if operation == "run":
+        assert run(repo, command) == 0
+        assert records(repo)[-1]["suite_results"]["missing"] == [SCOPE]
+        assert evaluate(repo) != 0
+    else:
+        assert invoke(repo, ["suite", "freeze", "--repository", ".", "--evidence", "evidence.json",
+                             "--artifact", ARTIFACT, "--output", "governance/uncovered.json",
+                             "--results-reporter", reporter, "--scan-scope", SCOPE,
+                             "--scan-rule", "review", "--", *command]) == 2
+        assert "coverage missing frozen scope" in capsys.readouterr().err
+        assert not (repo / "governance/uncovered.json").exists()

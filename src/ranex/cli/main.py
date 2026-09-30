@@ -3754,7 +3754,7 @@ def _host_qualification_resolution(root: Path, command: Sequence[str]) -> Resolu
 
 
 def _scan_freeze_reader(
-    artifact_relative: Path, *, reporter: str = "sarif-2.1.0"
+    artifact_relative: Path, *, reporter: str = "sarif-2.1.0", scope: tuple[str, ...] = ()
 ) -> Callable[[Path], object]:
     """Read a SARIF artifact and its findings inside the materialisation.
 
@@ -3769,7 +3769,8 @@ def _scan_freeze_reader(
     def read(path: Path) -> object:
         raw = read_results_artifact(artifact_relative, subject_root=path.parents[depth])
         return observed_findings(
-            raw, path.parents[depth], require_review=reporter == REVIEW_REPORTER
+            raw, path.parents[depth], require_review=reporter == REVIEW_REPORTER,
+            required_scope=scope,
         )
 
     return read
@@ -4328,7 +4329,8 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             artifact_reader=(
                 _antislop_freeze_reader(artifact_relative)
                 if antislop_reporter
-                else _scan_freeze_reader(artifact_relative, reporter=args.results_reporter)
+                else _scan_freeze_reader(artifact_relative, reporter=args.results_reporter,
+                                         scope=tuple(args.scan_scope or ()))
                 if scan_reporter
                 else read_results_artifact
             ),

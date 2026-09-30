@@ -33,6 +33,9 @@ BODY = "import os\n\n\ndef answer():\n    return 42\n"
 
 
 def sarif(results: list[dict[str, object]], **run: object) -> bytes:
+    # This fixture declares its actual subject file, independently of whatever
+    # frozen scope a particular test asks the reducer to enforce.
+    run.setdefault("artifacts", [{"location": {"uri": SUBJECT}}])
     document = {
         "version": "2.1.0",
         "runs": [{"tool": {"driver": {"name": "probe"}}, "results": results, **run}],
@@ -77,6 +80,16 @@ def test_a_clean_scan_passes_every_scope_path(subject, manifest) -> None:
     assert summary["non_passed"] == []
     assert summary["missing"] == []
     assert summary["counts"]["passed"] == 1
+
+
+@pytest.mark.parametrize("successful_invocation", [False, True])
+def test_absent_path_coverage_is_missing_even_when_scope_exists(subject, manifest, successful_invocation):
+    document = json.loads(sarif([]))
+    document["runs"][0].pop("artifacts")
+    if successful_invocation:
+        document["runs"][0]["invocations"] = [{"executionSuccessful": True}]
+    summary = scan_results_from_sarif(json.dumps(document).encode(), manifest, subject_root=subject)
+    assert summary["missing"] == [SUBJECT]
 
 
 def test_a_blocking_finding_fails_an_id_the_manifest_froze(subject, manifest) -> None:
@@ -224,16 +237,39 @@ def test_a_freeze_refuses_to_accept_a_finding_nobody_observed(subject) -> None:
 
 
 
-@pytest.mark.parametrize("old_binding", ["legacy", "previous-v2", "previous-review-required"])
+@pytest.mark.parametrize("old_binding,require_review", [
+    pytest.param("legacy", False, id="legacy"),
+    pytest.param("previous-v2", False, id="previous-v2"),
+    pytest.param("previous-review-required", False, id="previous-review-required"),
+    pytest.param("previous-coverage", False, id="previous-coverage"),
+    pytest.param("previous-coverage", True, id="previous-coverage-required-review"),
+])
 def test_signed_legacy_scan_summary_cannot_satisfy_versioned_expectations(
-    subject: Path, manifest: dict[str, object], old_binding: str,
+    subject: Path, manifest: dict[str, object], old_binding: str, require_review: bool,
 ) -> None:
     from ranex.foundation.canonical import canonical_sha256
     from ranex.foundation.signing import ENVELOPE_TYPE, generate_keypair, sign_evidence
     from ranex.governed_execution.domain.admission import admit
     from ranex.governed_execution.domain.verdict import Claim, Gate, evaluate
 
-    current = scan_results_from_sarif(sarif([]), manifest, subject_root=subject)
+    raw = sarif([])
+    if require_review:
+        from ranex.foundation.delegated_review import (
+            build_packet,
+            empty_handbook_digest,
+            packet_bytes,
+            packet_digest,
+        )
+
+        packet = build_packet(subject_digest="sha256:" + "a" * 64,
+                              range_base="b" * 40, range_head="c" * 40,
+                              handbook_digest=empty_handbook_digest(), chapters=[])
+        (subject / "governance").mkdir()
+        (subject / "governance/review-packet.json").write_bytes(packet_bytes(packet))
+        document = json.loads(raw)
+        document["runs"][0]["properties"] = {"packet_digest": packet_digest(packet)}
+        raw = json.dumps(document).encode()
+    current = scan_results_from_sarif(raw, manifest, subject_root=subject, require_review=require_review)
     old_digest = "sha256:" + canonical_sha256(manifest)
     if old_binding in {"previous-v2", "previous-review-required"}:
         old_digest = "sha256:" + canonical_sha256({
@@ -260,8 +296,23 @@ def test_signed_legacy_scan_summary_cannot_satisfy_versioned_expectations(
                 "generic_identity": "subject-region-v1",
             }, "manifest": manifest,
         })
+    if old_binding == "previous-coverage":
+        old_digest = "sha256:" + canonical_sha256({
+            "schema": "ranex-scan-expectations-binding-v2",
+            "semantics": {
+                "review_identity": "excerpt-category-occurrence-v1",
+                "review_severity": "explicit-then-driver-default-v1",
+                "review_category": "rule-id-then-properties-category-v1",
+                "review_packet": "trusted-required-dispatch-v2",
+                "review_required": require_review,
+                "ingestion_core": "strict-interpreted-structure-v3-confined-subject-reads",
+                "coverage": "explicit-witness-required-v1",
+                "generic_identity": "subject-region-v1",
+            }, "manifest": manifest,
+        })
     legacy = {**current, "manifest_digest": old_digest}
-    digest, ids, skips = claim_expectations(canonical_json_bytes(manifest), "sarif-2.1.0")
+    reporter = "delegated-review-sarif-2.1.0" if require_review else "sarif-2.1.0"
+    digest, ids, skips = claim_expectations(canonical_json_bytes(manifest), reporter)
     private, public = generate_keypair()
     command_digest = "sha256:" + "c" * 64
     subject_digest = "sha256:" + "a" * 64

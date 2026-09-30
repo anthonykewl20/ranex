@@ -87,6 +87,11 @@ Claims that require a delegated review bind the
 `delegated-review-sarif-2.1.0` reporter; it requires the materialized review
 packet and matching packet metadata in every explicit declaration. Generic
 SARIF claims retain the `sarif-2.1.0` reporter.
+Both reporters require explicit coverage of every frozen scope path in the
+SARIF `artifacts` declarations. Missing coverage blocks even when the scanner
+exits zero; a successful invocation alone cannot establish path coverage.
+Ruff 0.16.2 does not emit those declarations. An adapter must obtain them from
+the scanner's actual file discovery rather than copy the frozen scope.
 
 After you have committed the policy, public keyring and frozen test manifest,
 provisioned dependencies and configured the signing key, the core loop is:

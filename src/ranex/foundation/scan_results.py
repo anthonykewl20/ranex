@@ -36,13 +36,12 @@ subject at run time: a region past the end of the file, or a snippet the file
 does not carry there, makes the artifact malformed — refused, and absence
 blocks. Nothing is relocated and nothing is guessed.
 
-The coverage boundary, recorded rather than papered over: SARIF's own coverage
-witnesses are `runs[].artifacts[]` and `runs[].invocations[]`, and a producer
-may emit neither — ruff 0.16.2 emits neither. When a witness is present it is
-enforced; when it is absent, a scope path is proved only to *exist* in the
-subject, and "the scanner exited 0 having read nothing" is caught by the run's
-exit code and by nothing else in the artifact. That residual is a GAP in the
-#95 vocabulary, not a pass.
+Frozen scope requires explicit path coverage in `runs[].artifacts[]`. An absent
+coverage declaration leaves every scope path missing, even when the scanner
+exits zero and those files exist. Successful `invocations` do not name paths
+and cannot replace coverage. Ruff 0.16.2 emits neither; a producer adapter can
+declare paths from actual scanner discovery, but must not invent them from the
+manifest. These are producer declarations, not controller-observed file reads.
 """
 
 from __future__ import annotations
@@ -176,7 +175,7 @@ def scan_manifest_digest(
             "review_packet": "trusted-required-dispatch-v2",
             "review_required": require_review,
             "ingestion_core": "strict-interpreted-structure-v3-confined-subject-reads",
-            "coverage": "explicit-witness-required-v1",
+            "coverage": "explicit-scope-witness-required-v2",
             "generic_identity": "subject-region-v1",
         },
         "manifest": validated,
@@ -619,7 +618,7 @@ def _reduce_scan_findings(
     missing = sorted(
         path
         for path in scope
-        if not _subject_file_present(subject_root, path) or (witnessed is not None and path not in witnessed)
+        if not _subject_file_present(subject_root, path) or witnessed is None or path not in witnessed
     )
     expected = set(scan_expected_ids(validated))
     observed = set(outcomes)
@@ -709,7 +708,8 @@ def claim_expectations(
 
 
 def observed_findings(
-    sarif_bytes: bytes, subject_root: Path, *, require_review: bool = False
+    sarif_bytes: bytes, subject_root: Path, *, require_review: bool = False,
+    required_scope: tuple[str, ...] | None = None,
 ) -> tuple[tuple[str, str, str], ...]:
     """Every finding a run reported, as `(finding_id, path, level)`.
 
@@ -736,9 +736,16 @@ def observed_findings(
             raise ValueError("delegated-review findings require a materialised packet")
         from ranex.foundation.delegated_review import validated_review_findings
 
-        findings, _ = validated_review_findings(document, subject_root, expected)
+        findings, witnessed = validated_review_findings(document, subject_root, expected)
     else:
-        findings, _ = _findings(document, subject_root)
+        findings, witnessed = _findings(document, subject_root)
+    if required_scope:
+        missing = sorted(
+            path for path in required_scope
+            if not _subject_file_present(subject_root, path) or witnessed is None or path not in witnessed
+        )
+        if missing:
+            raise ValueError("scan coverage missing frozen scope path(s): " + ", ".join(missing))
     return tuple(findings)
 
 
