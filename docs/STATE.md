@@ -22,6 +22,7 @@ re-check retained; production soak/rotation remain UNVERIFIED.
 Recent closed: #107/#108/#109, #112, #102, #88, #90. Queue: #115, #119,
 #105.
 
-Suite: standing DIRECT 003 / E-C17 host-drift (`/etc/ld.so.cache`) and
-host-bound ELF digest fixtures remain red on this host — quoted, not
-fixed.
+Suite (isolated `/tmp/ranex-90`): `uv run --frozen pytest -q` → 2285
+passed / 88 skipped / 12 failed / 26 errors / exit 1 — standing DIRECT
+003 / E-C17 (`/etc/ld.so.cache`) + host-bound ELF digest fixtures; same
+shape as sibling main worktrees; not fixed here.
