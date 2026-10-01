@@ -407,7 +407,7 @@ def admit(
 ) -> Admission:
     """Split records into evidence and rejections. Never raises on bad input."""
 
-    evidence: list[Evidence] = []
+    evidence: list[tuple[int, Evidence]] = []
     rejections: list[Rejection] = []
     qualifications: list[tuple[int, Evidence, Mapping[str, Any], Any]] = []
 
@@ -542,7 +542,7 @@ def admit(
             continue
 
         if qualification_report is None:
-            evidence.append(admitted)
+            evidence.append((index, admitted))
         else:
             qualifications.append(
                 (index, admitted, qualification_report["host_state"], reject)
@@ -574,6 +574,11 @@ def admit(
                             f"live durable host-state anchor differs: {stale}",
                         )
                 else:
-                    evidence.extend(admitted for _, admitted, _, _ in qualifications)
+                    evidence.extend((index, admitted) for index, admitted, _, _ in qualifications)
 
-    return Admission(evidence=tuple(evidence), rejections=tuple(rejections))
+    # Host-state checks are deferred, but record identity/order is not. Every
+    # downstream refusal must still refer to the original signed record.
+    return Admission(
+        evidence=tuple(item for _, item in sorted(evidence, key=lambda pair: pair[0])),
+        rejections=tuple(sorted(rejections, key=lambda rejection: rejection.index)),
+    )

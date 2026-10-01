@@ -139,7 +139,7 @@ RESPONSE_LIMIT = 65_536
 # E-APPROVER-* refusals), the approver countersignature handed to publish_verdict,
 # and the approvers map threaded to the verdict readers. No confinement,
 # launcher or strict-local call site is touched. This pin is the merge of all five.
-MAIN_PY_SHA256 = "86150ef50d559f80542a468c61c64ea8226e55be02934ae05eb0f41013814831"
+MAIN_PY_SHA256 = "888c4320daadadf4cb5296dc5966dc201ab3b1d137b9ad4d50be66500bd2837a"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
