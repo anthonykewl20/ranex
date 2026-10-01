@@ -556,7 +556,7 @@ currently exposes:
 antislop
 deps fetch | approve
 gate evaluate
-github bind | check publish | check qualify | check verify | listen | register | status | ruleset
+github bind | check publish | listen | register | status | ruleset
 history bootstrap | migrate | recover
 host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
 journal verify
