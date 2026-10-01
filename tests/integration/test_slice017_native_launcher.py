@@ -142,7 +142,7 @@ RESPONSE_LIMIT = 65_536
 # Audit remediation: authenticated history, serialized task merge, explicit
 # review reporters, confined scanner artifact reads and paired runtime output
 # exemptions; native routing retained.
-MAIN_PY_SHA256 = "a523ac98ed34c70f26948692351bf504798967d9a3ea18e4f7392577f3182ed8"
+MAIN_PY_SHA256 = "d09ba3258dff040a78f9bd992ce3053a59d9fce208579672807bd39f70e1da1f"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

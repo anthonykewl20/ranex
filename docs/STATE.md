@@ -13,4 +13,12 @@ Full suite (final commit): 2865 passed, 22 failed, 41 skipped, 25 errors.
 32 baseline reds fixed; 1 new red classified host-transient (passed 3/3 isolated reruns).
 Manifest ceremony accepted: 2953 tests, 125 expected skips.
 
-Next: C1 follow-up #223, then H1 verification.
+Settings PR-0a implemented on branch captain/settings-pr0a (ADR-071).
+Adds scoped catalogs, loader, policy digest and `ranex settings show|get`;
+no consumers migrated, kernel unchanged. Focused settings/architecture: 73 passed.
+Mutation spot-check: 8 failed, 21 passed; restored checks pass.
+Ruff passes; Pyrefly reports 0 errors. Suite/manifest results in PR/report.
+
+Next: settings PR-0b (v6 envelope, admission binding and live path),
+then PR-0c (platform table and no-literal contract test).
+Remediation follow-up: C1 #223, then H1 verification.
