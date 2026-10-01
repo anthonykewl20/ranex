@@ -26,9 +26,9 @@ remediation queue so the work survives the session.
 ## Verdict
 
 The kernel is real and well tested. Eight of the eleven recent features are
-genuinely shipped end to end. But the initial plans are NOT finished, one
-CRITICAL fail-open sits in the policy-context binding, the suite is red on the
-settled tip for reasons that are not only host drift, and the owner's
+genuinely shipped end to end. But the initial plans are NOT finished, the
+CRITICAL policy-context fail-open is now remediated (C1 below), the suite was
+red on the settled tip for reasons that are not only host drift, and the owner's
 logging requirement is unmet at every level.
 
 ## Findings
@@ -44,7 +44,23 @@ logging requirement is unmet at every level.
   A `host-qualification` record placed before a foreign-policy record shifts
   every pairing: the foreign record is admitted under the wrong gate and
   catalog, and the honest record is rejected. Reproduced through the
-  production chain. No test mixes both record kinds.
+  production chain. No test mixed both record kinds at audit time.
+  **Remediated:** `f01d42a` (2026-10-01). Admission preserves original record
+  order even after deferred host-state checks; both executable containment and
+  policy filtering check equal lengths and every evidence field against its
+  signed source, refusing duplicate envelopes and broken/missing identity.
+  `tests/security/test_c1_policy_context_pairing.py` covers both production-chain
+  orderings and malformed, missing, duplicate, unmatched and length-mismatched
+  identity. Origin/main `c3ac86a85710dc615902e72d473d218d880e5af6`:
+  16 failed / 3 passed; fixed branch: 19 passed (63 with existing qualification,
+  policy-context and kernel-byte contracts). The reverse-order counterfactual
+  was already green on main; qualification-first was red. Kernel bytes remain
+  `2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6`.
+  `MAIN_PY_SHA256` re-pinned in the implementation commit. Production refreeze
+  on that committed tree: 2469 tests / 157 expected skips, `load_manifest`
+  accepted; sealed run 2268 passed / 146 skipped / 22 failed / 33 errors.
+  That nonzero run is not PASS; direct final-suite drift comparison is reported
+  separately in the C1 review PR.
 
 ### HIGH
 
@@ -224,10 +240,9 @@ Progress: 2026-10-01 — the #105 OCR-subject gap is closed (static
 entrypoint v3 admission + proof arms 0/1/2/3/5 VERIFIED; arm 4 GAP by
 owner decision); see `tools/dogfood/audits/2026-09-30-ocr-subject-v2/`.
 
-1. C1: order-preserving admission so policy-context binding cannot fail open.
-   Acceptance: mixed qualification + foreign-policy records refuse the foreign
-   record; new security test covers the mixed ordering.
-2. H1: anchor the observation-chain head in the signed verdict. Acceptance:
+1. C1: **done**, `f01d42a`; order-preserving admission with checked identity,
+   both mixed record orderings covered by production-chain security regressions.
+2. H1: **next** — anchor the observation-chain head in the signed verdict. Acceptance:
    wholesale chain rewrite is refused like the journal anchor case.
 3. M1/M2: promotion gate refuses non-finite and wrong-type claim fields as
    data with named causes. Acceptance: NaN/inf/malformed-tau claims produce
