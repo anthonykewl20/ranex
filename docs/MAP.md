@@ -202,9 +202,9 @@ journal-effect requirements. The README correction replaces the prior false
 assertion with the implemented `ranex journal verify`, and adds the still-open
 rollback/truncation risk. Sources outside the repository, all in the external
 backup tree `ranex-FULL-BACKUP-2026-07-31` (no longer present on this host):
-docs/research/cookbook-alignment-research-2026-07-27.md:605-990,
-docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md:20,
-docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-398.
+ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:605-990,
+ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md:20,
+ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-398.
 
 ### 0.11 What changed in `2.6.0` — adversarial pass
 
