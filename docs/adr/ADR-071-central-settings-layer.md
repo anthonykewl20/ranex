@@ -34,7 +34,7 @@ It must never read settings (see D3, C1).
 
 ## Decision
 
-**D1** One typed settings module src/ranex/foundation/settings.py (new module, created by PR-0) (frozen
+**D1** One typed settings module module ranex.foundation.settings (new module, created by PR-0) (frozen
 dataclasses, one per section from report 012) is the only place code reads
 configuration; no other module reads `os.environ` or a settings file directly.
 Every key carries `scope = policy | mechanics` (C1).
@@ -64,7 +64,7 @@ transport, redaction and cleanup are specified in C3.
 **D5** Not settings: trust pins stay code constants pinned by tests; standard
 constants stay; platform facts (syscall numbers, loader paths, triples) come
 from a built-in per-architecture table selected from the running machine
-(src/ranex/foundation/platform.py (new module), C5), with unsupported architectures
+(module ranex.foundation.platform (new module), C5), with unsupported architectures
 refused, not configured.
 
 **D6** Identity: product output (SARIF `informationUri`, release URLs, check
@@ -138,7 +138,7 @@ step-time values via `ranex settings get <key>` (E2). Migration starts after
 the remediation integration (order 011) merges, so remediation-only files are
 covered.
 
-**C5 (F4/D5) Platform table.** src/ranex/foundation/platform.py (new module) maps (os,
+**C5 (F4/D5) Platform table.** module ranex.foundation.platform (new module) maps (os,
 arch) to syscall numbers, loader paths and triples; unsupported platforms are
 refused, never configured.
 
