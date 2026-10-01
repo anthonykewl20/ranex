@@ -9,9 +9,9 @@ implementer.
 The frozen interface this file pins (the frame's one library module,
 `tests/e2e/_prereqs.py` — issue #35's exact ownership):
 
-    PROBE_NAMES                        the six frozen probe names, exactly:
+    PROBE_NAMES                        historical probes plus Rekor transport:
                                        pinned_resolver, network_available,
-                                       signing_key, harness_fork,
+                                       rekor_network, signing_key, harness_fork,
                                        openrouter_key, qualified_host
     <probe>() -> (ok: bool, reason: str)   one callable per name
     REASON_PREFIX = "ranex-prereq:"    machine-greppable reason grammar: an
@@ -129,11 +129,12 @@ def _make_present(kind: str, tmp_path: Path) -> str:
 
 
 def test_the_six_frozen_probe_names_exist_as_callables() -> None:
-    """Exactly the six ADR-named probes, each a callable returning a pair."""
+    """Historical probes plus the public Rekor transport prerequisite."""
 
     assert _prereqs.PROBE_NAMES == (
         "pinned_resolver",
         "network_available",
+        "rekor_network",
         "signing_key",
         "harness_fork",
         "openrouter_key",
@@ -922,7 +923,7 @@ def test_prereq_tier_declaration_with_unmarked_observed_message_is_a_finding(
 #:
 #:     ``ranex-prereq:<probe>: <prose>`` — HARD tier. The declaration
 #:     asserts a context-independent, probe-verifiable condition;
-#:     ``<probe>`` must be one of the six frozen probes, exactly the
+#:     ``<probe>`` must be one of the registered probes, exactly the
 #:     mapping the cross-check's probe-backed tier verifies live in both
 #:     directions.
 #:
@@ -953,7 +954,7 @@ def _declaration_defect(reason: str) -> str | None:
             return "carries the probe marker but no '<probe>:' slot"
         if probe not in _prereqs.PROBE_NAMES:
             return (
-                f"names {probe!r} — not one of the six frozen probes — so "
+                f"names {probe!r} — not one of the registered probes — so "
                 "the probe-backed tier cannot verify it and the declaration "
                 "would silently fall informational"
             )
@@ -1617,3 +1618,41 @@ def test_frame_qualification_limitation_matches_the_spine_copy_on_identical_inpu
             f"scenario {name!r}: the limitation output shape is None or a "
             f"non-empty string, not {frame_verdict!r}"
         )
+
+
+@pytest.mark.parametrize('response_kind', ['success', 'http-error', 'network-error'])
+def test_rekor_network_probe_uses_real_client_transport_and_exact_endpoint(monkeypatch, response_kind):
+    import urllib.error
+    import urllib.request
+
+    from ranex.governed_execution.witness import DEFAULT_WITNESS_URL
+
+    observed = []
+    closed = []
+
+    class Response:
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            closed.append(True)
+        def read(self, *args):
+            raise AssertionError('network prerequisite must not consume log content')
+
+    def transport(request, timeout):
+        observed.append((request.full_url, request.get_method(), timeout))
+        if response_kind == 'http-error':
+            raise urllib.error.HTTPError(request.full_url, 405, 'HEAD unavailable', {}, None)
+        if response_kind == 'network-error':
+            raise urllib.error.URLError('network denied')
+        return Response()
+
+    monkeypatch.setattr(urllib.request, 'urlopen', transport)
+    ok, reason = _prereqs.rekor_network()
+    assert observed == [(DEFAULT_WITNESS_URL, 'HEAD', 3)]
+    if response_kind == 'network-error':
+        assert ok is False
+        assert reason == 'ranex-prereq:rekor_network: rekor.sigstore.dev:443 unreachable'
+    else:
+        assert ok is True
+        if response_kind == 'success':
+            assert closed == [True]

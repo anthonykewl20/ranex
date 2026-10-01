@@ -38,7 +38,7 @@ def _open_created_directory(root: Path, directory: Path) -> int:
         raise
 
 
-def write_atomic(target: Path, data: bytes, *, root: Path) -> None:
+def write_atomic(target: Path, data: bytes, *, root: Path, exclusive: bool = False) -> None:
     target = Path(target).absolute()
     parent = _open_created_directory(root, target.parent)
     temporary = f".{target.name}.{uuid.uuid4().hex}"
@@ -56,13 +56,20 @@ def write_atomic(target: Path, data: bytes, *, root: Path) -> None:
                 raise OSError("atomic write made no progress")
             view = view[written:]
         os.fsync(descriptor)
-        try:
-            os.link(target.name, backup, src_dir_fd=parent, dst_dir_fd=parent,
+        if exclusive:
+            # link is an atomic create-if-absent; unlike replace it cannot reset
+            # an independently retained checkpoint during bootstrap.
+            os.link(temporary, target.name, src_dir_fd=parent, dst_dir_fd=parent,
                     follow_symlinks=False)
-            had_previous = True
-        except FileNotFoundError:
-            pass
-        os.replace(temporary, target.name, src_dir_fd=parent, dst_dir_fd=parent)
+            os.unlink(temporary, dir_fd=parent)
+        else:
+            try:
+                os.link(target.name, backup, src_dir_fd=parent, dst_dir_fd=parent,
+                        follow_symlinks=False)
+                had_previous = True
+            except FileNotFoundError:
+                pass
+            os.replace(temporary, target.name, src_dir_fd=parent, dst_dir_fd=parent)
         try:
             os.fsync(parent)
         except OSError:

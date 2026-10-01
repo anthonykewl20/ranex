@@ -36,6 +36,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import _approver
 import pytest
 
 EXIT_PASS = 0
@@ -98,6 +99,7 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
     (repository / "producers.yaml").write_text(
         f"producers:\n  worker: {keys['public']}\n", encoding="utf-8"
     )
+    _approver.register_history_service(repository, repository / "producers.yaml", tmp_path)
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
@@ -117,6 +119,7 @@ def invoke(repo: Path, argv: list[str], key_path: str | None) -> int:
             monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
         else:
             monkeypatch.setenv("RANEX_SIGNING_KEY", key_path)
+        _approver.history_for(repo).configure(monkeypatch, "evidence.json")
         return main(argv)
 
 

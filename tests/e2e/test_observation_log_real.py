@@ -51,6 +51,8 @@ def invoke(
         if not name.startswith(("RANEX_", "GIT_", "PYTHON", "COVERAGE_"))
     }
     environment["PYTHONPATH"] = str(KERNEL / "src")
+    environment["RANEX_VERDICT_SIGNING_KEY"] = str(repo.parent / "history-service.key")
+    environment["RANEX_HISTORY_CHECKPOINT"] = str(repo.parent / "history-checkpoint.json")
     if signing_key is not None:
         environment["RANEX_SIGNING_KEY"] = str(signing_key)
     if approver_key is not None:
@@ -102,8 +104,12 @@ def observation_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
         encoding="utf-8",
     )
     (repo / "README.md").write_text("observation subject\n", encoding="utf-8")
+    import _history
+    private, public, _ = _history.mint_service(tmp_path)
+    _history.register_service(repo / "governance/producers.yaml", public)
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "init")
+    _history.establish(repo, "governance/evidence.json", tmp_path / "history-checkpoint.json", private, public)
     return repo, signer, approver_key
 
 
@@ -173,6 +179,7 @@ def test_arm1_deleted_fail_named_removed_observation(
     assert "FAIL" in control.stdout
 
     # Delete the FAIL from the projection; the chain still holds it.
+    evidence.chmod(0o600)
     evidence.write_text("[]\n", encoding="utf-8")
     deleted = _evaluate(repo, approver_key)
     assert deleted.returncode == 1, deleted.stdout + deleted.stderr

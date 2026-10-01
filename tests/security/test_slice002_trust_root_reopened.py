@@ -172,6 +172,9 @@ def invoke(
             _approver.strip_approvers(monkeypatch)
         else:
             monkeypatch.setenv(_approver.APPROVER_ENV, approver_path)
+        if argv[0] != "keygen":
+            evidence = argv[argv.index("--evidence") + 1] if "--evidence" in argv else "governance/evidence.json"
+            _approver.history_for(repo).configure(monkeypatch, evidence)
         return main(argv)
 
 
@@ -205,6 +208,7 @@ def write_keyring(
     # the attacker keyrings below are refused before any identity resolves.
     if approver_public is not None:
         _approver.register_approver(target, "reviewer", approver_public)
+        _approver.register_history_service(repo, target, repo.parent)
 
 
 def git_output(repo: Path, *args: str) -> str:
@@ -288,9 +292,7 @@ def record(
 
 
 def write_evidence(repo: Path, records: list[dict[str, object]]) -> None:
-    (repo / "evidence.json").write_text(
-        json.dumps(records, indent=2) + "\n", encoding="utf-8"
-    )
+    _approver.history_for(repo).write(records, "evidence.json")
 
 
 def run_cmd(
@@ -510,7 +512,7 @@ def test_gitignored_producer_keyring_is_refused(
         repo, worker=keys.public["worker"], approver_public=keys.approver_public
     )
     (repo / ".gitignore").write_text(
-        ".cache/\nevidence.json\ngovernance/\n", encoding="utf-8"
+        ".cache/\nevidence.json\nobservations.sqlite3*\ngovernance/\n", encoding="utf-8"
     )
     commit_all(repo)
 
@@ -762,16 +764,12 @@ def swap_inside_the_window(
 ) -> list[str]:
     """Rewrite `replacements` on disk exactly once, from inside `gate evaluate`.
 
-    `refuse_uncommitted_trust_root` reads the file, compares it against the
-    bytes the ref records, and returns — and the bytes it read are then thrown
-    away. Every loader afterwards re-opens the same path BY NAME. So there are
-    two reads of a name the observed party owns, and this hook stands between
-    them: the evidence load runs after both trust-root checks and before either
-    the keyring or the catalog is opened, verified by tracing an ordinary
-    evaluation, which touches them in the order
-
-        trust-root check (keyring), trust-root check (catalog), evidence,
-        keyring, catalog.
+    The current CLI captures committed keyring and catalog bytes before
+    anchored evidence reconciliation. This hook changes their working-tree
+    names at that reconciliation seam, before admission and judgment use the
+    captured bytes. Reopening either name afterwards would let the substituted
+    trust root decide the verdict. The unchanged-files control proves this
+    actual seam fires and does not suppress an honest PASS.
 
     Deterministic and not threaded, the same technique as
     `test_the_file_that_runs_is_the_file_containment_cleared`. A racing test
@@ -787,17 +785,17 @@ def swap_inside_the_window(
 
     import ranex.cli.main as cli
 
-    real_load_records = cli.load_records
+    real_reconcile = cli.reconcile_anchored
     entered: list[str] = []
 
-    def swap_then_load(path: Path) -> list[object]:
+    def swap_then_load(path: Path, *args, **kwargs):
         if not entered:
             entered.append(str(path))
             for relative, content in replacements.items():
                 (repo / relative).write_text(content, encoding="utf-8")
-        return real_load_records(path)
+        return real_reconcile(path, *args, **kwargs)
 
-    monkeypatch.setattr("ranex.cli.main.load_records", swap_then_load)
+    monkeypatch.setattr("ranex.cli.main.reconcile_anchored", swap_then_load)
     return entered
 
 

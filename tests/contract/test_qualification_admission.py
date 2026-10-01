@@ -161,6 +161,81 @@ def admit_with_live(monkeypatch: pytest.MonkeyPatch, records, public: str, live=
     return admission.admit(records, {"qualifier": public})
 
 
+@pytest.mark.parametrize("host_position", [0, 1, 2])
+@pytest.mark.parametrize("foreign_field", ["gate_id", "catalog_digest"])
+def test_mixed_qualification_policy_filter_checks_each_records_own_context(
+    monkeypatch, identity, tmp_path: Path, host_position: int, foreign_field: str
+) -> None:
+    from ranex.cli.main import admit_records
+
+    private, public = identity
+    host = raw_record(private)
+    ordinary = {key: value for key, value in host.items() if key != "signature"}
+    ordinary.update(claim_id="ordinary", suite_results=None)
+    ordinary[foreign_field] = (
+        "foreign" if foreign_field == "gate_id" else "sha256:" + "f" * 64
+    )
+    ordinary["signature"] = signing.sign_evidence(ordinary, private)
+    records = [ordinary, {}]
+    records.insert(host_position, host)
+    evidence_path = tmp_path / "evidence.json"
+    evidence_path.write_text(json.dumps(records), encoding="utf-8")
+    monkeypatch.setattr(admission, "_read_live_durable_host_state", lambda: HOST_STATE)
+
+    admitted = admit_records(
+        evidence_path,
+        {"qualifier": public},
+        gate_id="landing",
+        catalog_digest=host["catalog_digest"],
+        allow_unanchored_history=True,
+    )
+
+    assert [item.claim_id for item in admitted.evidence] == ["host-qualification"]
+    foreign_rejection = next(
+        item for item in admitted.rejections if item.claim_id == "ordinary"
+    )
+    assert foreign_rejection.index == records.index(ordinary)
+    assert foreign_rejection.reason is admission.RejectionReason.POLICY_CONTEXT_MISMATCH
+    gate = Gate("landing", "RULE", (Claim("ordinary", ordinary["command_digest"]),), True)
+    assert evaluate(
+        gate, admitted.evidence, subject_digest=SUBJECT, approver_id="reviewer"
+    ).verdict is Verdict.FAIL
+
+
+def test_containment_then_policy_filter_preserves_mixed_record_identity(
+    monkeypatch, identity, tmp_path: Path
+) -> None:
+    from ranex.cli.main import admit_records
+
+    private, public = identity
+    host = raw_record(private)
+
+    def ordinary(claim: str, **changes: object) -> dict[str, object]:
+        content = {key: value for key, value in host.items() if key != "signature"}
+        content.update(claim_id=claim, suite_results=None, **changes)
+        return {**content, "signature": signing.sign_evidence(content, private)}
+
+    inside = ordinary("inside", executable_path=str(tmp_path / "worker"))
+    foreign = ordinary("foreign", gate_id="other-gate")
+    records = [host, {}, inside, foreign]
+    evidence_path = tmp_path / "evidence.json"
+    evidence_path.write_text(json.dumps(records), encoding="utf-8")
+    monkeypatch.setattr(admission, "_read_live_durable_host_state", lambda: HOST_STATE)
+
+    admitted = admit_records(
+        evidence_path, {"qualifier": public}, tmp_path,
+        gate_id="landing", catalog_digest=host["catalog_digest"],
+        allow_unanchored_history=True,
+    )
+
+    assert [item.claim_id for item in admitted.evidence] == ["host-qualification"]
+    assert [(item.index, item.claim_id, item.reason) for item in admitted.rejections] == [
+        (1, None, admission.RejectionReason.MALFORMED_RECORD),
+        (2, "inside", admission.RejectionReason.EXECUTABLE_INSIDE_SUBJECT),
+        (3, "foreign", admission.RejectionReason.POLICY_CONTEXT_MISMATCH),
+    ]
+
+
 def qualification_catalog(*, report: str, extra: str = "") -> str:
     return f"""gates:
   - gate_id: landing
@@ -516,6 +591,11 @@ def test_cmd_task_judge_uses_shared_qualification_admission(
     (governance / "producers.yaml").write_text(
         f"producers:\n  qualifier: {public}\n", encoding="utf-8"
     )
+    import _history
+    service_private, service_public, _ = _history.mint_service(tmp_path)
+    _history.register_service(governance / "producers.yaml", service_public)
+    checkpoint = tmp_path / "history-checkpoint.json"
+    monkeypatch.setenv("RANEX_HISTORY_CHECKPOINT", str(checkpoint))
     (repository / "candidate.txt").write_text("base\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
@@ -546,8 +626,8 @@ def test_cmd_task_judge_uses_shared_qualification_admission(
         live = copy.deepcopy(HOST_STATE)
         live["boot_id"] = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
         monkeypatch.setattr(admission, "_read_live_durable_host_state", lambda: live)
-    evidence_path = governance / "evidence.json"
-    evidence_path.write_text(json.dumps(records), encoding="utf-8")
+    _history.establish(repository, "governance/evidence.json", checkpoint, service_private, service_public)
+    _history.write_records(repository, "governance/evidence.json", records, checkpoint, service_private, service_public)
 
     journal_path = tmp_path / f"{qualification}.sqlite3"
     Journal(journal_path).append(TaskDispatch("T-19", str(repository), base))

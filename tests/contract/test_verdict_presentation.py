@@ -30,9 +30,10 @@ import pty
 import re
 import subprocess
 import sys
-import uuid
 from pathlib import Path
 
+import _approver
+import _history
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -54,41 +55,24 @@ def _cli(*args: str) -> list[str]:
     return [sys.executable, "-m", "ranex.cli.main", *args]
 
 
-def _environment(verdict: bool = False) -> dict[str, str]:
+def _environment(verdict: bool = False, extra: dict[str, str] | None = None) -> dict[str, str]:
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(REPO_ROOT / "src")
-    # Deliberately NOT set: a test that only passes with NO_COLOR set would
-    # prove the opposite of the rule. The claim is that content never varies,
-    # not that colour can be suppressed on request.
     environment.pop("NO_COLOR", None)
-    if verdict:
-        # RISK-07: judging this repository means proving possession of the
-        # catalogued approver's key (release-approver in the committed
-        # catalog). That is the operator's credential: taken from the
-        # environment or its conventional home, and skipped honestly where
-        # the host does not hold it — never faked, never weakened.
-        key = os.environ.get("RANEX_APPROVER_SIGNING_KEY")
-        if not key:
-            conventional = Path.home() / ".config" / "ranex" / "approver.key"
-            if conventional.is_file():
-                key = str(conventional)
-        if not key or not Path(key).is_file():
-            pytest.skip(
-                "a real verdict on this repository needs the operator's "
-                "approver key (RANEX_APPROVER_SIGNING_KEY or "
-                "~/.config/ranex/approver.key); nowhere to be found here"
-            )
-        environment["RANEX_APPROVER_SIGNING_KEY"] = key
+    for variable in ("RANEX_APPROVER_SIGNING_KEY", "RANEX_VERDICT_SIGNING_KEY",
+                     "RANEX_VERDICT_DIR", "RANEX_HISTORY_CHECKPOINT"):
+        environment.pop(variable, None)
+    environment.update(extra or {})
     return environment
 
 
-def _through_pipe(args: list[str], *, verdict: bool = False) -> bytes:
+def _through_pipe(args: list[str], *, verdict: bool = False, extra=None) -> bytes:
     """stdout and stderr interleaved, with neither attached to a terminal."""
 
     completed = subprocess.run(
         args,
         cwd=REPO_ROOT,
-        env=_environment(verdict),
+        env=_environment(verdict, extra),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         timeout=600,
@@ -97,14 +81,14 @@ def _through_pipe(args: list[str], *, verdict: bool = False) -> bytes:
     return completed.stdout
 
 
-def _through_pty(args: list[str], *, verdict: bool = False) -> bytes:
+def _through_pty(args: list[str], *, verdict: bool = False, extra=None) -> bytes:
     """The same command with a real terminal on both streams."""
 
     master, slave = pty.openpty()
     process = subprocess.Popen(
         args,
         cwd=REPO_ROOT,
-        env=_environment(verdict),
+        env=_environment(verdict, extra),
         stdout=slave,
         stderr=slave,
         close_fds=True,
@@ -128,21 +112,45 @@ def _through_pty(args: list[str], *, verdict: bool = False) -> bytes:
     return _CR.sub(b"", b"".join(chunks))
 
 
-def _verdict_arguments() -> tuple[list[str], Path]:
-    """A real gate evaluation, journalled somewhere disposable.
+def _subject(tmp_path: Path) -> tuple[Path, dict[str, str], str, str, Path]:
+    from ranex.foundation.signing import generate_keypair
 
-    Path confinement refuses absolute paths, so pytest's `tmp_path` cannot be
-    used for `--journal`. A unique repo-relative name keeps concurrent runs from
-    sharing a journal, and every caller removes it in a `finally`.
-    """
+    repository = tmp_path / "subject"
+    repository.mkdir()
+    governance = repository / "governance"
+    governance.mkdir()
+    _, worker = generate_keypair()
+    (governance / "producers.yaml").write_text(f"producers:\n  worker: {worker}\n")
+    approver, public = _approver.mint_approver(tmp_path)
+    _approver.register_approver(governance / "producers.yaml", "release-approver", public)
+    private, service, key = _history.mint_service(tmp_path)
+    _history.register_service(governance / "producers.yaml", service)
+    catalog = (
+        "gates:\n  - gate_id: landing\n    rule_id: TESTS_EXECUTED\n"
+        "    blocking: true\n    required_claims:\n"
+    )
+    for claim in ("tests-executed", "host-qualification", "architecture"):
+        catalog += f"      - claim_id: {claim}\n        command: [\"{claim}\"]\n"
+    (governance / "gates.yaml").write_text(catalog)
+    for args in (("init", "-q"), ("config", "user.email", "fixture@example.invalid"),
+                 ("config", "user.name", "Fixture"), ("add", "."), ("commit", "-qm", "fixture")):
+        subprocess.run(["git", "-C", str(repository), *args], check=True, capture_output=True)
+    checkpoint = tmp_path / "history.json"
+    _history.establish(repository, "governance/evidence.json", checkpoint, private, service)
+    environment = {"RANEX_APPROVER_SIGNING_KEY": str(approver),
+                   "RANEX_VERDICT_SIGNING_KEY": str(key),
+                   "RANEX_HISTORY_CHECKPOINT": str(checkpoint)}
+    return repository, environment, private, service, checkpoint
 
-    journal = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
+
+def _verdict_arguments(tmp_path: Path) -> tuple[list[str], Path, dict[str, str]]:
+    repository, environment, _, _, _ = _subject(tmp_path)
+    journal = repository / "governance" / "presentation.sqlite3"
     arguments = [
-        "gate", "evaluate", "HEAD",
-        "--approver", "release-approver",
-        "--journal", f"governance/{journal.name}",
+        "gate", "evaluate", "HEAD", "--external-repository", str(repository),
+        "--approver", "release-approver", "--journal", "governance/presentation.sqlite3",
     ]
-    return arguments, journal
+    return arguments, journal, environment
 
 
 # One invocation per output shape the CLI has. A rule proven only on the happy
@@ -150,10 +158,11 @@ def _verdict_arguments() -> tuple[list[str], Path]:
 _INVOCATIONS = ("verdict", "usage-error", "help")
 
 
-def _run(name: str) -> tuple[bytes, bytes]:
+def _run(name: str, tmp_path: Path) -> tuple[bytes, bytes]:
     journal: Path | None = None
+    environment = None
     if name == "verdict":
-        arguments, journal = _verdict_arguments()
+        arguments, journal, environment = _verdict_arguments(tmp_path)
     elif name == "usage-error":
         arguments = ["gate", "evaluate", "HEAD"]  # no --approver
     else:
@@ -162,8 +171,8 @@ def _run(name: str) -> tuple[bytes, bytes]:
     try:
         verdict = name == "verdict"
         return (
-            _through_pipe(_cli(*arguments), verdict=verdict),
-            _through_pty(_cli(*arguments), verdict=verdict),
+            _through_pipe(_cli(*arguments), verdict=verdict, extra=environment),
+            _through_pty(_cli(*arguments), verdict=verdict, extra=environment),
         )
     finally:
         if journal is not None:
@@ -171,10 +180,10 @@ def _run(name: str) -> tuple[bytes, bytes]:
 
 
 @pytest.mark.parametrize("name", _INVOCATIONS)
-def test_content_is_identical_under_pipe_and_pty(name: str) -> None:
+def test_content_is_identical_under_pipe_and_pty(name: str, tmp_path: Path) -> None:
     """The same command, watched and unwatched, says exactly the same thing."""
 
-    piped, attended = _run(name)
+    piped, attended = _run(name, tmp_path)
 
     assert piped, f"{name} produced no output, so this test would prove nothing"
     assert _ANSI.sub(b"", piped) == _ANSI.sub(b"", attended), (
@@ -185,11 +194,11 @@ def test_content_is_identical_under_pipe_and_pty(name: str) -> None:
     )
 
 
-def test_a_verdict_carries_no_styling_even_on_a_terminal() -> None:
+def test_a_verdict_carries_no_styling_even_on_a_terminal(tmp_path: Path) -> None:
     """Equality alone would pass two identically coloured captures. A verdict is
     held to the stronger claim: it is undecorated wherever it is read."""
 
-    piped, attended = _run("verdict")
+    piped, attended = _run("verdict", tmp_path)
 
     assert b"FAIL" in attended or b"PASS" in attended, (
         "the verdict invocation printed no verdict, so this proves nothing"
@@ -230,36 +239,23 @@ def test_source_contains_no_styling_primitives() -> None:
 
 
 def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
-    from ranex.foundation.canonical import canonical_sha256
+    """The pure formatter preserves diagnosis for records with no usable claim."""
+    from ranex.foundation.canonical import command_digest
+    from ranex.governed_execution.domain.admission import admit
+    from ranex.governed_execution.domain.verdict import Claim, Gate, evaluate
+    from ranex.governed_execution.verdict_presentation import render_verdict_stdout
+    from ranex.governed_execution.verdict_projection import project_verdict
 
-    evidence = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.json"
-    evidence.write_text(json.dumps([
-        {"claim_id": "tests-executed"},
-        {"claim_id": 7},
-    ]), encoding="utf-8")
-    journal_pipe = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
-    journal_pty = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
-    common = [
-        "gate", "evaluate", "HEAD", "--approver", "release-approver",
-        "--evidence", f"governance/{evidence.name}",
-    ]
-    try:
-        piped = _through_pipe(
-            _cli(*common, "--journal", f"governance/{journal_pipe.name}"), verdict=True
-        )
-        attended = _through_pty(
-            _cli(*common, "--journal", f"governance/{journal_pty.name}"), verdict=True
-        )
-    finally:
-        evidence.unlink(missing_ok=True)
-        journal_pipe.unlink(missing_ok=True)
-        journal_pty.unlink(missing_ok=True)
-
-    tree = subprocess.run(
-        ["git", "rev-parse", "HEAD^{tree}"], cwd=REPO_ROOT, check=True,
-        capture_output=True, text=True,
-    ).stdout.strip()
-    subject = "sha256:" + canonical_sha256({"tree": tree})
+    subject = "sha256:" + "a" * 64
+    gate = Gate("landing", "TESTS_EXECUTED", tuple(
+        Claim(claim, command_digest([claim]))
+        for claim in ("tests-executed", "host-qualification", "architecture")
+    ), True)
+    admission = admit([{"claim_id": "tests-executed"}, {"claim_id": 7}], {})
+    result = evaluate(gate, admission.evidence, subject_digest=subject, approver_id="owner")
+    projected = project_verdict(result, admission, required_claims=tuple(
+        claim.claim_id for claim in gate.required_claims), journal_head=None)
+    rendered = render_verdict_stdout(result, admission, projected).encode()
     expected = (
         b"FAIL  gate=landing  rule=TESTS_EXECUTED\n"
         b"      REFUSED record 0 [malformed-record] missing field(s): catalog_digest, command, command_digest, confinement_profile_digest, confinement_result_digest, envelope_type, executable_path, exit_code, gate_id, producer_id, subject_digest, suite_results\n"
@@ -267,5 +263,18 @@ def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
         b"      2 record(s) were refused above; no verifying evidence remains for: tests-executed\n"
         b"      1 record(s) above were refused without a usable claim_id, so these required claims cannot be called work never done: architecture, host-qualification\n"
     ) + f"      subject={subject}\n".encode()
-    assert piped == expected
+    assert rendered == expected
+
+
+def test_anchored_cli_refuses_malformed_projection_before_judgment(tmp_path: Path) -> None:
+    repository, environment, _, _, _ = _subject(tmp_path)
+    (repository / "governance/evidence.json").write_text(json.dumps([
+        {"claim_id": "tests-executed"}, {"claim_id": 7},
+    ]))
+    command = _cli("gate", "evaluate", "HEAD", "--external-repository", str(repository),
+                   "--approver", "release-approver")
+    piped = _through_pipe(command, verdict=True, extra=environment)
+    attended = _through_pty(command, verdict=True, extra=environment)
+    assert piped == b"ERROR  E-OBSERVATION-CHAIN: projection includes unchained records\n"
     assert attended == piped
+    assert not (repository / "governance/journal.sqlite3").exists()

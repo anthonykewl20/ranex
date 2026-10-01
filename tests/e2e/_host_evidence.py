@@ -11,7 +11,8 @@ from pathlib import Path
 import _prereqs
 
 
-def record_host_qualification(repo: Path, key_path: Path, *, producer_id: str = "worker") -> None:
+def record_host_qualification(repo: Path, key_path: Path, *, producer_id: str = "worker",
+                              history_environment: dict[str, str] | None = None) -> None:
     _prereqs.prereq_or_skip("qualified_host")
     profile = "governance/confinement/strict-local-host-v1.json"
     manifest = "governance/confinement/native-launcher-build-v1.json"
@@ -20,6 +21,8 @@ def record_host_qualification(repo: Path, key_path: Path, *, producer_id: str = 
     artifact = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
     environment = {**os.environ, "PYTHONPATH": str(repo / "src")}
     environment.pop("RANEX_SIGNING_KEY", None)
+    if history_environment is not None:
+        environment.update(history_environment)
     commands = (
         ["ranex.cli.host_confinement", "launcher-build", "--manifest", manifest,
          "--source", source, "--output", build],

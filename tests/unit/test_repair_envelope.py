@@ -10,6 +10,10 @@ may be importable from the evidence path.
 from __future__ import annotations
 
 import json
+import shlex
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -248,6 +252,30 @@ class TestEnvelopeFromProjection:
 
 
 class TestNextRung:
+    def test_targeted_rung_runs_only_the_failure_and_preserves_option_values(self, tmp_path: Path) -> None:
+        suite = tmp_path / "test ladder.py"
+        suite.write_text("def test_target():\n    assert True\n\ndef test_unrelated():\n    assert False\n")
+        junit = tmp_path / "target report.xml"
+        repro = shlex.join([sys.executable, "-m", "pytest", str(tmp_path), "-q", "-o", "xfail_strict=true", "--junitxml", str(junit)])
+        nodeid = str(suite) + "::test_target"
+        rung = next(line for line in next_rung_lines(repro, [{"id": nodeid, "at": "", "assertion": ""}]) if line.startswith("L1 "))
+        result = subprocess.run(shlex.split(rung[3:]), cwd=tmp_path, capture_output=True, text=True, check=False)
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "1 passed" in result.stdout
+        assert junit.exists()
+
+    def test_unknown_option_arity_omits_targeted_pointer(self) -> None:
+        failures = [{"id": "tests/test_one.py::test_one", "at": "", "assertion": ""}]
+        assert next_rung_lines("uv run --frozen pytest tests/ --custom-selector value", failures) == ["L2 uv run --frozen pytest tests/ --custom-selector value"]
+
+    def test_uv_targeted_pointer_preserves_valued_and_attached_options(self) -> None:
+        repro = "uv run --frozen pytest tests/ -q -k 'one or two' -m fast -c config.ini -o xfail_strict=true -p observer --junitxml='report file.xml'"
+        failure = {"id": "tests/test_one.py::test_one[param value]", "at": "", "assertion": ""}
+        rung = next(line for line in next_rung_lines(repro, [failure]) if line.startswith("L1 "))
+        expected = shlex.split(repro)
+        expected.remove("tests/")
+        assert shlex.split(rung[3:]) == [*expected, "--", failure["id"]]
+
     def test_ladder_orders_l0_l1_l2(self) -> None:
         failures = [
             {"id": "tests/test_a.py::test_one", "assertion": "", "at": "src/mod.py:10"},
@@ -255,7 +283,7 @@ class TestNextRung:
         ]
         rungs = next_rung_lines(REPRO, failures)
         assert rungs[0] == "L0 /usr/bin/python3 -m py_compile src/mod.py"
-        assert rungs[1] == f"L1 {REPRO} tests/test_a.py::test_one tests/test_a.py::test_two"
+        assert rungs[1] == "L1 /usr/bin/python3 -m pytest -q -- tests/test_a.py::test_one tests/test_a.py::test_two"
         assert rungs[2] == f"L2 {REPRO}"
 
     def test_l1_carries_at_most_eight_ids(self) -> None:
@@ -264,13 +292,13 @@ class TestNextRung:
         ]
         rungs = next_rung_lines(REPRO, failures)
         l1 = next(rung for rung in rungs if rung.startswith("L1 "))
-        targeted = l1.removeprefix(f"L1 {REPRO} ").split()
+        targeted = shlex.split(l1)[shlex.split(l1).index("--") + 1:]
         assert targeted == [failure["id"] for failure in failures[:8]]
 
     def test_no_python_interpreter_omits_l0(self) -> None:
         failures = [{"id": "tests/test_c.py::test_x", "assertion": "", "at": "src/x.py:1"}]
         rungs = next_rung_lines("/usr/bin/make test", failures)
-        assert [rung[:2] for rung in rungs] == ["L1", "L2"]
+        assert [rung[:2] for rung in rungs] == ["L2"]
 
     def test_no_located_files_omits_l0(self) -> None:
         failures = [{"id": "tests/test_d.py::test_y", "assertion": "", "at": ""}]

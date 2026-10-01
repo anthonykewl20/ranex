@@ -27,10 +27,12 @@ import sys
 from pathlib import Path
 
 import _approver
+import _prereqs
 import pytest
 
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.signing import generate_keypair
+from ranex.governed_execution.adapters.persistence.history import bootstrap_history
 
 KERNEL = Path(__file__).resolve().parents[2]
 REKOR_KEY = KERNEL / "governance" / "rekor_public_key.pem"
@@ -58,6 +60,8 @@ def invoke(
         if not name.startswith(("RANEX_", "GIT_", "PYTHON", "COVERAGE_"))
     }
     environment["PYTHONPATH"] = str(KERNEL / "src")
+    environment["RANEX_HISTORY_CHECKPOINT"] = str(repo.parent / "history-checkpoint.json")
+    environment["RANEX_VERDICT_SIGNING_KEY"] = str(repo.parent / "verdict.key")
     if verdict_key is not None:
         environment["RANEX_VERDICT_SIGNING_KEY"] = str(verdict_key)
         environment["RANEX_VERDICT_DIR"] = "governance/verdicts"
@@ -82,6 +86,11 @@ def subject_hex(repo: Path) -> str:
 
 
 @pytest.fixture
+def prereq_rekor_network() -> None:
+    _prereqs.prereq_or_skip("rekor_network")
+
+
+@pytest.fixture
 def witnessed_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     if not REKOR_KEY.is_file():
         pytest.fail(f"pinned Rekor public key missing: {REKOR_KEY}")
@@ -94,6 +103,7 @@ def witnessed_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     (repo / "governance" / "rekor_public_key.pem").write_bytes(REKOR_KEY.read_bytes())
     (repo / ".gitignore").write_text(
         "governance/evidence.json\ngovernance/journal.sqlite3*\n"
+        "governance/observations.sqlite3*\n"
         "governance/verdicts/\n"
     )
     signing, verifying = generate_keypair()
@@ -129,6 +139,7 @@ def witnessed_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     (repo / "README.md").write_text("witness subject\n", encoding="utf-8")
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "init")
+    bootstrap_history(repo / "governance/evidence.json", repo.parent / "history-checkpoint.json", signing, verifying, repo)
     return repo, signer, approver_key, other_key
 
 
@@ -157,6 +168,7 @@ def _evaluate(
 
 
 def test_arm1_publish_and_witnessed_verify(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED: witness.json present; --witnessed accepts."""
@@ -188,6 +200,7 @@ def test_arm1_publish_and_witnessed_verify(
 
 
 def test_arm2_rewrite_refused_when_witnessed(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED negative: self-consistent rewrite fails --witnessed."""
@@ -269,6 +282,7 @@ def test_arm3_network_down_refuses_and_unwitnessed_publishes(
 
 
 def test_arm4_tampered_witness_refused(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED negative: edited inclusion proof fails."""
@@ -299,6 +313,7 @@ def test_arm4_tampered_witness_refused(
 
 
 def test_arm5_repeats_identical_local_artifacts(
+    prereq_rekor_network: None,
     witnessed_repo: tuple[Path, Path, Path, Path],
 ) -> None:
     """VERIFIED: identical inputs → identical payload digests; log coalesces."""

@@ -12,6 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import _approver
 import pytest
 
 from ranex.cli import main as cli
@@ -96,12 +97,14 @@ def repo(tmp_path: Path) -> tuple[Path, Path, str]:
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(PROJECT / relative, destination)
-    (root / ".gitignore").write_text("evidence.json\n.local/\n", encoding="utf-8")
+    _approver.register_history_service(root, root / "producers.yaml", tmp_path)
+    (root / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n.local/\n", encoding="utf-8")
     subprocess.run(["git", "init", "-q", str(root)], check=True)
     for name, value in (("user.email", "test@example.invalid"), ("user.name", "test")):
         subprocess.run(["git", "-C", str(root), "config", name, value], check=True)
     subprocess.run(["git", "-C", str(root), "add", "."], check=True)
     subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "initial"], check=True)
+    _approver.history_for(root).establish()
     return root, key, public
 
 
@@ -176,6 +179,7 @@ def _run_bound(
     monkeypatch.chdir(repo)
     monkeypatch.setattr(cli, "governed_repository_root", lambda: repo)
     monkeypatch.setenv("RANEX_SIGNING_KEY", str(key))
+    _approver.history_for(repo).configure(monkeypatch)
     monkeypatch.setattr(cli.subprocess, "Popen", popen)
     code = cli.cmd_run(_arguments())
     return code, capsys.readouterr().err
@@ -192,7 +196,7 @@ def test_strict_local_flag_refuses_an_unqualified_host_before_evidence(
             "--producers", "producers.yaml", "--confinement", "strict-local", "--", "/bin/true",
         ],
         cwd=root,
-        env={**os.environ, "PYTHONPATH": str(PROJECT / "src"), "RANEX_SIGNING_KEY": str(key)},
+        env={**os.environ, "PYTHONPATH": str(PROJECT / "src"), "RANEX_SIGNING_KEY": str(key), **_approver.history_for(root).environment()},
         capture_output=True,
         text=True,
         check=False,
@@ -374,6 +378,9 @@ def test_real_strict_local_session_is_host_gated_and_binds_its_result(
     cli.record_evidence(
         root / "evidence.json",
         {**content, "signature": sign_evidence(content, private_key)},
+        repository_root=root, history_private_key=_approver.history_for(root).private,
+        history_public_key=_approver.history_for(root).public,
+        history_checkpoint_path=_approver.history_for(root).establish(),
     )
     (record,) = json.loads((root / "evidence.json").read_text(encoding="utf-8"))
     assert record["confinement_result_digest"]

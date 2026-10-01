@@ -149,7 +149,11 @@ class Journal:
         read followed by ``append``.
         """
 
-        record = evaluation.as_record()
+        return self.append_record_if_head(expected_head, evaluation.as_record())
+
+    def append_record_if_head(self, expected_head: str | None,
+                              record: dict[str, Any]) -> JournalAppend:
+        """The same CAS boundary for an already-built signed observation."""
         payload = canonical_json(record)
         with closing(self._connect()) as conn, conn:
             conn.execute("BEGIN IMMEDIATE")

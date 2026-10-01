@@ -36,10 +36,18 @@ class EvidenceEvaluator:
     #: disables nothing: the listener refuses to start an evaluating receiver
     #: without it.
     approver_key: Path | None = None
+    history_checkpoint_path: Path | None = None
     _policy: tuple[bytes, ...] = field(init=False, repr=False)
     _policy_names: tuple[str, ...] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
+        # Freeze operator configuration at receiver startup. The minimal
+        # subprocess environment must carry the same external history trust
+        # root; inheriting the rest of the environment is not necessary.
+        if self.history_checkpoint_path is None:
+            configured = os.environ.get("RANEX_HISTORY_CHECKPOINT")
+            if configured:
+                object.__setattr__(self, "history_checkpoint_path", Path(configured))
         from ranex.cli.confinement import resolve_within_repository
         from ranex.cli.main import committed_trust_root
         from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
@@ -125,6 +133,8 @@ class EvidenceEvaluator:
             # evaluation without the approver's key must refuse naming
             # E-APPROVER-KEY-ABSENT, never judge and publish unsigned.
             environment["RANEX_APPROVER_SIGNING_KEY"] = str(self.approver_key)
+        if self.history_checkpoint_path is not None:
+            environment["RANEX_HISTORY_CHECKPOINT"] = str(self.history_checkpoint_path)
         argv = [sys.executable, "-m", "ranex.cli.main", "gate", "evaluate",
                 binding.head_sha, "--external-repository", str(self.repository),
                 "--evidence", self.evidence, "--gate", self.gate,

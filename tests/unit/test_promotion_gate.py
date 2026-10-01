@@ -320,3 +320,41 @@ class TestTauDerivation:
     def test_unknown_tau_axis_raises(self) -> None:
         with pytest.raises(KeyError):
             derived_tau(validate_base_freeze(base_freeze()), "six.tau_max")
+
+
+@pytest.mark.parametrize("change", [
+    "missing-treatment", "object-tau", "list-axis", "none-base",
+    "nan-treatment", "infinite-delta", "nan-tau", "list-tau-axis",
+])
+def test_malformed_promotion_is_refusal_data(change):
+    claim = admitted_claim()
+    if change == "missing-treatment":
+        del claim["treatment"]
+    elif change == "object-tau":
+        claim["tau"] = {}
+    elif change == "list-axis":
+        claim["marginal_deltas"][0]["axis"] = []
+    elif change == "none-base":
+        claim["marginal_deltas"][0]["base"] = None
+    elif change == "nan-treatment":
+        claim["marginal_deltas"][0]["treatment"] = float("nan")
+        claim["marginal_deltas"][0]["delta"] = 999
+    elif change == "infinite-delta":
+        claim["marginal_deltas"][0]["delta"] = float("inf")
+        claim["marginal_deltas"][0]["treatment"] = float("inf")
+    elif change == "nan-tau":
+        claim["tau"][0]["value"] = float("nan")
+    else:
+        claim["tau"][0]["axis"] = []
+    decision = evaluate_promotion(claim, base_freeze(), freeze_digest=FREEZE_DIGEST)
+    assert decision.verdict == "REFUSED"
+    assert decision.causes
+    assert decision.decision_digest.startswith("sha256:")
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), -float("inf"), 10**1000], ids=["nan", "positive-infinity", "negative-infinity", "overflow-int"])
+def test_nonfinite_gauge_is_refused(bad):
+    freeze = base_freeze()
+    freeze["reference_metrics"]["six"]["raw_false_pass"] = bad
+    with pytest.raises(ValueError, match="numeric"):
+        validate_base_freeze(freeze)

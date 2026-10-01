@@ -8,6 +8,7 @@ from ranex.foundation.signing import generate_keypair
 def body(module) -> dict[str, object]:
     values = {field: None for field in module.SIGNED_FIELDS}
     values.update(
+        history_verified=False, observation_checkpoint=None,
         verdict="FAIL", gate_id="landing", subject_digest="sha256:" + "a" * 64,
         subject_lane="PRE_READINESS_PRODUCT_SLICE", catalog_digest=None,
         approver_id="owner", failing_rule="TESTS_EXECUTED",
@@ -22,8 +23,8 @@ def body(module) -> dict[str, object]:
 def test_verdict_domain_payload_type_and_exact_field_set() -> None:
     from ranex.foundation import verdict_signing as module
 
-    assert module.VERDICT_DOMAIN == b"ranex-verdict-v2\n"
-    assert module.PAYLOAD_TYPE == "application/vnd.ranex.verdict.v2+json"
+    assert module.VERDICT_DOMAIN == b"ranex-verdict-v3\n"
+    assert module.PAYLOAD_TYPE == "application/vnd.ranex.verdict.v3+json"
     assert "record_digest" not in module.SIGNED_FIELDS
     # ADR-057: v1 stays readable because archived verdicts are re-verified to
     # prove old audits still hold; it simply carries no anchor.
@@ -31,7 +32,10 @@ def test_verdict_domain_payload_type_and_exact_field_set() -> None:
     assert module.PAYLOAD_TYPE_V1 == "application/vnd.ranex.verdict.v1+json"
     assert "journal_head" in module.SIGNED_FIELDS
     assert "journal_head" not in module.SIGNED_FIELDS_V1
-    assert module.SIGNED_FIELDS == (*module.SIGNED_FIELDS_V1, "journal_head")
+    assert module.VERDICT_DOMAIN_V2 == b"ranex-verdict-v2\n"
+    assert module.PAYLOAD_TYPE_V2 == "application/vnd.ranex.verdict.v2+json"
+    assert module.SIGNED_FIELDS_V2 == (*module.SIGNED_FIELDS_V1, "journal_head")
+    assert module.SIGNED_FIELDS == (*module.SIGNED_FIELDS_V2, "observation_checkpoint", "history_verified")
     content = body(module)
     with pytest.raises(ValueError):
         module.signed_payload({**content, "record_digest": "sha256:" + "b" * 64})

@@ -113,6 +113,12 @@ def project_verdict(
         # a caller that forgets it fails loudly rather than publishing an
         # unanchored verdict that looks anchored.
         "journal_head": journal_head,
+        "history_verified": admission.history_verified,
+        "observation_checkpoint": (
+            None if admission.observation_checkpoint is None else dict(zip(
+                ("log_id", "head", "position"), admission.observation_checkpoint, strict=True
+            ))
+        ),
     }
     validate_projection(body, required_claims=required_claims)
     validate_publication_value(body)

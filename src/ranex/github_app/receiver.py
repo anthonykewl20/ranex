@@ -85,6 +85,7 @@ class ReceiverConfig:
     #: principal's own signature or the reader answers UNAPPROVED and nothing
     #: publishes. Empty for repositories whose catalog declares no approver.
     approvers: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
+    history_checkpoint_path: Path | None = None
 
 
 @dataclass(slots=True)
@@ -398,6 +399,8 @@ def _process_delivery(
             catalog_digest=config.catalog_digest,
             approver_id=config.approver_id,
             approvers=config.approvers,
+            repository_root=config.repo_root,
+            history_checkpoint_path=config.history_checkpoint_path,
         )
         revalidate_pr_head(config.repo_root, binding)
         # The attempt record goes down before the API call: a crash between
@@ -426,7 +429,7 @@ def _process_delivery(
         if acceptance.code != ABSENT_CODE and (
             config.evaluator is None or decision.conclusion == "success"
         ):
-            _forget_awaiting(config, event.head_sha)
+            _forget_awaiting(config, event.head_sha, event.installation_id, event.repository)
         outcome = f"published:{decision.conclusion}"
     except (BindingRefusal, ClientRefusal) as refusal:
         _journal(
@@ -479,12 +482,39 @@ def _reconcile_attempt(
     return None
 
 
+def _head_identity(installation_id: int, repository: str, head_sha: str) -> str:
+    return canonical_sha256({
+        "installation_id": installation_id, "repository": repository, "head_sha": head_sha,
+    })
+
+
+def _awaiting_path(
+    config: ReceiverConfig, head_sha: str, installation_id: int, repository: str,
+) -> Path:
+    namespace = canonical_sha256({"installation_id": installation_id, "repository": repository})
+    return config.state_dir / _AWAITING_DIR / namespace / f"{head_sha}.json"
+
+
+def _forget_legacy_awaiting(
+    config: ReceiverConfig, head_sha: str, installation_id: int, repository: str,
+) -> None:
+    legacy = config.state_dir / _AWAITING_DIR / f"{head_sha}.json"
+    try:
+        _delivery, stored_installation, stored_repository = _read_awaiting(legacy)
+    except (OSError, ValueError):
+        return
+    if (stored_installation, stored_repository) == (installation_id, repository):
+        for suffix in (".json", _FAILED_SUFFIX):
+            with suppress(FileNotFoundError):
+                legacy.with_suffix(suffix).unlink()
+
+
 def _remember_awaiting(
     config: ReceiverConfig, event: webhook.PullRequestEvent, delivery_id: str,
 ) -> None:
     """The head has no verdict yet; the periodic pass will look again."""
     write_atomic(
-        config.state_dir / _AWAITING_DIR / f"{event.head_sha}.json",
+        _awaiting_path(config, event.head_sha, event.installation_id, event.repository),
         canonical_json_bytes({
             "delivery": delivery_id,
             "installation_id": event.installation_id,
@@ -492,12 +522,17 @@ def _remember_awaiting(
         }),
         root=config.state_dir,
     )
+    _forget_legacy_awaiting(config, event.head_sha, event.installation_id, event.repository)
 
 
-def _forget_awaiting(config: ReceiverConfig, head_sha: str) -> None:
+def _forget_awaiting(
+    config: ReceiverConfig, head_sha: str, installation_id: int, repository: str,
+) -> None:
+    target = _awaiting_path(config, head_sha, installation_id, repository)
     for suffix in (".json", _FAILED_SUFFIX):
         with suppress(FileNotFoundError):
-            (config.state_dir / _AWAITING_DIR / f"{head_sha}{suffix}").unlink()
+            target.with_suffix(suffix).unlink()
+    _forget_legacy_awaiting(config, head_sha, installation_id, repository)
 
 
 def _read_awaiting(path: Path) -> tuple[str, int, str]:
@@ -520,14 +555,14 @@ def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str,
     delivery holds. Per head: the conclusion published, 503 when the pipeline
     was busy, 500 when the record or publication failed. A head whose verdict
     is still absent is left waiting and does not appear. The refresh check is
-    stamped `refresh:<head>` so an interrupted pass reconciles instead of
+    stamped with installation/repository/head identity so an interrupted pass reconciles instead of
     publishing twice; opt-in receivers also judge newly arrived signed evidence.
     """
     statuses: dict[str, str | int] = {}
     awaiting = config.state_dir / _AWAITING_DIR
     if not awaiting.is_dir():
         return statuses
-    for path in sorted(awaiting.glob("*.json")):
+    for path in sorted(awaiting.rglob("*.json")):
         if state.wanting():
             state.yielded = True  # a live delivery is waiting; resume right after it
             break
@@ -538,6 +573,8 @@ def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str,
             delivery_id, installation_id, repository = _read_awaiting(path)
             if not _HEAD_SHA_PATTERN.fullmatch(head_sha):
                 raise ValueError("invalid awaiting head")
+            if path.parent != awaiting and path != _awaiting_path(config, head_sha, installation_id, repository):
+                raise ValueError("invalid awaiting namespace")
         except (OSError, ValueError):
             _journal(config, {"head_sha": head_sha, "outcome": "awaiting-unreadable"})
             _note_failure(config, path)
@@ -567,17 +604,17 @@ def _refresh_head(
     if (installation_id, repository) not in config.allowlist:
         _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
                           "repository": repository, "outcome": "not-allowlisted"})
-        _forget_awaiting(config, head_sha)
+        _forget_awaiting(config, head_sha, installation_id, repository)
         return "not-allowlisted"
     if config.evaluator is not None:
         return _refresh_evaluated_head(config, head_sha, delivery_id, installation_id, repository)
-    external_id = f"refresh:{head_sha}"
+    external_id = f"refresh:{_head_identity(installation_id, repository, head_sha)}"
     for run in config.client.list_check_runs(
         installation_id, repository, head_sha, check_name=CHECK_NAME,
     ):
         if run.get("external_id") == external_id and isinstance(run.get("conclusion"), str):
             # A previous pass published and was interrupted before forgetting.
-            _forget_awaiting(config, head_sha)
+            _forget_awaiting(config, head_sha, installation_id, repository)
             _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
                               "outcome": f"reconciled-refresh:{run['conclusion']}"})
             return run["conclusion"]
@@ -586,6 +623,8 @@ def _refresh_head(
         config.verdicts_dir, binding, config.keyring, gate_id=config.gate_id,
         catalog_digest=config.catalog_digest, approver_id=config.approver_id,
         approvers=config.approvers,
+        repository_root=config.repo_root,
+        history_checkpoint_path=config.history_checkpoint_path,
     )
     if acceptance.code == ABSENT_CODE:
         return None
@@ -595,7 +634,7 @@ def _refresh_head(
         config.client, installation_id, repository, binding, acceptance,
         started_at=moment, completed_at=moment, external_id=external_id,
     )
-    _forget_awaiting(config, head_sha)
+    _forget_awaiting(config, head_sha, installation_id, repository)
     _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
                       "outcome": f"refreshed:{decision.conclusion}"})
     return decision.conclusion
@@ -612,11 +651,13 @@ def _refresh_evaluated_head(
         config.verdicts_dir, binding, config.keyring, gate_id=config.gate_id,
         catalog_digest=config.catalog_digest, approver_id=config.approver_id,
         approvers=config.approvers,
+        repository_root=config.repo_root,
+        history_checkpoint_path=config.history_checkpoint_path,
     )
     if acceptance.code == ABSENT_CODE:
         return None
     expected = decide_check(binding, acceptance).conclusion
-    external_id = f"evaluation:{head_sha}:{canonical_sha256({'code': acceptance.code, 'record': dict(acceptance.record or {})})}"
+    external_id = f"evaluation:{_head_identity(installation_id, repository, head_sha)}:{canonical_sha256({'code': acceptance.code, 'record': dict(acceptance.record or {})})}"
     completed = config.state_dir / "evaluations" / f"{canonical_sha256(external_id)}.json"
     if completed.exists():
         receipt = json.loads(completed.read_bytes())
@@ -624,7 +665,7 @@ def _refresh_evaluated_head(
             raise ValueError("E-GITHUB-EVALUATION-RECEIPT-INVALID")
         conclusion = receipt["conclusion"]
         if conclusion == "success":
-            _forget_awaiting(config, head_sha)
+            _forget_awaiting(config, head_sha, installation_id, repository)
         return None
     for run in config.client.list_check_runs(
         installation_id, repository, head_sha, check_name=CHECK_NAME,
@@ -633,7 +674,7 @@ def _refresh_evaluated_head(
             write_atomic(completed, canonical_json_bytes({"conclusion": run["conclusion"]}),
                          root=config.state_dir)
             if run["conclusion"] == "success":
-                _forget_awaiting(config, head_sha)
+                _forget_awaiting(config, head_sha, installation_id, repository)
             return None
     revalidate_pr_head(config.repo_root, binding)
     moment = time.time()
@@ -644,7 +685,7 @@ def _refresh_evaluated_head(
     write_atomic(completed, canonical_json_bytes({"conclusion": decision.conclusion}),
                  root=config.state_dir)
     if decision.conclusion == "success":
-        _forget_awaiting(config, head_sha)
+        _forget_awaiting(config, head_sha, installation_id, repository)
     _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
                       "outcome": f"evaluated:{decision.conclusion}"})
     return decision.conclusion

@@ -80,9 +80,10 @@ import pytest
 E2E_DIR = Path(__file__).resolve().parent
 if str(E2E_DIR) not in sys.path:
     sys.path.insert(0, str(E2E_DIR))
+import _history
 import _prereqs  # noqa: E402
 
-from ranex.foundation.signing import signed_payload  # noqa: E402
+from ranex.foundation.signing import public_key_for, signed_payload  # noqa: E402
 
 REAL_REPO = E2E_DIR.parents[1]
 EXPECTED = E2E_DIR / "expected"
@@ -131,6 +132,14 @@ def ranex(
 
     env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
     env["PYTHONPATH"] = str(subject / "src")
+    service_dir = subject.parent / f"service-{subject.name}"
+    service = service_dir / "history-service.key"
+    if service.exists():
+        env["RANEX_VERDICT_SIGNING_KEY"] = str(service)
+        env["RANEX_HISTORY_CHECKPOINT"] = str(service_dir / "checkpoint.json")
+        if argv[:1] == ["run"] and not (service_dir / "checkpoint.json").exists():
+            private = service.read_text().strip()
+            _history.establish(subject, "governance/evidence.json", service_dir / "checkpoint.json", private, public_key_for(private))
     if key is not None:
         env["RANEX_SIGNING_KEY"] = str(key)
     if approver_key is not None:
@@ -240,6 +249,10 @@ def _register_family_gate(subject: Path, producer: str, public: str) -> None:
 
     keyring = subject / "governance" / "producers.yaml"
     _prereqs.register_worker_key(keyring, producer, public)
+    service_dir = subject.parent / f"service-{subject.name}"
+    service_dir.mkdir(mode=0o700)
+    _, service_public, _ = _history.mint_service(service_dir)
+    _history.register_service(keyring, service_public)
 
     with (subject / "governance" / "gates.yaml").open("a", encoding="utf-8") as file:
         file.write(
@@ -378,12 +391,11 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
          "--approver", "reviewer"],
         approver_key=approver_key,
     )
-    assert removed_eval.returncode == 1, (
-        f"the no-evidence evaluation must FAIL (exit 1): "
+    assert removed_eval.returncode == 0, (
+        f"retained certified history must survive projection deletion: "
         f"{removed_eval.stdout}{removed_eval.stderr}"
     )
-    assert removed_eval.stdout.startswith("FAIL"), removed_eval.stdout
-    assert "no evidence for required claim" in removed_eval.stdout, removed_eval.stdout
+    assert removed_eval.stdout.startswith("PASS"), removed_eval.stdout
 
     # --- sabotage arm 2: evidence SWAPPED between two real subjects -----
     other = base / "other-subject"
@@ -414,14 +426,14 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
          "--approver", "reviewer"],
         approver_key=approver_key,
     )
-    assert swapped_eval.returncode == 1, (
-        "swapped evidence must FAIL the evaluation (exit 1): "
+    assert swapped_eval.returncode == 2, (
+        "unchained swapped evidence must refuse before judgment: "
         f"{swapped_eval.stdout}{swapped_eval.stderr}"
     )
-    assert "evidence bound to a different subject digest" in swapped_eval.stdout, (
-        "the subject-digest binding must keep its stable refusal reason: "
-        f"{swapped_eval.stdout}"
-    )
+    assert "E-OBSERVATION-CHAIN" in swapped_eval.stderr
+    assert not swapped_eval.stdout
+    evidence_path.chmod(0o600)
+    evidence_path.write_bytes(baseline_evidence)
 
     # --- traced arm 1: RANEX_TRACE_EVENT=1, the stderr event stream -----
     traced = spine({"RANEX_TRACE_EVENT": "1"})
@@ -469,7 +481,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
         baseline_run=baseline,
         baseline_evidence=baseline_evidence,
         removed_transcript=removed_eval.stdout,
-        swapped_transcript=swapped_eval.stdout,
+        swapped_transcript=swapped_eval.stderr,
         traced_run=traced,
         trace_events=trace_events,
         filed_run=filed,
@@ -559,10 +571,9 @@ def test_post_run_sabotage_controls_refuse(journey: RunJourney) -> None:
     posts on issue #37 for AC3.
     """
 
-    assert journey.removed_transcript.startswith("FAIL"), journey.removed_transcript
-    assert "no evidence for required claim: tree-clean" in journey.removed_transcript
-    assert journey.swapped_transcript.startswith("FAIL"), journey.swapped_transcript
-    assert "evidence bound to a different subject digest" in journey.swapped_transcript
+    assert journey.removed_transcript.startswith("PASS"), journey.removed_transcript
+    assert journey.swapped_transcript.startswith("ERROR"), journey.swapped_transcript
+    assert "E-OBSERVATION-CHAIN" in journey.swapped_transcript
 
 
 def test_traced_run_is_an_artifact_and_verdict_neutral(journey: RunJourney) -> None:
@@ -699,11 +710,13 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     assert public, f"keygen printed no public key: {generated.stdout!r}"
     keyring = subject / "governance" / "producers.yaml"
     _prereqs.register_worker_key(keyring, producer, public.group(1))
+    service = _approver.register_history_service(subject, keyring, tmp_path)
     committed = git(subject, "add", "governance/producers.yaml")
     assert committed.returncode == 0, committed.stderr
     committed = git(subject, "commit", "-q", "-m", "register lifecycle RED producer")
     assert committed.returncode == 0, committed.stderr
 
+    service.establish("governance/evidence.json")
     fetched = ranex(
         subject,
         ["deps", "fetch", "--repository", ".", "--store", str(store)],
@@ -737,6 +750,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
 
     env = {name: value for name, value in os.environ.items() if name not in _STRIPPED_ENV}
     env.update({"PYTHONPATH": str(subject / "src"), "RANEX_SIGNING_KEY": str(key)})
+    env.update(service.environment("governance/evidence.json"))
     evidence = subject / "governance" / "evidence.json"
     stdout_log = tmp_path / "kernel.stdout"
     stderr_log = tmp_path / "kernel.stderr"

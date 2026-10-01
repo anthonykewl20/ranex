@@ -1,10 +1,10 @@
 """C1: real signed qualification admission must not shift policy bindings."""
 from __future__ import annotations
 
-import json
 import runpy
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -15,13 +15,29 @@ from ranex.cli.main import (
 )
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.domain import admission
+from ranex.governed_execution.domain.verdict import Claim, Gate, evaluate
 
 # Reuse the frozen, closed-schema qualification contract rather than invent a
 # smaller report that production admission would never accept.
 QUALIFICATION = runpy.run_path(
     str(Path(__file__).parents[1] / "contract/test_qualification_admission.py")
 )
+HISTORY = runpy.run_path(str(Path(__file__).parents[1] / "_history.py"))
 CATALOG = "sha256:" + "e" * 64
+
+
+def anchored_admission(tmp_path, records, public):
+    private, history_public, _ = HISTORY["mint_service"](tmp_path)
+    checkpoint = tmp_path / "checkpoint.json"
+    repository = tmp_path / "candidate"
+    repository.mkdir()
+    HISTORY["establish"](repository, "evidence.json", checkpoint, private, history_public)
+    HISTORY["write_records"](repository, "evidence.json", records, checkpoint, private, history_public)
+    return admit_records(
+        repository / "evidence.json", {"qualifier": public}, repository,
+        gate_id="landing", catalog_digest=CATALOG,
+        history_checkpoint_path=checkpoint, history_public_key=history_public,
+    )
 
 
 def records_and_key(monkeypatch):
@@ -42,12 +58,8 @@ def records_and_key(monkeypatch):
 def test_mixed_records_bind_their_own_policy(tmp_path, monkeypatch, qualification_first):
     honest, foreign, public = records_and_key(monkeypatch)
     records = [honest, foreign] if qualification_first else [foreign, honest]
-    path = tmp_path / "evidence.json"
-    path.write_text(json.dumps(records))
-    # Includes reconciliation, signature/host-state admission, executable
-    # containment and policy filtering: the same chain used by gate evaluate.
-    result = admit_records(path, {"qualifier": public}, tmp_path,
-                           gate_id="landing", catalog_digest=CATALOG)
+    # Includes anchored history and the production admission/filter chain.
+    result = anchored_admission(tmp_path, records, public)
     assert [item.claim_id for item in result.evidence] == ["host-qualification"]
     assert [(r.index, r.claim_id, r.reason) for r in result.rejections] == [
         (records.index(foreign), "tests-executed", admission.RejectionReason.POLICY_CONTEXT_MISMATCH)
@@ -61,10 +73,12 @@ def test_invalid_pairing_refuses_without_admission(tmp_path, monkeypatch, damage
     records = [honest]
     admitted = admission.admit(records, {"qualifier": public})
     assert len(admitted.evidence) == 1
-    if damage == "short":
-        admitted = replace(admitted, evidence=())
-    elif damage == "long":
-        admitted = replace(admitted, evidence=admitted.evidence * 2)
+    if damage in {"short", "long"}:
+        evidence = () if damage == "short" else admitted.evidence * 2
+        with pytest.raises(ValueError):
+            replace(admitted, evidence=evidence)
+        admitted = SimpleNamespace(evidence=evidence, rejections=(),
+                                   evidence_indices=admitted.evidence_indices)
     elif damage == "duplicate":
         records *= 2
         admitted = admission.admit(records, {"qualifier": public})
@@ -79,9 +93,10 @@ def test_invalid_pairing_refuses_without_admission(tmp_path, monkeypatch, damage
         # the source records. Neither filter may trust that positional claim.
         second = {**honest, "claim_id": "other"}
         records = [honest, second]
-        admitted = replace(admitted, evidence=(
-            replace(admitted.evidence[0], claim_id="other"), admitted.evidence[0],
-        ))
+        evidence = (replace(admitted.evidence[0], claim_id="other"), admitted.evidence[0])
+        with pytest.raises(ValueError):
+            replace(admitted, evidence=evidence)
+        admitted = SimpleNamespace(evidence=evidence, rejections=(), evidence_indices=(0, 1))
     if filter_name == "policy":
         result = refuse_foreign_policy_context(admitted, records, "landing", CATALOG)
     else:
@@ -92,16 +107,27 @@ def test_invalid_pairing_refuses_without_admission(tmp_path, monkeypatch, damage
 
 
 @pytest.mark.parametrize("damage", ["duplicate", "missing", "malformed"])
-def test_bad_identity_in_production_chain_is_refused(tmp_path, monkeypatch, damage):
+def test_bad_identity_in_production_chain_is_fail_closed(tmp_path, monkeypatch, damage):
     honest, _, public = records_and_key(monkeypatch)
     records = [honest, honest] if damage == "duplicate" else [
         {k: v for k, v in honest.items() if k != "claim_id"}
         if damage == "missing" else {**honest, "claim_id": []}
     ]
-    path = tmp_path / "evidence.json"
-    path.write_text(json.dumps(records))
-    result = admit_records(path, {"qualifier": public}, tmp_path,
-                           gate_id="landing", catalog_digest=CATALOG)
-    assert result.evidence == ()
-    assert result.rejections
-    assert all(r.reason is admission.RejectionReason.MALFORMED_RECORD for r in result.rejections)
+    if damage != "duplicate":
+        with pytest.raises(ValueError, match="E-OBSERVATION-CHAIN"):
+            anchored_admission(tmp_path, records, public)
+        return  # No admission exists from which a PASS verdict could be produced.
+    result = anchored_admission(tmp_path, records, public)
+    single_path = tmp_path / "single"
+    single_path.mkdir()
+    single = anchored_admission(single_path, [honest], public)
+    assert len(result.evidence) == 1
+    assert result.evidence == single.evidence
+    assert result.evidence_indices == (0,)
+    assert result.evidence[0].claim_id == honest["claim_id"]
+    gate = Gate("landing", "RULE", (Claim(honest["claim_id"], honest["command_digest"]),), True)
+    assert evaluate(
+        gate, result.evidence, subject_digest=QUALIFICATION["SUBJECT"], approver_id="reviewer"
+    ) == evaluate(
+        gate, single.evidence, subject_digest=QUALIFICATION["SUBJECT"], approver_id="reviewer"
+    )

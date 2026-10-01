@@ -323,6 +323,7 @@ def _prove(instrument: str, repeats: int, scratch: Path,
         positive=lambda: observer("good"),
         negative=lambda: observer("bad"),
     )
+    calibration.validate_repeats(repeats)
     positive = [control.positive() for _ in range(repeats)]
     negative = [control.negative() for _ in range(repeats)]
     runner = calibration.Calibration(out=scratch / "classify", repeats=repeats)
@@ -386,7 +387,7 @@ def _overall(instruments: list[dict[str, Any]]) -> str:
     for candidate in order:
         if candidate.value in seen:
             return candidate.value
-    return str(calibration.Status.VERIFIED)
+    return str(calibration.Status.UNVERIFIED)
 
 
 def exit_code(instruments: list[dict[str, Any]]) -> int:
@@ -397,13 +398,16 @@ def exit_code(instruments: list[dict[str, Any]]) -> int:
         str(calibration.Status.NON_DETERMINISTIC),
         str(calibration.Status.GAP),
     }
-    return 1 if any(row["status"] in blocking for row in instruments) else 0
+    return 1 if not instruments or any(row["status"] in blocking for row in instruments) else 0
 
 
 def assemble_receipt(instruments: list[dict[str, Any]], *, repeats: int,
                      blunt: str | None, argv: list[str] | None) -> dict[str, Any]:
     """Build the timing-free receipt; byte-identical for identical runs."""
 
+    calibration.validate_repeats(repeats)
+    if not instruments:
+        raise ValueError("no instruments were executed; no self-test receipt")
     return {
         "schema": SCHEMA,
         "issue": "anthonykewl20/ranex#113",
@@ -437,6 +441,9 @@ def run(out: Path, *, repeats: int = DEFAULT_REPEATS,
     run must never be readable as one that passed.
     """
 
+    calibration.validate_repeats(repeats)
+    if names == [] or not INSTRUMENTS:
+        raise ValueError("no instruments selected; no self-test receipt")
     unknown = [name for name in (names or []) if name not in INSTRUMENTS]
     if unknown:
         raise KeyError(f"unknown instruments {unknown}; known: {sorted(INSTRUMENTS)}")

@@ -84,6 +84,8 @@ def invoke(
             _approver.strip_approvers(monkeypatch)
         else:
             monkeypatch.setenv(_approver.APPROVER_ENV, str(approver_path))
+        if argv[0] != "keygen" and (repo / "producers.yaml").exists():
+            _approver.history_for(repo).configure(monkeypatch)
         return main(argv)
 
 
@@ -123,11 +125,14 @@ def prepare(
     approver_path = tmp_path / "reviewer.key"
     approver_public = keygen(repo, approver_path, "reviewer")
     _approver.register_approver(keyring, "reviewer", approver_public)
+    _approver.register_history_service(repo, keyring, repo.parent)
+    (repo / ".gitignore").write_text("observations.sqlite3*\n")
     _APPROVER_KEYS[repo.resolve()] = approver_path
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True
     )
+    _approver.history_for(repo).establish()
     return key_path
 
 

@@ -22,7 +22,7 @@ oracle-science 3-miss rule): each verified FAIL spends one miss, a
 verified PASS resets the count, and reaching the budget stops the loop
 deterministically — an approve whose reason says the budget is spent, not
 a human decision and not a pane wait. The budget counter is runtime state
-in the read-channel directory, keyed by subject digest; it is never
+in the read-channel directory, keyed by repository, gate and stable harness session; it is never
 evidence and never journaled.
 """
 
@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import fcntl
 import io
 import json
 import os
@@ -96,17 +97,26 @@ def _run_cli(argv: list[str]) -> tuple[int, str]:
     return code, captured
 
 
-def _budget_path(verdicts_dir: Path, subject_hex: str) -> Path:
-    return verdicts_dir / f"{subject_hex}.budget.json"
+def _budget_path(verdicts_dir: Path, loop_digest: str) -> Path:
+    return verdicts_dir / f"loop-{loop_digest}.budget.json"
 
 
 def _read_misses(path: Path) -> int:
+    from ranex.foundation.suite_results import read_results_artifact
+
     try:
-        value = json.loads(path.read_bytes())
-        misses = value["misses"]
-    except (OSError, ValueError, KeyError, TypeError):
+        path.lstat()
+    except FileNotFoundError:
         return 0
-    return misses if isinstance(misses, int) and misses >= 0 else 0
+    raw = read_results_artifact(path, maximum_bytes=1024)
+    try:
+        value = json.loads(raw)
+    except ValueError as exc:
+        raise ValueError("repair budget state must be valid JSON") from exc
+    if (not isinstance(value, dict) or set(value) != {"misses"}
+            or type(value["misses"]) is not int or value["misses"] < 0):
+        raise ValueError("repair budget state must contain one non-negative integer misses")
+    return value["misses"]
 
 
 def _write_misses(path: Path, misses: int) -> None:
@@ -115,6 +125,20 @@ def _write_misses(path: Path, misses: int) -> None:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     write_atomic(path, canonical_json_bytes({"misses": misses}) + b"\n", root=path.parent)
+
+
+def _update_misses(path: Path, *, reset: bool = False) -> int:
+    """Serialize the complete budget transition across hook processes."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        previous = _read_misses(path)
+        misses = 0 if reset else previous + 1
+        _write_misses(path, misses)
+        return misses
+    finally:
+        os.close(descriptor)
 
 
 def cmd_task_stop_hook(args: argparse.Namespace) -> int:
@@ -210,6 +234,7 @@ def cmd_task_stop_hook(args: argparse.Namespace) -> int:
                         "--suite-manifest", str(args.suite_manifest),
                         "--evidence", str(args.evidence),
                         "--producers", str(args.producers),
+                        "--gate", args.gate,
                         "--approver", args.approver,
                         "--journal", str(args.journal),
                     ]
@@ -244,6 +269,7 @@ def cmd_task_stop_hook(args: argparse.Namespace) -> int:
             catalog_digest=catalog_digest_for(catalog_source),
             approver_id=args.approver,
             approvers=trust.approvers,
+            repository_root=root,
         )
         envelope: dict[str, object] | None = None
         envelope_path = verdicts_dir / f"{subject_hex}.envelope.json"
@@ -255,7 +281,17 @@ def cmd_task_stop_hook(args: argparse.Namespace) -> int:
             except (ValueError, OSError):
                 envelope = None
 
-        budget_file = _budget_path(verdicts_dir, subject_hex)
+        from ranex.foundation.canonical import canonical_sha256
+
+        loop_id = getattr(args, "loop_id", None) or hook.get("session_id") or "default"
+        if not isinstance(loop_id, str) or not loop_id.strip():
+            raise ValueError("repair loop identity must be a non-empty string")
+        loop_digest = canonical_sha256({
+            "repository": str(root.resolve()), "gate": args.gate,
+            "claim": args.claim, "producer": args.producer,
+            "approver": args.approver, "loop_id": loop_id,
+        })
+        budget_file = _budget_path(verdicts_dir, loop_digest)
         if verdict.state is ReadState.VERIFIED and verdict.record is not None:
             reason = render_packet_text(envelope) if envelope else (
                 f"VERDICT {verdict.record['verdict']} (no envelope published)"
@@ -263,21 +299,18 @@ def cmd_task_stop_hook(args: argparse.Namespace) -> int:
             if cycle_note:
                 reason += f"\nNOTE {cycle_note}"
             if verdict.record["verdict"] == "PASS":
-                with contextlib.suppress(OSError):
-                    budget_file.unlink()
+                _update_misses(budget_file, reset=True)
                 return _emit("approve", reason, envelope=envelope,
                              read_state=verdict.state.value, misses=0, budget=budget)
-            misses = _read_misses(budget_file) + 1
+            misses = _update_misses(budget_file)
             if misses >= budget:
                 # The 3-miss rule: stopping is deterministic, not babysat.
-                _write_misses(budget_file, misses)
                 return _emit(
                     "approve",
                     reason + f"\nSTOP miss budget exhausted ({misses}/{budget})",
                     envelope=envelope, read_state=verdict.state.value,
                     misses=misses, budget=budget,
                 )
-            _write_misses(budget_file, misses)
             return _emit("block", reason, envelope=envelope,
                          read_state=verdict.state.value, misses=misses, budget=budget)
 
@@ -321,9 +354,11 @@ def _pretooluse(
         return _emit("approve", "no command to judge", envelope=None,
                      read_state="n-a", misses=None, budget=None)
     try:
-        argv = shlex.split(command)
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()")
+        lexer.whitespace_split = True
+        argv = list(lexer)
     except ValueError:
-        return _emit("approve", "unparsable command", envelope=None,
+        return _emit("block", "unparsable command", envelope=None,
                      read_state="n-a", misses=None, budget=None)
     commit = head_commit(root)
     catalog_source = committed_trust_root(
@@ -331,7 +366,56 @@ def _pretooluse(
     )
     claim = claim_definition_for(catalog_source, args.gate, args.claim)
     frozen = list(claim.command) if claim is not None and claim.command else None
-    if frozen and argv[: len(frozen)] == frozen:
+    commands: list[list[str]] = [[]]
+    for token in argv:
+        if token and all(char in ";&|()" for char in token):
+            commands.append([])
+        else:
+            commands[-1].append(token)
+
+    def unwrap(tokens: list[str]) -> list[str]:
+        import re
+
+        assignment = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+        # Each iteration removes a wrapper, so nested wrappers retain the same
+        # judgment as the command they invoke. Bound expansion depth explicitly.
+        for _ in range(32):
+            while tokens and assignment.match(tokens[0]):
+                tokens = tokens[1:]
+            if not tokens:
+                return tokens
+            program = Path(tokens[0]).name
+            if program in {"command", "exec", "time"}:
+                tokens = tokens[1:]
+                while tokens and tokens[0] in {"--", "-p"}:
+                    tokens = tokens[1:]
+                continue
+            if program in {"sh", "bash", "dash", "zsh"}:
+                # A shell payload has a different grammar. Require the Stop
+                # hook rather than claiming arbitrary shell evaluation is safe.
+                return frozen or tokens
+            if program != "env":
+                return tokens
+            tokens = tokens[1:]
+            while tokens:
+                option = tokens[0]
+                if assignment.match(option) or option in {"-i", "--ignore-environment", "--"}:
+                    tokens = tokens[1:]
+                elif option in {"-u", "--unset"} and len(tokens) > 1:
+                    tokens = tokens[2:]
+                elif option.startswith("--unset="):
+                    tokens = tokens[1:]
+                elif option in {"-S", "--split-string"} or option.startswith("--split-string="):
+                    # GNU env uses its own expansion grammar, including variable
+                    # substitution. Do not approve a payload we cannot evaluate.
+                    return frozen or tokens
+                elif option.startswith("-"):
+                    return frozen or tokens
+                else:
+                    break
+        return frozen or tokens
+
+    if frozen and any(unwrap(tokens)[: len(frozen)] == frozen for tokens in commands):
         return _emit(
             "block",
             "the governed gate already runs this suite and answers through the "
@@ -372,6 +456,7 @@ def register(task_actions: argparse._SubParsersAction) -> None:
                            help="producer identity for the governed run")
     stop_hook.add_argument("--approver", required=True,
                            help="approver identity for the evaluation")
+    stop_hook.add_argument("--loop-id", help="stable repair session identity; defaults to harness session_id, then repository/gate/claim scope")
     stop_hook.add_argument("--budget", type=int, default=3,
                            help="deterministic miss budget before the loop stops")
     stop_hook.add_argument("--external-repository",

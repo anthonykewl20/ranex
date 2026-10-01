@@ -13,15 +13,19 @@ import os
 import shlex
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NoReturn, cast
 
 from ranex.cli.repository import git, uncommitted_paths
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
+from ranex.foundation.log_redaction import collect_redaction_literals, redact_text
+from ranex.foundation.retained_logs import truncate_tail
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
@@ -390,14 +394,58 @@ class _PreparedChild:
     row: dict[str, Any]
 
 
-def _provision_child(root: Path, base: str, flow_id: str, row: dict[str, Any]) -> _PreparedChild:
+@dataclass
+class _BatchResources:
+    """Only exclusive directory reservations and successful Git acquisitions."""
+
+    roots: dict[Path, tuple[int, int]] = field(default_factory=dict)
+    children: list[Path] = field(default_factory=list)
+    lock: Any = field(default_factory=threading.Lock, repr=False)
+
+    def reserve(self, path: Path) -> None:
+        path = path.absolute()
+        if path.resolve() != path:
+            _refuse("E-BATCH-WORKTREE-RESIDUE", f"flow destination is aliased: {path}")
+        try:
+            path.mkdir(mode=0o700)
+        except OSError as exc:
+            _refuse("E-BATCH-WORKTREE-RESIDUE", f"cannot exclusively reserve flow {path}: {exc}")
+        facts = path.lstat()
+        self.roots[path] = (facts.st_dev, facts.st_ino)
+
+    def require_owned(self, child: Path) -> None:
+        child = child.absolute()
+        if child.resolve() != child:
+            _refuse("E-BATCH-WORKTREE-RESIDUE", f"child destination is aliased: {child}")
+        for root, identity in self.roots.items():
+            if child.is_relative_to(root):
+                try:
+                    facts = root.lstat()
+                except OSError as exc:
+                    _refuse("E-BATCH-WORKTREE-RESIDUE", f"flow reservation disappeared: {root}: {exc}")
+                if stat.S_ISDIR(facts.st_mode) and (facts.st_dev, facts.st_ino) == identity:
+                    return
+        _refuse("E-BATCH-WORKTREE-RESIDUE", f"no owned flow reservation for {child}")
+
+    def acquired(self, child: Path) -> None:
+        # A provisioning future may fail after Git succeeds. Record ownership
+        # immediately, rather than relying on that future returning a result.
+        with self.lock:
+            self.children.append(child)
+
+
+def _provision_child(
+    root: Path, base: str, flow_id: str, row: dict[str, Any], *, resources: _BatchResources,
+) -> _PreparedChild:
     task_id = row["task_id"]
     child = root.parent / flow_id / "children" / task_id / f"attempt-{row['attempt']}"
+    resources.require_owned(child)
     created = git(root, "worktree", "add", "--quiet", "--detach", str(child), base)
     if created.returncode != 0:
         _refuse(
             "E-BATCH-WORKTREE-RESIDUE", f"cannot create child worktree: {created.stderr.strip()}"
         )
+    resources.acquired(child)
     try:
         if uncommitted_paths(child):
             _refuse("E-BATCH-WORKTREE-RESIDUE", f"child worktree is not initially clean: {task_id}")
@@ -447,7 +495,13 @@ def _execute_child(prepared: _PreparedChild) -> _ChildOutcome:
         try:
             runtime_result = json.loads(result_lines[0][len(marker) :])
         except (IndexError, json.JSONDecodeError) as exc:
-            _refuse("E-BATCH-ORACLE-MISMATCH", f"child runtime result is absent: {task_id}: {exc}")
+            diagnostic, _ = redact_text(completed.stderr.strip(), collect_redaction_literals(environment))
+            diagnostic, _, _, _ = truncate_tail(diagnostic, 4096)
+            _refuse(
+                "E-BATCH-ORACLE-MISMATCH",
+                f"child {task_id} exited {completed.returncode} without a valid runtime result: "
+                f"{exc}; {diagnostic or 'no stderr'}",
+            )
         if completed.returncode == 91:
             _refuse("E-BATCH-NETWORK-ESCAPE", f"network control escaped for {task_id}")
         if completed.returncode != 0:
@@ -502,13 +556,30 @@ def _execute_child(prepared: _PreparedChild) -> _ChildOutcome:
         _refuse("E-BATCH-ORACLE-MISMATCH", f"child execution failed: {exc}")
 
 
-def _remove_children(root: Path, paths: list[Path]) -> None:
-    for child in paths:
-        if child.exists():
-            git(root, "worktree", "remove", "--force", str(child))
-    git(root, "worktree", "prune")
-    for flow in sorted({child.parents[2] for child in paths}, reverse=True):
-        shutil.rmtree(flow, ignore_errors=True)
+def _remove_children(root: Path, resources: _BatchResources) -> None:
+    if not isinstance(resources, _BatchResources):
+        _refuse("E-BATCH-WORKTREE-RESIDUE", "cleanup requires acquired resource ownership")
+    # Validate reservations before removing anything. A renamed or replaced
+    # root no longer establishes ownership of the names underneath it.
+    for flow in resources.roots:
+        resources.require_owned(flow)
+    failures: list[str] = []
+    for child in resources.children:
+        try:
+            removed = git(root, "worktree", "remove", "--force", str(child), timeout=30)
+            if removed.returncode != 0:
+                failures.append(f"{child}: {removed.stderr.strip() or 'Git removal failed'}")
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            failures.append(f"{child}: {exc}")
+    if failures:
+        # Keep the reserved directories and surviving Git metadata together
+        # for recovery; deleting bytes does not make a failed removal succeed.
+        _refuse("E-BATCH-WORKTREE-RESIDUE", "; ".join(failures))
+    for flow in resources.roots:
+        try:
+            shutil.rmtree(flow)
+        except OSError as exc:
+            _refuse("E-BATCH-WORKTREE-RESIDUE", f"cannot release owned flow {flow}: {exc}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -625,22 +696,13 @@ def qualify_batch(
             code, _, detail = message.partition(":")
             _refuse(code, detail.strip())
         _refuse("E-BATCH-SCHEMA", message)
-    if _worktree_count(target) != 1:
-        _refuse("E-BATCH-WORKTREE-RESIDUE", "governed repository has an unrelated worktree")
+    baseline_worktrees = _worktree_count(target)
     dirty = uncommitted_paths(target, ignoring=target / "governance/journal.sqlite3")
     if dirty:
         _refuse("E-BATCH-WORKTREE-RESIDUE", f"governed worktree is dirty: {', '.join(dirty)}")
 
     by_key = {(row["runtime_input"]["flow_id"], row["task_id"]): row for row in rows}
-    child_paths = [
-        target.parent
-        / flow.flow_id
-        / "children"
-        / task_id
-        / f"attempt-{by_key[(flow.flow_id, task_id)]['attempt']}"
-        for flow in plan.flows
-        for task_id in children
-    ]
+    resources = _BatchResources()
     outcomes: dict[str, _ChildOutcome] = {}
     lines = [
         _event(
@@ -671,6 +733,11 @@ def qualify_batch(
         )
     try:
         for flow in plan.flows:
+            destination = target.parent / flow.flow_id
+            if destination.parent != target.parent:
+                _refuse("E-BATCH-WORKTREE-RESIDUE", "flow must name a direct child destination")
+            resources.reserve(destination)
+        for flow in plan.flows:
             first_ready = plan.ready_sets[0]
             lines.append(
                 _event(
@@ -687,6 +754,7 @@ def qualify_batch(
                         base,
                         flow.flow_id,
                         by_key[(flow.flow_id, task_id)],
+                        resources=resources,
                     ): task_id
                     for task_id in first_ready
                 }
@@ -709,6 +777,7 @@ def qualify_batch(
                     base,
                     flow.flow_id,
                     by_key[(flow.flow_id, task_id)],
+                    resources=resources,
                 )
                 outcome = _execute_child(child)
                 completion.append(outcome.task_id)
@@ -736,8 +805,19 @@ def qualify_batch(
                 )
             )
     finally:
-        _remove_children(target, child_paths)
-    if _worktree_count(target) != 1:
+        primary_failure = sys.exc_info()[1]
+        try:
+            _remove_children(target, resources)
+        except BatchRefusal as cleanup_failure:
+            if isinstance(primary_failure, BatchRefusal):
+                raise BatchRefusal(
+                    primary_failure.code,
+                    f"{primary_failure.detail}; cleanup residue: {cleanup_failure.detail}",
+                ) from cleanup_failure
+            if primary_failure is not None:
+                raise primary_failure from cleanup_failure
+            raise
+    if _worktree_count(target) != baseline_worktrees:
         _refuse("E-BATCH-WORKTREE-RESIDUE", "child worktree cleanup left residue")
 
     admitted_records = [outcomes[task_id].record for task_id in children]
@@ -902,6 +982,12 @@ def _verify_qualification_facts(
         or not isinstance(attestation, dict)
     ):
         _refuse("E-BATCH-SCHEMA", "qualification payload is not closed v1")
+    signed_results = attestation.get("suite_results")
+    if (
+        not isinstance(signed_results, dict)
+        or signed_results.get("outcome_digest") != _sha256(canonical_json_bytes(payload))
+    ):
+        _refuse("E-BATCH-PROTECTED-ARTIFACT", "signed qualification payload digest disagrees")
     identities = {
         name: payload[name]
         for name in (
@@ -1174,6 +1260,16 @@ def plan_qualification(
             raise ValueError("E-BATCH-SCHEMA: child dependency graph is cyclic")
         ready_sets.append(ready)
         completed.update(ready)
+
+    # The execution and journal grammar implements one sibling wave followed
+    # by one join of all siblings. Reject other DAGs before allocating anything;
+    # their dependency facts cannot be represented by this qualification v1.
+    if (
+        len(ready_sets) != 2
+        or len(ready_sets[1]) != 1
+        or set(by_task[ready_sets[1][0]]["depends_on"]) != set(ready_sets[0])
+    ):
+        raise ValueError("E-BATCH-SCHEMA: qualification requires one sibling wave and its complete join")
 
     flows: list[QualificationFlow] = []
     for flow_id in flow_ids:

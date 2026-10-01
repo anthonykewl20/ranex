@@ -14,11 +14,11 @@ be collected before the implementation that closes it exists.
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 from pathlib import Path
 
 import _approver
+import _history
 import pytest
 
 EXIT_PASS = 0
@@ -49,12 +49,19 @@ def make_repository(
     # RISK-07: the evaluation below names a catalogued approver, so the
     # repository's committed keyring must carry that principal.
     _approver.register_approver(path / "producers.yaml", "reviewer", approver_public)
+    history_directory = path.parent / (path.name + "-history")
+    history_directory.mkdir()
+    history_private, history_public, _ = _history.mint_service(history_directory)
+    _history.register_service(path / "producers.yaml", history_public)
+    (path / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n")
     (path / "gates.yaml").write_text(command_catalog(), encoding="utf-8")
     check = path / "run-tests.sh"
     check.write_text(f"#!/bin/sh\n{check_body}\n", encoding="utf-8")
     check.chmod(0o755)
     subprocess.run(["git", "-C", str(path), "add", "-A"], check=True)
     subprocess.run(["git", "-C", str(path), "commit", "-q", "-m", "initial"], check=True)
+    _history.establish(path, "evidence.json", history_directory / "checkpoint.json",
+                       history_private, history_public)
     return path
 
 
@@ -69,6 +76,9 @@ def invoke(
 
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repository)
+        history_directory = repository.parent / (repository.name + "-history")
+        monkeypatch.setenv("RANEX_VERDICT_SIGNING_KEY", str(history_directory / "history-service.key"))
+        monkeypatch.setenv("RANEX_HISTORY_CHECKPOINT", str(history_directory / "checkpoint.json"))
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repository.resolve()
         )
@@ -146,7 +156,15 @@ def test_relative_git_dir_cannot_make_shadow_evidence_pass(
     assert run(shadow, key_path) == EXIT_PASS, (
         "the shadow run must succeed honestly, or this reproduction proves nothing"
     )
-    shutil.copy(shadow / "evidence.json", honest / "evidence.json")
+    # Certify the genuine shadow observation in the honest test service's
+    # history so this control isolates Git subject binding from history refusal.
+    from ranex.foundation.signing import public_key_for
+
+    history_directory = honest.parent / (honest.name + "-history")
+    history_private = (history_directory / "history-service.key").read_text().strip()
+    _history.write_records(honest, "evidence.json", json.loads((shadow / "evidence.json").read_bytes()),
+                           history_directory / "checkpoint.json", history_private,
+                           public_key_for(history_private))
 
     with monkeypatch.context() as environment:
         environment.chdir(honest)

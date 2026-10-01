@@ -30,14 +30,16 @@ from ranex.foundation.signing import _decode, _encode
 VERDICT_DOMAIN_V1 = b"ranex-verdict-v1\n"
 PAYLOAD_TYPE_V1 = "application/vnd.ranex.verdict.v1+json"
 
-VERDICT_DOMAIN = b"ranex-verdict-v2\n"
-PAYLOAD_TYPE = "application/vnd.ranex.verdict.v2+json"
+VERDICT_DOMAIN_V2 = b"ranex-verdict-v2\n"
+PAYLOAD_TYPE_V2 = "application/vnd.ranex.verdict.v2+json"
+VERDICT_DOMAIN = b"ranex-verdict-v3\n"
+PAYLOAD_TYPE = "application/vnd.ranex.verdict.v3+json"
 SIGNED_FIELDS_V1 = (
     "verdict", "gate_id", "subject_digest", "subject_lane", "catalog_digest",
     "approver_id", "failing_rule", "missing_claims", "considered", "causes",
     "rejections", "self_approval", "reason",
 )
-SIGNED_FIELDS = (
+SIGNED_FIELDS_V2 = (
     *SIGNED_FIELDS_V1,
     # The journal chain head this evaluation's own record produced, retained
     # OUTSIDE the journal and signed by the verdict signer — a different key
@@ -50,11 +52,14 @@ SIGNED_FIELDS = (
 )
 
 
+SIGNED_FIELDS = (*SIGNED_FIELDS_V2, "observation_checkpoint", "history_verified")
+
 #: Every readable verdict version: payload type -> (domain, signed fields).
 #: New records are only ever written at PAYLOAD_TYPE.
 VERSIONS = {
     PAYLOAD_TYPE: (VERDICT_DOMAIN, SIGNED_FIELDS),
     PAYLOAD_TYPE_V1: (VERDICT_DOMAIN_V1, SIGNED_FIELDS_V1),
+    PAYLOAD_TYPE_V2: (VERDICT_DOMAIN_V2, SIGNED_FIELDS_V2),
 }
 
 

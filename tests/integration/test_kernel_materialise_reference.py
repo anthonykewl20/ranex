@@ -12,7 +12,6 @@ passing from fixture state alone.
 
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import subprocess
@@ -79,6 +78,7 @@ def subject_digest(repository: Path, ref: str = "HEAD") -> str:
 
 
 def evidence_record(signing: Signing, digest: str) -> dict[str, object]:
+    from ranex.bootstrap.composition import catalog_digest_for
     from ranex.foundation.signing import sign_evidence
 
     body: dict[str, object] = {
@@ -94,7 +94,7 @@ def evidence_record(signing: Signing, digest: str) -> dict[str, object]:
         "confinement_profile_digest": "sha256:" + "d" * 64,
         "envelope_type": "ranex-evidence-envelope-v1",
         "gate_id": "landing",
-        "catalog_digest": "sha256:" + "e" * 64,
+        "catalog_digest": catalog_digest_for(GATES.encode()),
     }
     private_key = signing.path.read_text(encoding="utf-8").strip()
     return {**body, "signature": sign_evidence(body, private_key)}
@@ -123,17 +123,26 @@ def target(tmp_path: Path, signing: Signing) -> Path:
     (repository / "producers.yaml").write_text(
         f"producers:\n  worker: {signing.public}\n", encoding="utf-8"
     )
+    from _history import mint_service, register_service
+    _, service_public, _ = mint_service(tmp_path)
+    register_service(repository / "producers.yaml", service_public)
+    (repository / ".gitignore").write_text("evidence.json\n*.sqlite3*\n")
     commit_all(repository, "initial governed work")
     return repository
 
 
 def invoke(*arguments: str) -> subprocess.CompletedProcess[str]:
+    environment = clean_env()
+    if arguments[:2] == ("task", "judge"):
+        from _task_history import checkpoint
+        worktree = Path(arguments[arguments.index("--emitted-worktree") + 1])
+        environment["RANEX_HISTORY_CHECKPOINT"] = str(checkpoint(worktree, "evidence.json"))
     return subprocess.run(
         ["python", "-m", "ranex.cli.main", *arguments],
         capture_output=True,
         text=True,
         check=False,
-        env=clean_env(),
+        env=environment,
     )
 
 
@@ -170,6 +179,13 @@ def dispatched(target: Path, tmp_path: Path) -> tuple[Path, Path]:
     worktree, journal = tmp_path / "worktree", tmp_path / "journal.sqlite3"
     result = dispatch(target, worktree, journal)
     assert result.returncode == EXIT_PASS, result.stderr
+    from _task_history import checkpoint
+
+    from ranex.foundation.signing import public_key_for
+    from ranex.governed_execution.adapters.persistence.history import bootstrap_history
+    private = (tmp_path / "history-service.key").read_text().strip()
+    bootstrap_history(worktree / "evidence.json", checkpoint(worktree, "evidence.json"),
+                      private, public_key_for(private), worktree)
     return worktree, journal
 
 
@@ -180,10 +196,13 @@ def write_satisfying_evidence(worktree: Path, signing: Signing) -> None:
     subject — committing it would change the subject it attests.
     """
 
-    (worktree / "evidence.json").write_text(
-        json.dumps([evidence_record(signing, subject_digest(worktree))]) + "\n",
-        encoding="utf-8",
-    )
+    from _task_history import checkpoint
+
+    from ranex.foundation.signing import public_key_for
+    from ranex.governed_execution.adapters.persistence.history import record_anchored
+    private = (worktree.parent / "history-service.key").read_text().strip()
+    record_anchored(worktree / "evidence.json", evidence_record(signing, subject_digest(worktree)),
+                    checkpoint(worktree, "evidence.json"), private, public_key_for(private), worktree)
 
 
 def test_dispatch_materialises_head_and_appends_a_chained_record(target: Path, tmp_path: Path) -> None:

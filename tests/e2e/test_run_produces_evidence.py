@@ -97,12 +97,14 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     (repository / "gates.yaml").write_text(GATES, encoding="utf-8")
     # The keyring is committed with the tree, as it is in production: it is the
     # trust root, and review of this file is the control on it.
+    (repository / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\ngovernance/observations.sqlite3*\n")
     signing.write_keyring(repository)
     attach(repository, signing)
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
     )
+    signing.establish_history(repository)
     return repository
 
 
@@ -140,6 +142,9 @@ def invoke(
                 _approver.APPROVER_ENV,
                 str(signing_for(repo).approver_path(approver)),
             )
+        evidence_name = argv[argv.index("--evidence") + 1] if "--evidence" in argv else "governance/evidence.json"
+        if argv[0] in ("run", "gate"):
+            signing_for(repo).configure_history(monkeypatch, repo, evidence_name)
         return main(argv)
 
 
@@ -768,9 +773,7 @@ def test_creates_the_evidence_file_when_absent(repo: Path) -> None:
 
 
 def test_preserves_unrelated_records(repo: Path) -> None:
-    (repo / "evidence.json").write_text(
-        json.dumps(
-            [
+    signing_for(repo).write_records(repo, [
                 signing_for(repo).sign(
                     {
                         "claim_id": "contracts-validated",
@@ -783,10 +786,7 @@ def test_preserves_unrelated_records(repo: Path) -> None:
                     },
                     "auditor",
                 )
-            ]
-        ),
-        encoding="utf-8",
-    )
+            ])
 
     run_cmd(repo, "sh", "-c", "exit 0")
 

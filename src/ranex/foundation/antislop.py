@@ -144,16 +144,26 @@ def _effective_asserts(function: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
     `pytest.raises` and unittest's `assert*` methods assert as surely as the
     keyword does; counting the keyword alone turned real assertion-free
     tests into known-good false-positives in the science run.
+
+    Nested declarations are separate execution scopes. Their assertions do
+    not execute when the parent test merely creates the helper, so they
+    cannot replace assertions in its own body. Compound statements within
+    that body remain traversed; decorator checks belong to the module rules.
     """
 
     count = 0
-    for node in ast.walk(function):
+    pending: list[ast.AST] = list(function.body)
+    while pending:
+        node = pending.pop()
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            continue
         if isinstance(node, ast.Assert):
             count += 1
         elif isinstance(node, ast.Call):
             name = _called_name(node.func)
             if name == "raises" or (name is not None and name.startswith("assert")):
                 count += 1
+        pending.extend(ast.iter_child_nodes(node))
     return count
 
 

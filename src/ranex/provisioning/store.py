@@ -59,7 +59,16 @@ class WheelStore:
                     pass
 
     def verified_path(self, digest: str) -> Path:
-        """Return an entry only after rehashing it, quarantining corruption."""
+        """Check availability; this pathname is not authority to consume bytes.
+
+        Consumers must use verified_bytes: a mutable store pathname can change
+        after this check and before an installer opens it.
+        """
+        self.verified_bytes(digest)
+        return self._entry(digest)
+
+    def verified_bytes(self, digest: str) -> bytes:
+        """Return the exact immutable bytes hashed, quarantining corruption."""
         self._check_digest(digest)
         entry = self._entry(digest)
         try:
@@ -69,7 +78,7 @@ class WheelStore:
         except OSError as exc:
             raise StoreError(f"cannot read wheel-store entry {digest}: {exc}") from exc
         if hashlib.sha256(data).hexdigest() == digest:
-            return entry
+            return data
         quarantine = self.root / "quarantine"
         quarantine.mkdir(parents=True, exist_ok=True)
         destination = quarantine / f"{digest}-{os.urandom(8).hex()}"

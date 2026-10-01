@@ -77,21 +77,34 @@ def assemble_root(
     environment = destination / "env"
     scratch_home = destination / "home"
     cache = destination / "cache"
-    for directory in (links, scratch_home, cache):
-        directory.mkdir(parents=True, exist_ok=True)
+    try:
+        links.mkdir(mode=0o700, parents=True, exist_ok=False)
+        for directory in (scratch_home, cache):
+            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    except OSError as exc:
+        raise RootError(f"cannot reserve private wheel staging: {exc}") from exc
 
     named: list[Path] = []
-    for artifact, source in zip(
-        artifacts, verified_wheel_paths(artifacts, store), strict=True
-    ):
-        # The installer parses tags from the filename, so the store entry is
-        # linked under the name the lock's url carries. A hard link shares the
-        # verified bytes; a filesystem that refuses one gets a copy.
+    for artifact in artifacts:
+        # Snapshot authority is the bytes hashed, never the CAS pathname.
+        # A private copy also keeps staging writes from corrupting the store.
+        try:
+            data = store.verified_bytes(artifact.sha256)
+        except StoreError as exc:
+            raise RootError(
+                f"wheel for {artifact.package} {artifact.version} is not "
+                f"available from the store: {exc}. Only `ranex deps fetch` "
+                "may bring it in; the gated run never reaches the network"
+            ) from exc
+        if Path(artifact.filename).name != artifact.filename:
+            raise RootError("wheel staging filename is not a basename")
         target = links / artifact.filename
         try:
-            os.link(source, target)
-        except OSError:
-            target.write_bytes(source.read_bytes())
+            with target.open("xb") as handle:
+                handle.write(data)
+                os.fchmod(handle.fileno(), 0o444)
+        except OSError as exc:
+            raise RootError(f"cannot stage wheel {artifact.filename}: {exc}") from exc
         named.append(target)
 
     environment_variables = {

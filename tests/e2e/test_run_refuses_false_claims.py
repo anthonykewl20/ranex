@@ -44,6 +44,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
         '        command: ["sh", "-c", "exit 0"]\n',
         encoding="utf-8",
     )
+    (repository / ".gitignore").write_text("observations.sqlite3*\n", encoding="utf-8")
     signing.write_keyring(repository)
     attach(repository, signing)
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
@@ -57,6 +58,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "second"], check=True
     )
+    signing.establish_history(repository)
     return repository
 
 
@@ -90,6 +92,7 @@ def invoke(
                 "RANEX_APPROVER_SIGNING_KEY",
                 str(signing_for(repo).approver_path(approver)),
             )
+        signing_for(repo).configure_history(monkeypatch, repo)
         return main(argv)
 
 

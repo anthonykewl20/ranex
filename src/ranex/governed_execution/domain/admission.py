@@ -95,6 +95,28 @@ class Rejection:
 class Admission:
     evidence: tuple[Evidence, ...]
     rejections: tuple[Rejection, ...]
+    evidence_indices: tuple[int, ...] = ()
+    observation_checkpoint: tuple[str, str, int] | None = None
+    history_verified: bool = False
+    removed_observations: tuple[Any, ...] = ()
+    """Raw record positions, carried with evidence through every filter.
+
+    Qualification freshness is decided after ordinary records are admitted,
+    so evidence order need not be input order. Rejection positions cannot
+    reconstruct this association: each admitted item keeps its own position.
+    """
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.evidence_indices, tuple):
+            raise ValueError("admitted record indices must be an immutable tuple")
+        if len(self.evidence_indices) != len(self.evidence):
+            raise ValueError("each admitted evidence item must carry its record index")
+        if any(type(index) is not int or index < 0 for index in self.evidence_indices):
+            raise ValueError("admitted record indices must be non-negative integers")
+        if len(set(self.evidence_indices)) != len(self.evidence_indices):
+            raise ValueError("admitted record indices must be unique")
+        if set(self.evidence_indices).intersection(item.index for item in self.rejections):
+            raise ValueError("a record cannot be both admitted and rejected")
 
 
 _SIGNATURE = "signature"
@@ -576,9 +598,10 @@ def admit(
                 else:
                     evidence.extend((index, admitted) for index, admitted, _, _ in qualifications)
 
-    # Host-state checks are deferred, but record identity/order is not. Every
-    # downstream refusal must still refer to the original signed record.
+    # Deferred qualification checks must not change original record order.
+    ordered = sorted(evidence, key=lambda pair: pair[0])
     return Admission(
-        evidence=tuple(item for _, item in sorted(evidence, key=lambda pair: pair[0])),
+        evidence=tuple(item for _, item in ordered),
         rejections=tuple(sorted(rejections, key=lambda rejection: rejection.index)),
+        evidence_indices=tuple(index for index, _ in ordered),
     )

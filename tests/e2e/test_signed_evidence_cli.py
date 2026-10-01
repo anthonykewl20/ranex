@@ -60,6 +60,7 @@ def repo(tmp_path: Path) -> Path:
 def commit_all(repo: Path, message: str = "initial") -> None:
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", message], check=True)
+    _approver.history_for(repo).establish()
 
 
 def invoke(
@@ -82,6 +83,8 @@ def invoke(
             _approver.strip_approvers(monkeypatch)
         else:
             monkeypatch.setenv(_approver.APPROVER_ENV, str(approver_path))
+        if argv[0] != "keygen" and (repo / "producers.yaml").exists():
+            _approver.history_for(repo).configure(monkeypatch)
         return main(argv)
 
 
@@ -113,6 +116,8 @@ def write_keyring(repo: Path, **producers: str) -> None:
         repo.parent, name="reviewer_alice"
     )
     _approver.register_approver(keyring, "reviewer_alice", approver_public)
+    _approver.register_history_service(repo, keyring, repo.parent)
+    (repo / ".gitignore").write_text("observations.sqlite3*\n")
     _APPROVER_KEYS[repo.resolve()] = approver_path
 
 
@@ -220,6 +225,7 @@ def test_hand_edited_record_fails_and_names_the_signature(
     assert record["exit_code"] == 1
 
     record["exit_code"] = 0
+    (repo / "evidence.json").chmod(0o600)
     (repo / "evidence.json").write_text(json.dumps([record], indent=2), encoding="utf-8")
 
     capsys.readouterr()
@@ -260,7 +266,7 @@ def test_unsigned_record_stops_counting(repo: Path, tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    assert evaluate(repo) == EXIT_FAIL
+    assert evaluate(repo) == EXIT_USAGE
 
 
 # --- run refuses rather than producing evidence it knows will be rejected ----

@@ -63,6 +63,7 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+import _history
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -639,7 +640,10 @@ class _Subject:
         (root / "producers.yaml").write_text(
             f"producers:\n  worker: {public}\n", encoding="utf-8"
         )
-        (root / ".gitignore").write_text("evidence.json\n", encoding="utf-8")
+        self.service_private, self.service_public, self.service_key = _history.mint_service(root.parent)
+        self.checkpoint = root.parent / "history.json"
+        _history.register_service(root / "producers.yaml", self.service_public)
+        (root / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n", encoding="utf-8")
         shutil.copytree(REPO_ROOT / "src" / "ranex", root / "src" / "ranex")
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         for key, value in (("user.email", "t@example.invalid"), ("user.name", "test")):
@@ -649,6 +653,8 @@ class _Subject:
             ["git", "-C", str(root), "commit", "-q", "-m", "initial"], check=True
         )
 
+        _history.establish(root, "evidence.json", self.checkpoint, self.service_private, self.service_public)
+
     def base_env(self) -> dict[str, str]:
         env = {
             "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
@@ -656,6 +662,8 @@ class _Subject:
             "PYTHONPATH": str(self.root / "src"),
             "PYTHONDONTWRITEBYTECODE": "1",
             "RANEX_SIGNING_KEY": str(self.key),
+            "RANEX_VERDICT_SIGNING_KEY": str(self.service_key),
+            "RANEX_HISTORY_CHECKPOINT": str(self.checkpoint),
         }
         for name in TRACE_VARIABLES:
             env.pop(name, None)

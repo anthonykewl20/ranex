@@ -53,6 +53,7 @@ _ED25519_SPKI_PREFIX = bytes.fromhex("302a300506032b6570032100")
 _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
+    "RANEX_HISTORY_CHECKPOINT",
     "RANEX_VERDICT_DIR",
     "RANEX_APPROVER_SIGNING_KEY",
     "COVERAGE_PROCESS_START",
@@ -70,6 +71,9 @@ JOURNAL = "governance/journal.sqlite3"
 VERDICTS = "governance/verdicts"
 
 
+_HISTORY_ENV: dict[Path, dict[str, str]] = {}
+
+
 def ranex(
     subject: Path, argv: list[str], *, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
@@ -78,6 +82,7 @@ def ranex(
 
     child = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
     child["PYTHONPATH"] = str(subject / "src")
+    child.update(_HISTORY_ENV.get(subject, {}))
     child.update(env or {})
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
@@ -87,6 +92,36 @@ def ranex(
         env=child,
         check=False,
     )
+
+
+def establish_history(subject: Path, signer_key: Path) -> None:
+    authority = {
+        "RANEX_VERDICT_SIGNING_KEY": str(signer_key),
+        "RANEX_HISTORY_CHECKPOINT": str(subject.parent / f"{subject.name}.history.json"),
+    }
+    established = ranex(subject, ["history", "bootstrap"], env=authority)
+    assert established.returncode == 0, established.stdout + established.stderr
+    _HISTORY_ENV[subject] = authority
+
+
+def copy_with_history(source: Path, target: Path, signer_key: Path) -> None:
+    from ranex.foundation.signing import public_key_for
+    from ranex.governed_execution.adapters.persistence.history import record_anchored
+
+    records = json.loads((source / "governance/evidence.json").read_bytes())
+
+    def ignore(directory, names):
+        if Path(directory) == source / "governance":
+            return {name for name in names if name == "evidence.json" or name.startswith("observations.sqlite3")}
+        return set()
+
+    shutil.copytree(source, target, ignore=ignore)
+    establish_history(target, signer_key)
+    private = signer_key.read_text().strip()
+    for record in records:
+        record_anchored(target / "governance/evidence.json", record,
+                        Path(_HISTORY_ENV[target]["RANEX_HISTORY_CHECKPOINT"]),
+                        private, public_key_for(private), target)
 
 
 def git(subject: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -227,6 +262,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> ApproverJourney:
     ):
         assert git(subject, "config", key, value).returncode == 0
     (subject / "README.md").write_text("subject\n", encoding="utf-8")
+    (subject / ".gitignore").write_text("governance/evidence.json\ngovernance/observations.sqlite3*\ngovernance/journal.sqlite3*\ngovernance/verdicts/\n__pycache__/\n")
 
     worker_key, worker_public = keygen(subject, base, "worker")
     approver_key, approver_public = keygen(subject, base, "approver")
@@ -249,6 +285,8 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> ApproverJourney:
     )
     assert git(subject, "add", "-A").returncode == 0
     assert git(subject, "commit", "-q", "-m", "the subject and its trust root").returncode == 0
+
+    establish_history(subject, signer_key)
 
     # Real evidence from a real governed run of the bound command.
     recorded = ranex(
@@ -289,20 +327,20 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> ApproverJourney:
     # Arms 2–4 on fresh copies of the identical state: each refusal must
     # write nothing at all.
     absent_copy = base / "arm-absent"
-    shutil.copytree(snapshot, absent_copy)
+    copy_with_history(snapshot, absent_copy, signer_key)
     refused_absent = ranex(absent_copy, evaluate_argv(), env={
         "RANEX_VERDICT_SIGNING_KEY": str(signer_key),
         "RANEX_VERDICT_DIR": VERDICTS,
     })
 
     role_copy = base / "arm-role"
-    shutil.copytree(snapshot, role_copy)
+    copy_with_history(snapshot, role_copy, signer_key)
     refused_role = ranex(role_copy, evaluate_argv(approver=WORKER), env={
         "RANEX_APPROVER_SIGNING_KEY": str(worker_key),
     })
 
     unknown_copy = base / "arm-unknown"
-    shutil.copytree(snapshot, unknown_copy)
+    copy_with_history(snapshot, unknown_copy, signer_key)
     refused_unknown = ranex(unknown_copy, evaluate_argv(approver="ghost"), env={
         "RANEX_APPROVER_SIGNING_KEY": str(approver_key),
     })
@@ -310,7 +348,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> ApproverJourney:
     # Arm 6: one key under two principals — the approver registered with
     # the worker's key. The catalog must refuse to load at all.
     collision_copy = base / "arm-collision"
-    shutil.copytree(snapshot, collision_copy)
+    copy_with_history(snapshot, collision_copy, signer_key)
     write_catalog(
         collision_copy,
         workers={WORKER: worker_public},
@@ -426,10 +464,13 @@ def test_arm1_repeats_produce_identical_verdict_bytes(journey: ApproverJourney) 
         "RANEX_VERDICT_DIR": VERDICTS,
         "RANEX_APPROVER_SIGNING_KEY": str(journey.approver_key),
     }
-    digests = {journey.verdict_bytes}
+    # v3 binds the absolute observation log identity. Repeats therefore use
+    # one path and the same retained history, with a fresh evaluation journal.
+    digests = set()
+    copy = journey.base / "identical-repeat"
+    copy_with_history(journey.snapshot, copy, journey.signer_key)
     for attempt in (1, 2, 3):
-        copy = journey.base / f"identical-repeat-{attempt}"
-        shutil.copytree(journey.snapshot, copy)
+        (copy / JOURNAL).unlink(missing_ok=True)
         repeated = ranex(copy, evaluate_argv(), env=publication)
         assert repeated.returncode == 0, (
             f"repeat {attempt} must exit 0: {repeated.stdout}{repeated.stderr}"
@@ -491,7 +532,7 @@ def _judged_copy_with_verdict(journey: ApproverJourney, name: str) -> tuple[Path
     """A copy judged once for real (journal + verdict), verdict in hand."""
 
     subject = journey.base / f"arm5-{name}"
-    shutil.copytree(journey.snapshot, subject)
+    copy_with_history(journey.snapshot, subject, journey.signer_key)
     judged = ranex(subject, evaluate_argv(), env={
         "RANEX_VERDICT_SIGNING_KEY": str(journey.signer_key),
         "RANEX_VERDICT_DIR": VERDICTS,
@@ -609,7 +650,7 @@ def test_arm7_producer_key_equals_approver_key_is_refused_twice(
     # no-self-approval comparison must refuse. verdict.py does not change;
     # this observes it.
     subject = journey.base / "arm7-selfapproval"
-    shutil.copytree(journey.snapshot, subject)
+    copy_with_history(journey.snapshot, subject, journey.signer_key)
     write_catalog(
         subject,
         workers={WORKER: journey.worker_public},

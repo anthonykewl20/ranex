@@ -52,13 +52,15 @@ from pathlib import Path
 import _approver
 import pytest
 
+import ranex
+
 EXIT_PASS = 0
 EXIT_FAIL = 1
 EXIT_USAGE = 2
 
-# The `src/ranex` tree this suite is testing, copied into each repository under
-# test so the child process's governed root is that repository and not this one.
-CLI_SOURCE = Path(__file__).resolve().parents[2] / "src" / "ranex"
+# The installed artifact this interpreter is testing, copied into each subject
+# so the child process governs that repository with the same current code.
+CLI_SOURCE = Path(ranex.__file__).resolve().parent
 
 # Printed by the wrapper before the CLI starts, so the test can prove the bind
 # mount actually took effect rather than assuming it did.
@@ -220,6 +222,7 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
     _approver.register_approver(
         repository / "producers.yaml", "reviewer", keys["approver_public"]
     )
+    _approver.register_history_service(repository, repository / "producers.yaml", tmp_path)
     return repository
 
 
@@ -257,6 +260,7 @@ def environment_for(
         # RISK-07: the approver's key rides the child's environment exactly
         # as the worker's does — the built environment inherits nothing.
         environment[_approver.APPROVER_ENV] = approver_path
+    environment.update(_approver.history_for(repo).environment("evidence.json"))
     return environment
 
 

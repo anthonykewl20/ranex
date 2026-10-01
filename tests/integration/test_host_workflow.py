@@ -48,11 +48,15 @@ def _assert_logs(result_dir: Path, report: dict[str, object]) -> None:
     assert isinstance(logs, dict)
     assert set(logs) == {"stdout", "stderr"}
     directory = result_dir / "logs"
-    assert {path.name for path in directory.iterdir()} == {
-        "stdout.log",
-        "stderr.log",
-        "manifest.json",
-    }
+    expected_files = {"stdout.log", "stderr.log", "manifest.json"}
+    for index, step in enumerate(report["steps"]):
+        for field in ("stdout", "stderr"):
+            expected_files.add(f"step-{index:03d}-{field}.log")
+            entry = step[field]
+            payload = (directory / entry["file"]).read_bytes()
+            assert entry["bytes"] == len(payload)
+            assert entry["sha256"] == "sha256:" + hashlib.sha256(payload).hexdigest()
+    assert {path.name for path in directory.iterdir()} == expected_files
     for entry in logs.values():
         assert isinstance(entry, dict)
         stream = directory / str(entry["file"])
@@ -342,6 +346,8 @@ def test_preflight_checks_record_success_and_host_probe_failures(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Every host prerequisite has both its normal and readable failure arm."""
+    checkout = host_workflow.governed_repository_root()
+    monkeypatch.setattr(host_workflow, "governed_repository_root", lambda: checkout)
     original_read_text = host_workflow.Path.read_text
     monkeypatch.setattr(host_workflow.Path, "is_file", lambda _path: True)
     monkeypatch.setattr(host_workflow.os, "access", lambda *_args: True)
@@ -596,3 +602,47 @@ def test_v2_pairing_and_public_main_dispatch_cover_public_arms(
             },
         )
     ]
+
+
+def test_report_retains_only_redacted_bounded_step_streams(monkeypatch, tmp_path):
+    secret = "production-test-token-0123456789"
+    monkeypatch.setenv("RANEX_TEST_SECRET", secret)
+    stream = secret + "😀" * host_workflow.DEFAULT_LOG_MAX_BYTES + secret
+    report = {
+        "steps": [{"name": "worker", "argv": ["worker", secret],
+                   "refusal_detail": secret, "stdout": stream, "stderr": stream}],
+        "_stdout": stream, "_stderr": stream,
+    }
+    host_workflow.write_run_report(tmp_path, report)
+    retained = json.loads((tmp_path / "host-run-report.json").read_bytes())
+    assert secret not in json.dumps(retained)
+    step = retained["steps"][0]
+    for field in ("stdout", "stderr"):
+        reference = step[field]
+        assert isinstance(reference, dict)
+        payload = (tmp_path / "logs" / reference["file"]).read_bytes()
+        assert len(payload) <= host_workflow.DEFAULT_LOG_MAX_BYTES
+        assert secret.encode() not in payload
+        assert reference["bytes"] == len(payload)
+        assert reference["sha256"] == "sha256:" + hashlib.sha256(payload).hexdigest()
+    for path in tmp_path.rglob("*"):
+        if path.is_file():
+            assert secret.encode() not in path.read_bytes()
+
+
+def test_host_child_and_report_inputs_are_anchored_to_checkout(monkeypatch, tmp_path):
+    import sys
+
+    from ranex.cli.repository import governed_repository_root
+
+    expected = governed_repository_root()
+    caller = tmp_path / "caller"
+    caller.mkdir()
+    monkeypatch.chdir(caller)
+    step = host_workflow._run_step("cwd", [sys.executable, "-c", "import os; print(os.getcwd())"])
+    assert step.exit_code == 0
+    assert Path(step.stdout.strip()) == expected
+    monkeypatch.setattr(host_workflow, "QUALIFICATION_REPORT", "governance/confinement/native-launcher-build-v1.json")
+    result = tmp_path / "result"
+    host_workflow.write_run_report(result, {"qualification": {"path": host_workflow.QUALIFICATION_REPORT}})
+    assert (result / "qualification.json").read_bytes() == (expected / host_workflow.QUALIFICATION_REPORT).read_bytes()

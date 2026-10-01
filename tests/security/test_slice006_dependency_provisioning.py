@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import stat
 import subprocess
@@ -37,19 +38,45 @@ import sys
 import zipfile
 from pathlib import Path
 
+import _approver
 import pytest
 
-from ranex.cli.main import main
+from ranex.cli.main import committed_trust_root, main
 from ranex.foundation.signing import generate_keypair
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.deps import DepsApproval, DepsDerivation
 from ranex.provisioning.approval import depset_digest
+from ranex.provisioning.pins import PinsError, load_pins_text, verified_pinned_binary
 from ranex.provisioning.store import WheelStore
 from ranex.provisioning.target import probe_target
 
-REAL_UV = shutil.which("uv")
 
-pytestmark = pytest.mark.skipif(REAL_UV is None, reason="uv is not installed")
+def committed_resolver(repository: Path) -> str | None:
+    """Use the same reviewed pins and verified descriptor as provisioning.
+
+    A restricted PATH does not remove the committed resolver. Only absence of
+    that exact artifact is a missing prerequisite; malformed pins, mismatched
+    bytes and writable executables remain failures, never alternate discovery.
+    """
+    candidate = "governance/deps.yaml"
+    source = committed_trust_root(repository, "HEAD", candidate,
+                                  (repository / candidate).resolve(), "dependency pins")
+    pins = load_pins_text(source.decode("utf-8"))
+    try:
+        descriptor = verified_pinned_binary(pins.resolver, pins.resolver_sha256)
+    except PinsError as exc:
+        if isinstance(exc.__cause__, FileNotFoundError):
+            return None
+        raise
+    os.close(descriptor)
+    return str(pins.resolver)
+
+
+REAL_UV = committed_resolver(Path(__file__).resolve().parents[2])
+pytestmark = pytest.mark.skipif(
+    REAL_UV is None,
+    reason="ranex-prereq:pinned_resolver: the committed pinned resolver artifact is absent",
+)
 
 
 def sha256(data: bytes) -> str:
@@ -222,8 +249,9 @@ def make_repo(
     key_path.write_text(private_key + "\n")
     key_path.chmod(0o600)
 
+    _approver.register_history_service(repo, governance / "producers.yaml", key_path.parent)
     (repo / ".gitignore").write_text(
-        "governance/evidence.json\ngovernance/journal.sqlite3\n"
+        "governance/evidence.json\ngovernance/journal.sqlite3*\ngovernance/observations.sqlite3*\n"
     )
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     if not commit_pins:
@@ -232,6 +260,7 @@ def make_repo(
             check=True,
         )
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True)
+    _approver.history_for(repo).establish("governance/evidence.json")
     return DepsRepo(
         repo,
         key_path,
@@ -244,6 +273,7 @@ def invoke(
     repo: DepsRepo, argv: list[str], monkeypatch: pytest.MonkeyPatch, *, sign: bool = False
 ) -> int:
     monkeypatch.chdir(repo.root)
+    _approver.history_for(repo.root).configure(monkeypatch, "governance/evidence.json")
     monkeypatch.setattr(
         "ranex.cli.main.governed_repository_root", lambda: repo.root.resolve()
     )
@@ -854,3 +884,9 @@ class TestSpawnFailure:
         assert run(repo, RUN_COMMAND, monkeypatch) == 2
         assert "unprivileged user namespaces are disabled" in capsys.readouterr().err
         assert repo.evidence() is None
+
+
+def test_committed_resolver_discovery_does_not_depend_on_inherited_path(monkeypatch):
+    """The sealed suite can execute provisioning controls with its bound artifact."""
+    monkeypatch.setattr(shutil, 'which', lambda *args, **kwargs: None)
+    assert committed_resolver(Path(__file__).resolve().parents[2]) == REAL_UV

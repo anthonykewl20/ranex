@@ -235,3 +235,25 @@ def test_every_driver_self_tests_before_it_measures(driver: str, measurement: st
         f"{driver}: the self-test must run before {measurement} — before any "
         "measurement and before any spend"
     )
+
+
+@pytest.mark.parametrize("repeats", [0, -1, False])
+def test_selftest_rejects_zero_repeat_false_green_before_instrument_execution(tmp_path, repeats) -> None:
+    module = _module("selftest")
+    with pytest.raises(ValueError, match="positive integer"):
+        module._prove("marker-scanner", repeats, tmp_path,
+                      lambda side: pytest.fail("invalid repeats executed an instrument"))
+    with pytest.raises(ValueError, match="positive integer"):
+        module.run(tmp_path / "receipt", repeats=repeats, names=["marker-scanner"],
+                   blunt="marker-scanner")
+    assert not (tmp_path / "receipt").exists()
+
+
+def test_empty_instrument_inventory_cannot_claim_verified(tmp_path) -> None:
+    module = _module("selftest")
+    assert module._overall([]) == "UNVERIFIED"
+    assert module.exit_code([]) != 0
+    with pytest.raises(ValueError, match="no instruments"):
+        module.assemble_receipt([], repeats=3, blunt=None, argv=[])
+    with pytest.raises(ValueError, match="no instruments"):
+        module.run(tmp_path / "receipt", names=[])

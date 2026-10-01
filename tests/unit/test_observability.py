@@ -1460,3 +1460,35 @@ def test_malformed_env_bytes_do_not_crash_the_import() -> None:
     assert SHAPE_DESCRIPTOR.search(warnings[0]), (
         f"the warning carries no well-formed shape descriptor: {warnings[0]!r}"
     )
+
+
+@pytest.mark.parametrize("trace_target", ["1", "2", "invalid-value"])
+def test_full_stderr_trace_and_warning_do_not_block_or_change_shared_flags(
+    trace_target: str,
+) -> None:
+    read_end, write_end = os.pipe()
+    try:
+        os.set_blocking(write_end, False)
+        while True:
+            try:
+                os.write(write_end, b"x" * 65536)
+            except BlockingIOError:
+                break
+        os.set_blocking(write_end, True)
+        environment = {**os.environ, "RANEX_TRACE": trace_target}
+        environment.pop("RANEX_TRACE_EVENT", None)
+        environment.pop("RANEX_TRACE_PARENT_SID", None)
+        completed = subprocess.run(
+            [sys.executable, "-c",
+             "import os; import ranex.observability as trace; "
+             "trace.emit_raw({'event':'note','level':'info','module':'observability',"
+             "'stage':'observability.note'}); print(os.get_blocking(2))"],
+            env=environment, stderr=write_end, stdout=subprocess.PIPE,
+            timeout=3, check=False, text=True,
+        )
+        assert completed.returncode == 0
+        assert completed.stdout.strip() == "True"
+        assert os.get_blocking(write_end), "trace changed a shared open-file description"
+    finally:
+        os.close(read_end)
+        os.close(write_end)

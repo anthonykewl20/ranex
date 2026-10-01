@@ -25,7 +25,6 @@ import argparse
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 import time
@@ -33,7 +32,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from two_arm import (  # noqa: E402
-    RANEX_PY, build_governed_repo, governed_cycle, pinned_python_has_pytest,
+    build_governed_repo,
+    governed_argv,
+    governed_cycle,
+    pinned_python_has_pytest,
 )
 
 DEFAULT_TASKS = ("py-paginate-cursor", "py-txn-kvstore", "py-config-parse")
@@ -75,9 +77,7 @@ def claim_commands_for(task_dir: Path) -> list[tuple[str, list[str]]]:
     metadata = json.loads((task_dir / "metadata.json").read_text())
     commands = []
     for entry in metadata["tests"]["fail_to_pass"]:
-        argv = shlex.split(entry["cmd"])
-        if argv[0] == "python":
-            argv[0] = "/usr/bin/python3"
+        argv = governed_argv(entry["cmd"])
         commands.append((entry["name"], argv))
     return commands
 
@@ -136,8 +136,8 @@ def main() -> int:
                 "commands_passing": f"{passing}/{len(commands)}",
                 "overhead_s": round(time.perf_counter() - governed_started, 1),
             }
-        except AssertionError as exc:
-            row["governed"] = {"error": f"agent patch would not apply: {exc}"}
+        except (AssertionError, RuntimeError) as exc:
+            row["governed"] = {"error": f"governed subject setup failed: {exc}"}
         rows.append(row)
         gov = row["governed"]
         print(f"    WITH ranex: gate {gov.get('gate_verdict')} "

@@ -367,3 +367,41 @@ def test_the_scanner_module_is_stdlib_ast_only() -> None:
         "ranex.foundation.canonical",
         "ranex.foundation.scan_results",
     }
+
+
+def test_uncalled_nested_assertions_do_not_credit_the_parent(tmp_path: Path) -> None:
+    declarations = (
+        "    def hidden():\n        assert False\n",
+        "    async def hidden():\n        assert False\n",
+        "    class Hidden:\n        def method(self):\n            assert False\n",
+        "    hidden = lambda: assert_never_called()\n",
+    )
+    for index, declaration in enumerate(declarations):
+        source = "def test_parent():\n" + declaration
+        namespace = {}
+        exec(compile(source, "nested-control", "exec"), namespace)
+        # Calling the actual parent never enters the assertion-bearing scope.
+        assert namespace["test_parent"]() is None
+        assert census(
+            tmp_path / str(index), {"test_nested.py": source}
+        ) == {"test_nested.py::test_parent": 0}
+
+
+def test_census_preserves_assertions_in_compound_test_body_paths(tmp_path: Path) -> None:
+    source = (
+        "from contextlib import nullcontext\n"
+        "def test_parent():\n"
+        "    for value in [1]:\n"
+        "        if value:\n"
+        "            with nullcontext():\n"
+        "                try:\n"
+        "                    assert value == 1\n"
+        "                finally:\n"
+        "                    assert value > 0\n"
+    )
+    namespace = {}
+    exec(compile(source, "compound-control", "exec"), namespace)
+    assert namespace["test_parent"]() is None
+    assert census(tmp_path, {"test_compound.py": source}) == {
+        "test_compound.py::test_parent": 2
+    }

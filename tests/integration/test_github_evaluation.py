@@ -18,7 +18,12 @@ from ranex.bootstrap.composition import catalog_digest_for
 from ranex.github_app.acceptance import resolve_acceptance
 from ranex.github_app.binding import bind_pr_head
 from ranex.github_app.evaluation import EvidenceEvaluator
-from ranex.github_app.receiver import _ReceiverState, process_delivery, refresh_awaiting
+from ranex.github_app.receiver import (
+    _awaiting_path,
+    _ReceiverState,
+    process_delivery,
+    refresh_awaiting,
+)
 
 application = test_external_repository.application
 
@@ -28,6 +33,37 @@ def pilot_approvers(repo) -> dict[str, tuple[str, ...]]:
     key = yaml.safe_load((repo / 'governance/producers.yaml').read_bytes())[
         'principals']['pilot']['keys'][0]['key']
     return {'pilot': (key,)}
+
+
+def test_operator_checkpoint_configuration_reaches_the_real_evaluation_child(application, monkeypatch):
+    repo, worker, signer, public, approver = application
+    (repo / '.gitignore').write_text((repo / '.gitignore').read_text() + '.local/\n')
+    commit(repo)
+    command = yaml.safe_load((repo / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
+    frozen = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
+                    '--artifact', 'governance/suite_results.xml', '--', *command)
+    assert frozen.returncode == 0, frozen.stderr
+    commit(repo)
+    observed = invoke(repo, 'run', '--external-repository', str(repo), '--claim', 'tests-executed',
+                      '--producer', 'worker', '--', *command, key=worker)
+    assert observed.returncode == 0, observed.stderr
+    checkpoint = repo.parent / 'history-checkpoint.json'
+    monkeypatch.setenv('RANEX_HISTORY_CHECKPOINT', str(checkpoint))
+    evaluator = EvidenceEvaluator(repo, 'governance/evidence.json', 'landing',
+                                  'governance/gates.yaml', 'governance/producers.yaml',
+                                  'governance/suite_manifest.json', 'pilot',
+                                  repo / 'governance/verdicts', signer, repo / '.local/evaluation',
+                                  approver_key=approver)
+    # An unrelated later ambient change must not redirect this service's trust.
+    monkeypatch.setenv('RANEX_HISTORY_CHECKPOINT', str(repo.parent / 'wrong-checkpoint.json'))
+    binding = bind_pr_head(repo, git(repo, 'rev-parse', 'HEAD'))
+    evaluator(binding)
+    acceptance = resolve_acceptance(evaluator.verdicts_dir, binding,
+                                    {'kernel-verdict-signer': public}, gate_id='landing',
+                                    catalog_digest=catalog_digest_for((repo / 'governance/gates.yaml').read_bytes()),
+                                    approver_id='pilot', approvers=pilot_approvers(repo),
+                                    repository_root=repo, history_checkpoint_path=checkpoint)
+    assert acceptance.publishable and acceptance.record['verdict'] == 'PASS'
 
 
 def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeypatch):
@@ -45,7 +81,7 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
                                   'governance/gates.yaml', 'governance/producers.yaml',
                                   'governance/suite_manifest.json', 'pilot',
                                   repo / 'governance/verdicts', signer, repo / '.local/evaluation',
-                                  approver_key=approver)
+                                  approver_key=approver, history_checkpoint_path=repo.parent / "history-checkpoint.json")
 
     def acceptance():
         binding = bind_pr_head(repo, git(repo, 'rev-parse', 'HEAD'))
@@ -54,7 +90,8 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
                                   {'kernel-verdict-signer': public}, gate_id='landing',
                                   catalog_digest=catalog_digest_for(
                                       (repo / 'governance/gates.yaml').read_bytes()), approver_id='pilot',
-                                  approvers=pilot_approvers(repo))
+                                  approvers=pilot_approvers(repo), repository_root=repo,
+                                  history_checkpoint_path=repo.parent / "history-checkpoint.json")
 
     assert not acceptance().publishable
     observed = invoke(repo, 'run', '--external-repository', str(repo), '--claim', 'tests-executed',
@@ -63,6 +100,7 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
     assert acceptance().record['verdict'] == 'PASS'
     evidence_path = repo / 'governance/evidence.json'
     valid_evidence = evidence_path.read_bytes()
+    evidence_path.chmod(0o600)
     evidence_path.write_bytes(b'{')
     with pytest.raises(ValueError, match='EVALUATION-REFUSED'):
         acceptance()
@@ -81,6 +119,7 @@ def test_fresh_evidence_is_judged_without_executing_pr_code(application, monkeyp
         def move_evidence(*args, **kwargs):
             result = actual_run(*args, **kwargs)
             if 'ranex.cli.main' in args[0]:
+                evidence_path.chmod(0o600)
                 evidence_path.write_bytes(evidence_path.read_bytes() + b'\n')
             return result
         patcher.setattr(subprocess, 'run', move_evidence)
@@ -132,13 +171,14 @@ def test_receiver_rejudges_late_evidence_and_recovers_without_duplicate_success(
                                   'governance/gates.yaml', 'governance/producers.yaml',
                                   'governance/suite_manifest.json', 'pilot',
                                   repo / 'governance/verdicts', signer, repo / '.local/evaluation',
-                                  approver_key=approver)
+                                  approver_key=approver, history_checkpoint_path=repo.parent / "history-checkpoint.json")
     with _github_fake.receiver_environment(tmp_path / 'api', with_verdict=False) as env:
         config = replace(env.config, repo_root=repo, remote=str(repo), evaluator=evaluator,
                          verdicts_dir=evaluator.verdicts_dir, approver_id='pilot',
                          keyring={'kernel-verdict-signer': public},
                          approvers=pilot_approvers(repo),
-                         catalog_digest=catalog_digest_for((repo / 'governance/gates.yaml').read_bytes()))
+                         catalog_digest=catalog_digest_for((repo / 'governance/gates.yaml').read_bytes()),
+                         history_checkpoint_path=repo.parent / "history-checkpoint.json")
         head = git(repo, 'rev-parse', 'HEAD')
         body = _github_fake.pull_request_event_body(head)
         assert process_delivery(config, env.state, body, 'automatic', 'pull_request') == 200
@@ -157,12 +197,12 @@ def test_receiver_rejudges_late_evidence_and_recovers_without_duplicate_success(
         completion.write_text('[]\n')
         assert refresh_awaiting(config, _ReceiverState()) == {head: 500}
         completion.write_bytes(receipt)
-        (config.state_dir / 'awaiting' / f'{head}.failed').unlink()
+        _awaiting_path(config, head, 1, "owner/name").with_suffix(".failed").unlink()
 
         result = invoke(repo, 'run', '--external-repository', str(repo), '--claim', 'tests-executed',
                         '--producer', 'worker', '--', *command, key=worker)
         assert result.returncode == 0, result.stderr
-        waiting = config.state_dir / 'awaiting' / f'{head}.json'
+        waiting = _awaiting_path(config, head, 1, "owner/name")
         retained = waiting.read_bytes()
         env.fake.fail_check_runs_with = 503
         assert refresh_awaiting(config, env.state) == {head: 500}

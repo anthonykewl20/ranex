@@ -21,7 +21,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, NoReturn
 
-from ranex.execution.log_redaction import collect_redaction_literals
+from ranex.cli.repository import governed_repository_root
+from ranex.execution.log_redaction import collect_redaction_literals, redact_text
 from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
     persist_stream,
@@ -173,7 +174,7 @@ def preflight_checks(*, build_needed: bool) -> list[CheckResult]:
     closure_detail = "build closure already available"
     if build_needed:
         compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
-        closure_ok = compiler.is_file() and os.access(compiler, os.X_OK) and Path(BUILD_MANIFEST).is_file()
+        closure_ok = compiler.is_file() and os.access(compiler, os.X_OK) and (governed_repository_root() / BUILD_MANIFEST).is_file()
         closure_detail = "requires gcc-13 and the committed launcher build manifest"
     checks.append(_check(_PREFLIGHT_NAMES[5], closure_ok, closure_detail))
     try:
@@ -202,7 +203,7 @@ def enter_delegated_scope(argv: Sequence[str]) -> NoReturn:
 
 def _run_step(name: str, argv: Sequence[str]) -> StepResult:
     """Run one kernel operation and decode its canonical refusal, if any."""
-    completed = subprocess.run(list(argv), capture_output=True, check=False, text=True)
+    completed = subprocess.run(list(argv), cwd=governed_repository_root(), capture_output=True, check=False, text=True)
     code, detail = _refusal_from_streams(completed.stdout, completed.stderr)
     return StepResult(name, list(argv), completed.returncode, code, detail, completed.stdout, completed.stderr)
 
@@ -261,8 +262,9 @@ def _launcher_matches_manifest(artifact: Path, manifest: Path) -> bool:
 
 def _managed_launcher_is_unchanged() -> bool:
     """Only skip install when the workflow's fixed libexec file is identical."""
-    artifact = Path(BUILD_ARTIFACT)
-    destination = Path(INSTALLED_ARTIFACT)
+    root = governed_repository_root()
+    artifact = root / BUILD_ARTIFACT
+    destination = root / INSTALLED_ARTIFACT
     try:
         return hashlib.sha256(artifact.read_bytes()).digest() == hashlib.sha256(
             destination.read_bytes()
@@ -298,23 +300,45 @@ def write_run_report(result_dir: Path, report: dict[str, object]) -> Path:
         "stdout": persist_stream(logs_dir, "stdout", str(report.pop("_stdout", "")), literals=literals, max_bytes=DEFAULT_LOG_MAX_BYTES),
         "stderr": persist_stream(logs_dir, "stderr", str(report.pop("_stderr", "")), literals=literals, max_bytes=DEFAULT_LOG_MAX_BYTES),
     }
-    write_log_manifest(logs_dir, streams, {"max_bytes": DEFAULT_LOG_MAX_BYTES})
     report["logs"] = {name: {key: value[key] for key in ("file", "bytes", "sha256")} for name, value in streams.items()}
+    steps = report.get("steps", [])
+    if isinstance(steps, list):
+        for index, step in enumerate(steps):
+            if not isinstance(step, dict):
+                continue
+            for field in ("stdout", "stderr"):
+                name = f"step-{index:03d}-{field}"
+                retained = persist_stream(
+                    logs_dir, name, str(step.pop(field, "")),
+                    literals=literals, max_bytes=DEFAULT_LOG_MAX_BYTES,
+                )
+                streams[name] = retained
+                step[field] = {key: retained[key] for key in ("file", "bytes", "sha256")}
+    write_log_manifest(logs_dir, streams, {"max_bytes": DEFAULT_LOG_MAX_BYTES})
     qualification = report.get("qualification")
     if isinstance(qualification, dict) and isinstance(qualification.get("path"), str):
-        source = Path(qualification["path"])
+        source = governed_repository_root() / qualification["path"]
         try:
             write_atomic(result_dir / "qualification.json", source.read_bytes(), root=result_dir)
         except OSError:
             pass
     path = result_dir / "host-run-report.json"
-    write_atomic(path, canonical_json_bytes(report) + b"\n", root=result_dir)
+    def redact_value(value: object) -> object:
+        if isinstance(value, str):
+            return redact_text(value, literals)[0]
+        if isinstance(value, list):
+            return [redact_value(item) for item in value]
+        if isinstance(value, dict):
+            return {key: redact_value(item) for key, item in value.items()}
+        return value
+
+    write_atomic(path, canonical_json_bytes(redact_value(report)) + b"\n", root=result_dir)
     return path
 
 
 def _operator_report(result_dir: Path, *, outcome: str, step: StepResult, scope: dict[str, object] | None = None) -> None:
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    report: dict[str, object] = {"schema": "ranex-host-strict-local-run-v1", "started_at": now, "finished_at": now, "outcome": outcome, "host": _host_facts(), "scope": scope or {"entered": False, "method": "none", "cgroup_root": None, "cgroup_relative_path": None, "controllers": []}, "checks": [], "steps": [asdict(step)], "launcher": launcher_identity(Path(BUILD_ARTIFACT), Path(BUILD_MANIFEST)), "qualification": {"path": QUALIFICATION_REPORT}, "command": {"argv": [], "exit_code": step.exit_code}, "result_binding": None, "logs": {}, "_stdout": step.stdout, "_stderr": step.stderr}
+    report: dict[str, object] = {"schema": "ranex-host-strict-local-run-v1", "started_at": now, "finished_at": now, "outcome": outcome, "host": _host_facts(), "scope": scope or {"entered": False, "method": "none", "cgroup_root": None, "cgroup_relative_path": None, "controllers": []}, "checks": [], "steps": [asdict(step)], "launcher": launcher_identity(governed_repository_root() / BUILD_ARTIFACT, governed_repository_root() / BUILD_MANIFEST), "qualification": {"path": QUALIFICATION_REPORT}, "command": {"argv": [], "exit_code": step.exit_code}, "result_binding": None, "logs": {}, "_stdout": step.stdout, "_stderr": step.stderr}
     write_run_report(result_dir, report)
 
 
@@ -414,7 +438,7 @@ def run_workflow(
             "scope": scope or empty_scope,
             "checks": [asdict(check) for check in checks],
             "steps": [asdict(step) for step in steps],
-            "launcher": launcher_identity(Path(BUILD_ARTIFACT), Path(BUILD_MANIFEST)),
+            "launcher": launcher_identity(governed_repository_root() / BUILD_ARTIFACT, governed_repository_root() / BUILD_MANIFEST),
             "qualification": {"path": QUALIFICATION_REPORT},
             "command": {"argv": list(command), "exit_code": exit_code},
             "result_binding": None,
@@ -429,7 +453,7 @@ def run_workflow(
     if pairing is not None:
         print(f"ERROR  {pairing}", file=os.sys.stderr)
         return finish("prereq-failed", 2)
-    launcher_matches = _launcher_matches_manifest(Path(BUILD_ARTIFACT), Path(BUILD_MANIFEST))
+    launcher_matches = _launcher_matches_manifest(governed_repository_root() / BUILD_ARTIFACT, governed_repository_root() / BUILD_MANIFEST)
     checks = preflight_checks(build_needed=not skip_build or not launcher_matches)
     try:
         root, relative, controllers = delegated_controllers()

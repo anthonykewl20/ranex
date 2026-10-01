@@ -27,9 +27,36 @@ from ranex.governed_execution.verdict_reader import ReadState
 def clean_env() -> dict[str, str]:
     return {
         "PATH": os.path.dirname(sys.executable) + os.pathsep + os.defpath,
-        "PYTHONPATH": "src",
         "LC_ALL": "C",
     }
+
+
+def publisher_cli() -> tuple[list[str], dict[str, str]]:
+    """Use the installed CLI, or the measured source in the exact sealed suite."""
+
+    console = Path(sys.executable).with_name("ranex")
+    environment = clean_env()
+    if console.is_file():
+        return [str(console)], environment
+
+    # assemble_root installs dependency wheels, deliberately excluding the
+    # subject package. The sealed suite imports that package from its measured
+    # tree; it has no installed project console script to invoke.
+    import ranex
+
+    repository = Path(ranex.__file__).resolve().parents[2]
+    materialisation = repository.parent
+    assert repository.name == "tree" and materialisation.name.startswith("ranex-subject-")
+    assert Path.cwd().resolve() == repository
+    for variable, relative in (
+        ("UV_PROJECT_ENVIRONMENT", "deps/env"), ("HOME", "home"), ("TMPDIR", "tmp"),
+    ):
+        value = os.environ.get(variable)
+        assert value and Path(value) == materialisation / relative
+        assert Path(value).is_dir()
+    assert Path(sys.executable).parent == materialisation / "deps/env/bin"
+    environment["PYTHONPATH"] = str(repository / "src")
+    return [sys.executable, "-m", "ranex.cli.main"], environment
 
 
 def binding_for(tree: str) -> PrHeadBinding:
@@ -151,7 +178,7 @@ def test_the_cli_publishes_from_a_verified_verdict(tmp_path: Path) -> None:
     clone, head = _github_fake.seeded_governed_clone(tmp_path / "clone")
     key_path, public = _github_fake.write_app_key(tmp_path / "keys")
     with _github_fake.FakeGitHub(public) as fake:
-        environment = dict(clean_env())
+        command, environment = publisher_cli()
         environment.update(
             {
                 "RANEX_GITHUB_APP_ID": _github_fake.APP_ID,
@@ -162,21 +189,31 @@ def test_the_cli_publishes_from_a_verified_verdict(tmp_path: Path) -> None:
         )
         result = subprocess.run(
             [
-                "python", "-m", "ranex.cli.main",
+                *command,
                 "github", "check", "publish",
                 "--head-sha", head,
                 "--installation", "1",
                 "--repo", "owner/name",
                 "--repository", str(clone),
                 "--approver", "operator",
+                "--history-checkpoint", str(_github_fake.checkpoint_for(clone)),
             ],
-            capture_output=True, text=True, check=False, env=environment,
+            capture_output=True, text=True, check=False, env=environment, cwd=tmp_path,
+        )
+        # The same signed publication cannot authorize current context without
+        # the separately retained history checkpoint.
+        unanchored = subprocess.run(
+            result.args[:-2],
+            capture_output=True, text=True, check=False, env=environment, cwd=tmp_path,
         )
 
+    assert unanchored.returncode == 1, unanchored.stderr
+    assert "conclusion=failure" in unanchored.stdout
     assert result.returncode == 0, result.stderr
     assert "PUBLISHED  ranex/acceptance" in result.stdout
     assert "conclusion=success" in result.stdout
-    assert len(fake.check_requests) == 1
+    assert len(fake.check_requests) == 2
+    assert fake.check_requests[1]["body"]["conclusion"] == "failure"
     assert fake.check_requests[0]["body"]["conclusion"] == "success"
     assert fake.check_requests[0]["body"]["head_sha"] == head
 

@@ -219,3 +219,75 @@ def test_worker_profile_refuses_mutable_image_and_scope_overlap():
     with pytest.raises(ValueError, match="E-TASK-SCOPE"):
         worker_profile({**good, "product_roots": ["acceptance"]}, ["acceptance"])
     assert hashlib.sha256(digest.encode()).digest()
+
+
+def approved_task_state(tmp_path):
+    root, bundle, pin, key = prepared(tmp_path)
+    state = tmp_path / "approved-state"
+    result = invoke(
+        "specification", "approve-task", "--external-repository", root,
+        "--bundle", bundle, "--manifest-digest", pin,
+        "--worker-profile", "acceptance/worker.json", "--state", state, key=key,
+    )
+    assert result.returncode == 0, result.stderr
+    return state
+
+
+@pytest.mark.parametrize("reevaluate", [False, True])
+def test_task_journal_receipts_never_claim_repository_history(tmp_path, reevaluate):
+    from ranex.cli.acceptance_task import Record, Task
+    from ranex.foundation.specification_abc import payload_digest
+    from ranex.foundation.verdict_signing import PAYLOAD_TYPE
+    from ranex.governed_execution.domain.verdict import evaluate
+    from ranex.governed_execution.verdict_reader import ReadState, read_verdict
+
+    state = approved_task_state(tmp_path)
+    task = Task(state)
+    evaluation = evaluate(
+        task.gate, (), subject_digest=task.last_verdict["subject_digest"],
+        catalog_digest=payload_digest(task.context["b"]), approver_id=task.payload["principal"],
+    ) if reevaluate else None
+    task.append(Record({"type": "controller-check", "c_digest": task.c_digest}), evaluation)
+    reopened = Task(state)
+    publication = json.loads((state / "verdict.json").read_bytes())
+    content = publication["record"]
+    assert publication["payload_type"] == PAYLOAD_TYPE
+    assert content["journal_head"] == reopened.journal.head()
+    assert content["observation_checkpoint"] is None
+    assert content["history_verified"] is False
+    result = read_verdict(
+        state / "verdict.json", {"task-publisher": reopened.context["identities"]["publisher"]},
+        subject_digest=content["subject_digest"], gate_id=content["gate_id"],
+        catalog_digest=content["catalog_digest"], approver_id=content["approver_id"],
+        repository_root=reopened.candidate,
+    )
+    assert result.state == ReadState.UNANCHORED
+
+
+def test_task_refuses_journal_append_without_new_signed_anchor(tmp_path):
+    from ranex.cli.acceptance_task import Record, Task
+
+    state = approved_task_state(tmp_path)
+    task = Task(state)
+    task.journal.append(Record({"type": "unanchored-row"}))
+    with pytest.raises(ValueError, match="E-TASK-ANCHOR: journal changed"):
+        Task(state)
+
+
+def test_task_refuses_signed_claim_of_repository_history(tmp_path):
+    from ranex.cli.acceptance_task import Task
+    from ranex.foundation.canonical import canonical_sha256
+    from ranex.governed_execution.adapters.persistence.sqlite.observations import GENESIS
+    from ranex.governed_execution.verdict_publication import publish_verdict
+
+    state = approved_task_state(tmp_path)
+    task = Task(state)
+    content = {**task.last_verdict, "history_verified": True,
+               "observation_checkpoint": {"log_id": str(task.candidate / "observations.sqlite3"),
+                                          "head": GENESIS, "position": 0}}
+    publish_verdict(
+        state / "verdict.json", {**content, "record_digest": "sha256:" + canonical_sha256(content)},
+        root=state, signer_id="task-publisher", private_key=(state / "publisher.key").read_text(),
+    )
+    with pytest.raises(ValueError, match="E-TASK-ANCHOR: task journal receipt cannot certify"):
+        Task(state)

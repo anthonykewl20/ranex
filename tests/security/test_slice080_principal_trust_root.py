@@ -395,13 +395,10 @@ def test_the_older_loaders_still_read_the_committed_trust_root() -> None:
 
 
 def test_this_checkouts_catalog_is_the_one_slice_080_committed() -> None:
-    """The done criterion, asserted where a fixture cannot silently replace it.
+    """Validate producer and service roles in the exact committed trust root.
 
-    Journeys overwrite the working-tree keyring; none of them rewrites git
-    history, so HEAD in any clone of this repository still carries the catalog
-    SLICE-080 committed. Read the bytes git records rather than the file on
-    disk — the same discipline `cmd_gate_evaluate` uses for the keyring that
-    decides a verdict.
+    Owned journeys can commit their own worker names and rotated keys. Read
+    HEAD rather than the working tree so substitutions still cannot answer it.
     """
 
     blob = subprocess.run(
@@ -421,9 +418,18 @@ def test_this_checkouts_catalog_is_the_one_slice_080_committed() -> None:
 
     catalog = load_principals_text(blob.stdout, "HEAD:governance/producers.yaml")
 
-    assert catalog.principals["anthony"].role == "worker"
-    assert catalog.principals["kernel-verdict-signer"].role == "service"
-    assert catalog.principals["kernel-verdict-signer"].active_keys
+    document = yaml.safe_load(blob.stdout)
+    for producer, public in document["producers"].items():
+        principal = catalog.resolve(public)
+        assert principal is not None
+        assert principal.principal_id == producer
+        assert principal.role == "worker"
+        assert principal.has_active(public)
+    signer = document.get("verdict_signer")
+    if signer is not None:
+        principal = catalog.principals[signer["id"]]
+        assert principal.role == "service"
+        assert principal.has_active(signer["public_key"])
 
 
 # --- failing closed, from bytes already in hand -----------------------------
@@ -493,3 +499,40 @@ def test_the_trust_keyring_loads_a_document_that_carries_the_catalog() -> None:
     assert load_trust_keyring_text(text, LIVE_KEYRING).verdict_signer_id == (
         "kernel-verdict-signer"
     )
+
+
+def test_committed_catalog_checks_the_fixture_worker_and_rejects_its_role_tamper(tmp_path, monkeypatch):
+    """A nested journey owns its worker name; its committed role still binds."""
+    repo = tmp_path / 'nested-subject'
+    (repo / 'governance').mkdir(parents=True)
+    _, worker = generate_keypair()
+    _, service = generate_keypair()
+    trust = {'producers': {'fixture-worker': worker},
+             'verdict_signer': {'id': 'kernel-verdict-signer', 'public_key': service},
+             'principals': {
+                 'fixture-worker': {'role': 'worker', 'keys': [{'key': worker, 'status': 'active'}]},
+                 'kernel-verdict-signer': {'role': 'service', 'keys': [{'key': service, 'status': 'active'}]},
+             }}
+    keyring = repo / 'governance/producers.yaml'
+    keyring.write_text(yaml.safe_dump(trust))
+    environment = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+
+    def fixture_git(*args):
+        subprocess.run(['git', '-C', str(repo), '-c', 'core.hooksPath=/dev/null',
+                        '-c', 'commit.gpgsign=false', *args], env=environment,
+                       capture_output=True, text=True, check=True)
+
+    fixture_git('init', '-q')
+    fixture_git('config', 'user.name', 'Catalog fixture')
+    fixture_git('config', 'user.email', 'catalog@example.invalid')
+    fixture_git('add', '.')
+    fixture_git('commit', '-qm', 'valid fixture trust')
+    monkeypatch.setitem(globals(), 'REPO_ROOT', repo)
+    keyring.write_text('principals: {}\n')  # Working-tree substitutions do not answer HEAD.
+    test_this_checkouts_catalog_is_the_one_slice_080_committed()
+    trust['principals']['fixture-worker']['role'] = 'approver'
+    keyring.write_text(yaml.safe_dump(trust))
+    fixture_git('add', '.')
+    fixture_git('commit', '-qm', 'role tamper')
+    with pytest.raises((PrincipalCatalogError, AssertionError)):
+        test_this_checkouts_catalog_is_the_one_slice_080_committed()

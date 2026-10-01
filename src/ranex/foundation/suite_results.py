@@ -8,7 +8,8 @@ import os
 import re
 import stat
 import xml.etree.ElementTree as ET
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, TypedDict, cast
 
@@ -134,6 +135,25 @@ def _is_collection_skip(testcase: ET.Element) -> bool:
 def _test_id(testcase: ET.Element, reporter: str) -> str:
     classname = testcase.get("classname")
     name = testcase.get("name")
+    nodeids = [prop.get("value") for prop in testcase.findall("./properties/property")
+               if prop.get("name") == "ranex.pytest_nodeid"]
+    if reporter == "pytest-junit" and nodeids:
+        if len(nodeids) != 1 or not isinstance(nodeids[0], str) or not nodeids[0]:
+            raise ValueError("junitxml must carry one non-empty pytest nodeid")
+        nodeid = nodeids[0]
+        address, bracket, parameters = nodeid.partition("[")
+        components = address.split("::")
+        path = components[0]
+        if (len(components) < 2 or any(not part for part in components)
+            or not path.endswith(".py") or "\\" in path
+            or any(part in {"", ".", ".."} for part in path.split("/"))):
+            raise ValueError("junitxml carries a malformed pytest nodeid")
+        expected_classname = ".".join([path[:-3].replace("/", "."), *components[1:-1]])
+        expected_name = components[-1] + bracket + parameters
+        if (name != expected_name or not classname
+            or not (classname == expected_classname or classname.endswith("." + expected_classname))):
+            raise ValueError("junitxml pytest nodeid disagrees with classname or name")
+        return nodeid
     if not classname and name and (
         _outcome(testcase) == "error" or _is_collection_skip(testcase)
     ):
@@ -402,10 +422,20 @@ def parse_results_artifact(
     )
 
 
-def read_results_artifact(path: str | Path) -> bytes:
-    """Read one regular, non-symlink artifact through a single bounded fd."""
+@contextmanager
+def _regular_artifact_descriptor(
+    path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES,
+    subject_root: Path | None = None,
+) -> Iterator[int]:
+    """Open a bounded regular artifact; optionally confine every path component.
+
+    With ``subject_root``, ``path`` is relative to that directory. Descriptor
+    traversal refuses parent and leaf symlinks without creating directories.
+    """
 
     artifact = Path(path)
+    if type(maximum_bytes) is not int or maximum_bytes <= 0:
+        raise ValueError("artifact byte limit must be a positive integer")
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NONBLOCK", 0)
     nofollow = getattr(os, "O_NOFOLLOW", 0)
     if nofollow:
@@ -418,19 +448,62 @@ def read_results_artifact(path: str | Path) -> bytes:
             raise ValueError(f"results artifact is absent: {artifact}") from exc
 
     descriptor: int | None = None
+    directory: int | None = None
     try:
-        descriptor = os.open(artifact, flags)
+        if subject_root is None:
+            descriptor = os.open(artifact, flags)
+        else:
+            if (artifact.is_absolute() or not artifact.parts
+                or any(part == ".." for part in artifact.parts)):
+                raise ValueError("subject artifact must be a confined relative path")
+            directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+            directory = os.open(subject_root, directory_flags)
+            for part in artifact.parts[:-1]:
+                child = os.open(part, directory_flags, dir_fd=directory)
+                os.close(directory)
+                directory = child
+            descriptor = os.open(artifact.name, flags, dir_fd=directory)
     except FileNotFoundError as exc:
         raise ValueError(f"results artifact is absent: {artifact}") from exc
     except OSError as exc:
         raise ValueError(f"cannot open results artifact {artifact}: {exc}") from exc
+    finally:
+        if directory is not None:
+            os.close(directory)
 
     try:
         identity = os.fstat(descriptor)
         if not stat.S_ISREG(identity.st_mode):
             raise ValueError(f"results artifact is not a regular file: {artifact}")
 
-        remaining = MAX_RESULTS_BYTES + 1
+        if identity.st_size > maximum_bytes:
+            limit = "50 MB" if maximum_bytes == MAX_RESULTS_BYTES else f"{maximum_bytes} byte"
+            raise ValueError(f"results artifact exceeds the {limit} limit")
+        yield descriptor
+    except OSError as exc:
+        raise ValueError(f"cannot read results artifact {artifact}: {exc}") from exc
+    finally:
+        os.close(descriptor)
+
+
+def probe_results_artifact(
+    path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES,
+    subject_root: Path | None = None,
+) -> None:
+    """Check confined regular-file identity and size without reading contents."""
+
+    with _regular_artifact_descriptor(path, maximum_bytes=maximum_bytes, subject_root=subject_root):
+        pass
+
+
+def read_results_artifact(
+    path: str | Path, *, maximum_bytes: int = MAX_RESULTS_BYTES,
+    subject_root: Path | None = None,
+) -> bytes:
+    """Read bounded bytes using the same file checks as metadata-only probes."""
+
+    with _regular_artifact_descriptor(path, maximum_bytes=maximum_bytes, subject_root=subject_root) as descriptor:
+        remaining = maximum_bytes + 1
         chunks: list[bytes] = []
         while remaining:
             chunk = os.read(descriptor, min(1024 * 1024, remaining))
@@ -439,10 +512,7 @@ def read_results_artifact(path: str | Path) -> bytes:
             chunks.append(chunk)
             remaining -= len(chunk)
         raw = b"".join(chunks)
-        if len(raw) > MAX_RESULTS_BYTES:
-            raise ValueError("results artifact exceeds the 50 MB limit")
+        if len(raw) > maximum_bytes:
+            limit = "50 MB" if maximum_bytes == MAX_RESULTS_BYTES else f"{maximum_bytes} byte"
+            raise ValueError(f"results artifact exceeds the {limit} limit")
         return raw
-    except OSError as exc:
-        raise ValueError(f"cannot read results artifact {artifact}: {exc}") from exc
-    finally:
-        os.close(descriptor)
