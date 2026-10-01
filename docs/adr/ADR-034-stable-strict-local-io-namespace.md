@@ -1,6 +1,6 @@
 # ADR-034 — stable strict-local I/O namespace
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-26
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-070-stable-strict-local-io-namespace.md`

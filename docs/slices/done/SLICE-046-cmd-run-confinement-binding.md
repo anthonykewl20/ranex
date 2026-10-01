@@ -1,6 +1,6 @@
 # SLICE-046 — cmd_run confinement binding
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-15
 **Priority:** P0 — the qualified strict-local session is not yet the production
 `cmd_run` path, so the measured command can still reach signing authority.

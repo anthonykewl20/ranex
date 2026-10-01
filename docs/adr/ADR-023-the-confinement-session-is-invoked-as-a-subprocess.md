@@ -1,6 +1,6 @@
 # ADR-023 — invoke the confinement session as a subprocess
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-15
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-046-cmd-run-confinement-binding.md`
