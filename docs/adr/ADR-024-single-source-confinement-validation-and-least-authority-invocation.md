@@ -1,6 +1,6 @@
 # ADR-024 — single-source confinement validation and least-authority invocation
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-15
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-047-confinement-hardening.md`

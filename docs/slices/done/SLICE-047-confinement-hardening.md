@@ -1,6 +1,6 @@
 # SLICE-047 — confinement hardening
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-15
 **Priority:** P0 — SLICE-046's signer-to-controller boundary presently permits
 ambient authority and duplicate result validation.
