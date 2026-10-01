@@ -10,8 +10,8 @@ Base: f9a56d184 (origin/main).
 Measured validation so far: C1 pairing 19 passed; focused C1 + contract
 769 passed, 0 failed, 8 skipped after the slice/STATE documentation fixes.
 CI Ruff: all checks passed. Pyrefly: 0 errors.
-Full suite: 2863 passed, 20 failed, 41 skipped, 29 errors.
-No new failing/erroring IDs against the baseline; 29 baseline reds absent.
+Full suite (final commit): 2865 passed, 22 failed, 41 skipped, 25 errors.
+32 baseline reds fixed; 1 new red classified host-transient (passed 3/3 isolated reruns).
 Manifest ceremony accepted: 2953 tests, 125 expected skips.
 
 Next: C1 follow-up #223, then H1 verification.
