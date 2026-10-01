@@ -98,6 +98,18 @@ Run that governed journey sequentially with other confinement work. CI retains
 coverage from its vendored kernel only after comparing every Python source file
 with this checkout; historical or modified source cannot supply its line hits.
 
+## Audit receipts
+
+- `tools/dogfood/audits/2026-09-10-sarif-live-check` (2026-09-10) — issue #97
+  arm 8 on the live probe PR: a real `sarif-2.1.0` scan claim deciding a real
+  GitHub check — absence blocks, both claims satisfied, a real F401 violation
+  and the repair — with the merge refusal and the signed verdicts.
+- `tools/dogfood/audits/2026-09-24-issue111-instruction-digest` (2026-09-24) —
+  issue #111 completion evidence: `instruction_digest` proven on real
+  delegated runs — outcome and manifest digests reproduced out of band,
+  sensitivity, a negative control, redaction and fanout — with the manifest
+  refreeze receipts.
+
 ## Commands
 
     uv run --frozen python tools/dogfood/dogfood.py capabilities
@@ -106,6 +118,7 @@ with this checkout; historical or modified source cannot supply its line hits.
     uv run --frozen python tools/dogfood/dogfood.py baseline
     uv run --frozen python tools/dogfood/dogfood.py iterate
     uv run --frozen python tools/dogfood/dogfood.py drift
+    uv run --frozen python tools/dogfood/dogfood.py report [--output-dir DIR]
     uv run --frozen python tools/dogfood/dogfood.py bench [--repeat N] [--output FILE]
     uv run --frozen python tools/dogfood/dogfood.py train classify
     uv run --frozen python tools/dogfood/dogfood.py train train [--suites S] \
@@ -114,6 +127,33 @@ with this checkout; historical or modified source cannot supply its line hits.
     uv run --frozen pytest -q tools/dogfood/test_harness_guards.py
     uv run --frozen python tools/dogfood/external_proof.py [--publish] \
         [--tag TAG] [--url URL] [--rev REV]
+
+## Driver inventory
+
+The rest of the top-level `tools/dogfood/*.py` drivers, one line each (drivers
+documented above, beside a curriculum group, or in FINDINGS.md are named
+there):
+
+- `tools/dogfood/adp_python_fracture_restress.py` — re-stress the six
+  Python-ADP blocking fractures under named remediations.
+- `tools/dogfood/antislop_probe.py` — the C3 anti-slop claim, frozen and
+  governed on the real six.
+- `tools/dogfood/arch_stress.py` — the architecture-freeze claim, tried
+  honestly to break.
+- `tools/dogfood/cmdparse.py` — parse task test commands without guessing a
+  positional argv slot.
+- `tools/dogfood/evolution_graphs.py` — real evolution graphs, computed
+  entirely from the repository's own history.
+- `tools/dogfood/history_service.py` — explicit service identity and retained
+  checkpoints for isolated tool subjects.
+- `tools/dogfood/ocr_subject_proof.py` — the #105 field proof: the fixed
+  behaviour measured on real data.
+- `tools/dogfood/p0_envelope_proof.py` — the SLICE-092 (C1+C6) real-data
+  proof: the repair envelope on pinned six@1.17.0.
+- `tools/dogfood/probe_bundle_journal.py` — frozen black-box journal journey:
+  real CLI, real SQLite, named defect assertion.
+- `tools/dogfood/sarif_proof.py` — the #97 field proof: a real scanner decides
+  a real gate, at operator level.
 
 ## The trainer — corpus-driven, automatically graded
 
@@ -125,7 +165,7 @@ hand-typed expectations. On this machine the corpus is the VulcanBench
 checkout (snapshotted to `training/corpus.json`): 287 tasks with metadata.
 `classify` sorts every task into an honest class; `train preflight` then
 gates which of the 157 grammar-exercisable tasks may actually train, and
-the CURRENT sound set is 104 (95 toolchain-unpinned, 28 preflight-failed,
+the CURRENT sound set is 104 (95 toolchain-unavailable, 28 preflight-failed,
 15 gold-not-green here, 10 governance-env-unsupported, 32 diff-graded,
 3 cmd-unparseable — the class that silently produced `pytest pytest pytest`
 in the old divergence harness, now a detected classification).
@@ -153,7 +193,8 @@ label and verdict is recorded as a DIVERGENCE and fails the pass (exit 1);
 divergences are findings to review — kernel bug, harness bug, or a corpus
 task whose contract differs — and each kind is information. Inaugural
 clean pass: 104 tasks x 7 variants = 728 examples, 0 divergences; every
-class the audit measured at zero coverage is now trained 93-169x.
+zero-coverage class the audit measured is now trained 66–169x (92–169x
+excluding partial-solution-failing).
 
 **Labels are only sound under governance conditions**, so `train preflight`
 mirrors confinement on a throwaway copy before a task may train: the suite
@@ -242,6 +283,9 @@ re-publishing is idempotent per kernel commit.
 `bench` is the capacity half of the loop: wall-clock timings per scenario
 (median/min/max over `--repeat` runs). Timings are deliberately
 NON-deterministic and never enter baselines or the ledger.
+- `tools/dogfood/benchmarks.py` — public benchmark metrics for ranex: the
+  deterministic proof-board facts and the labelled one-machine timings, never
+  mixed.
 
 ## Curriculum (43 scenarios)
 
@@ -257,15 +301,36 @@ NON-deterministic and never enter baselines or the ledger.
   chain; canonical-JSON cross-implementation agreement; Ed25519 determinism
   stress (128 samples); digest avalanche/distinctness (8192 argvs);
   manifest digest recomputation.
+- `tools/dogfood/math_proofs.py` — deterministic math proofs: every property
+  is verified by recomputing the kernel's cryptography with independent
+  primitives (plain hashlib, plain json), not by trusting the kernel's own
+  verdict about itself.
 - **Core logic methods** (5): exhaustive 8-row and 16-row truth tables for
   `addresses`/`satisfies`; De Morgan equivalence executed on the kernel's own
   predicates; precondition enforcement (7 malformed constructions must
   raise); evaluate postconditions + purity (byte-identical records).
+- `tools/dogfood/logic_proofs.py` — core logic-method proofs against the real
+  kernel: exhaustive truth tables, precondition/postcondition enforcement and
+  De Morgan equivalence between kernel predicates.
 - **Advanced methods, honestly mapped** (6): Kahn's DAG proof over the real
   `uv.lock` graph; `select_wheels` closure/determinism/pinning over the real
   lock and pinned interpreter; exact 2^53-1 publication boundary; NaN/Inf
   refusal in canonical JSON; byte-level O(1) append proof; permutation
   invariance of gate evaluation.
+- `tools/dogfood/advanced_proofs.py` — advanced-math proofs, mapped honestly
+  onto what ranex actually is.
+- `tools/dogfood/formal_proofs.py` — formal hardening: order theory, group
+  actions, stability, exact closures and combinatorial completeness — every
+  theorem EXECUTED against the kernel.
+- `tools/dogfood/scenarios.py` — the curriculum registry: each scenario
+  exercises a REAL ranex capability and asserts the behaviour the source
+  actually implements. Besides the groups above it registers
+  `signing-roundtrip`, `real-subject-digest-binding`, `grid-admission-cartesian`,
+  `boundary-results-cap`, `pigeonhole-archive-digests`, `canonical-fixed-point`,
+  `evolve-blind-spot-census` and the formal hardening scenarios
+  `formal-verdict-monotonicity`, `formal-irrelevance-invariance`,
+  `formal-permutation-group-s4`, `formal-lock-closure-equality` and
+  `formal-grid-pair-completeness`.
 
 Ranex has no gradients or matrices, so none are pretended: finite domains are
 proven exhaustively (truth tables), structural domains inductively (chain
@@ -381,6 +446,8 @@ The receipt (`selftest.json`) is deliberately **timing-free**: identical
 repeats are byte-identical, which is the anti-flake rule made checkable.
 Wall-clock and captured output are retained in `selftest-commands.json`,
 where variation is permitted and never changes a status.
+- `tools/dogfood/selftest_probe.py` — proof of the instrument self-test: every
+  arm run on a real invocation.
 
 ## Gate calibration certificates — issue #115 (MAP §8.4)
 
