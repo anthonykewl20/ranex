@@ -630,8 +630,7 @@ accounting now counts SLICE-018. No position changes — evidence, not decisions
 
 ### 0.29 What changed in `3.5.5`
 
-SLICE-046 (issue #22) landed 2026-08-15 (its archived slice record still reads
-open): `cmd_run` binds the qualified
+SLICE-046 (issue #22) landed 2026-08-15: `cmd_run` binds the qualified
 strict-local session through a subprocess controller (ADR-023, `proposed`);
 evidence is signed only after fail-closed confinement-result validation.
 ADR-006 and ADR-017 are accepted (ADR-017 without broadening); `RISK-06`
