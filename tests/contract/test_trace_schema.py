@@ -68,6 +68,8 @@ CLI_DISPATCH_GROUPS = (
     "journal.verify",
     "promotion.evaluate",
     "suite.freeze",
+    "settings.show",
+    "settings.get",
     "deps.fetch",
     "deps.approve",
     "keygen",

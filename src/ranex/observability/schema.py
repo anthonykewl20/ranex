@@ -77,6 +77,8 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "journal.verify",
     "promotion.evaluate",
     "suite.freeze",
+    "settings.show",
+    "settings.get",
     "deps.fetch",
     "deps.approve",
     "keygen",
