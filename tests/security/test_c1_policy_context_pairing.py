@@ -9,7 +9,9 @@ from pathlib import Path
 import pytest
 
 from ranex.cli.main import (
-    admit_records, refuse_executables_inside, refuse_foreign_policy_context,
+    admit_records,
+    refuse_executables_inside,
+    refuse_foreign_policy_context,
 )
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.domain import admission

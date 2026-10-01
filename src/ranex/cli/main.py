@@ -448,7 +448,7 @@ def _checked_record_pairs(
     """
     refused = {rejection.index for rejection in admission.rejections}
     positions = [index for index in range(len(records)) if index not in refused]
-    pairs = tuple(zip(positions, admission.evidence))
+    pairs = tuple(zip(positions, admission.evidence, strict=False))
     valid = (
         len(positions) == len(admission.evidence)
         and len(refused) == len(admission.rejections)
