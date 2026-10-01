@@ -90,7 +90,9 @@ provisioned dependencies and configured the signing key, the core loop is:
 ```sh
 export RANEX_APPROVER_SIGNING_KEY=$HOME/.config/ranex/approver.key
 uv run --frozen ranex run \
-  --claim tests-executed --producer worker -- uv run pytest -q
+  --claim tests-executed --producer worker -- uv run pytest -q \
+    -o xfail_strict=true -p ranex.foundation.pytest_xpass \
+    --junitxml=governance/suite_results.xml
 uv run --frozen ranex gate evaluate HEAD --approver release-approver
 uv run --frozen ranex journal verify
 ```

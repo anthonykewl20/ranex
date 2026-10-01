@@ -17,7 +17,9 @@ export RANEX_VERDICT_SIGNING_KEY=$HOME/.config/ranex/verdict.key
 export RANEX_HISTORY_CHECKPOINT=$HOME/.local/state/ranex/my-repository-history.json
 uv run --frozen ranex history bootstrap
 uv run --frozen ranex run \
-  --claim tests-executed --producer worker -- uv run pytest -q
+  --claim tests-executed --producer worker -- uv run pytest -q \
+  -o xfail_strict=true -p ranex.foundation.pytest_xpass \
+  --junitxml=governance/suite_results.xml
 uv run --frozen ranex gate evaluate HEAD --approver release-approver
 uv run --frozen ranex journal verify
 ```
@@ -130,9 +132,14 @@ approved, hash-correct wheel forcing a passing verdict. Then:
 
 ```sh
 uv run --frozen ranex run \
-    --claim tests-executed --producer worker -- uv run pytest -q
+    --claim tests-executed --producer worker -- uv run pytest -q \
+    -o xfail_strict=true -p ranex.foundation.pytest_xpass \
+    --junitxml=governance/suite_results.xml
 # Equivalent module-path form from the source checkout:
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main run --claim tests-executed --producer worker -- uv run pytest -q
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main run \
+    --claim tests-executed --producer worker -- uv run pytest -q \
+    -o xfail_strict=true -p ranex.foundation.pytest_xpass \
+    --junitxml=governance/suite_results.xml
 ```
 
 `gate evaluate` then judges that run for real. The observation is a fresh
@@ -460,7 +467,7 @@ Producing verdicts is unchanged: a `gate evaluate` run against the PR head
 (wired with `RANEX_VERDICT_SIGNING_KEY`, `RANEX_VERDICT_DIR`, and
 `RANEX_APPROVER_SIGNING_KEY`) writes the dual-signed publication the App
 reads. The one-shot
-`ranex github check publish --head-sha <sha> --installation <id> --repo
+`ranex github check publish --head-sha <sha> --installation <id> --approver <id> --repo
 owner/name` exercises the same path without a webhook, for debugging.
 
 ### Requiring the check (ruleset)
@@ -509,8 +516,8 @@ through the existing evidence format and atomic publication path.
 The receiver pins the gate catalog, producer keyring and test manifest from the
 operator checkout at startup. PRs that change them refuse evaluation; review
 policy changes independently before restarting against an approved checkout.
-The receiver checks late evidence every 15 seconds, retaining the existing
-300-second failure backoff. Missing evidence produces an action-required check;
+The receiver checks late evidence every 15 seconds and retries failed
+spool deliveries every 300 seconds. Missing evidence produces an action-required check;
 failing evidence stays blocked and can recover when fresh evidence arrives.
 Unchanged inputs reuse the judgment, and completed refreshes avoid repeated API
 queries. Failed or interrupted publication reconciles using the verdict's ID.
@@ -546,24 +553,21 @@ one endpoint, one event type, one delivery at a time, localhost by default.
 currently exposes:
 
 ```text
-gate evaluate
-journal verify
-promotion evaluate
-run
-suite freeze
+antislop
 deps fetch | approve
+gate evaluate
+github bind | check publish | check qualify | check verify | listen | register | status | ruleset
+history bootstrap | migrate | recover
+host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
+journal verify
 keygen
 markers
-github bind
-github check publish
-github listen
-github register
-github status
-github ruleset
-host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
-task dispatch | judge | merge | delegate | fanout
-task batch qualify | verify
-specification draft | advance | questions | status | approve
+promotion evaluate
+prove
+run
+specification draft | advance | questions | status | approve | observe-http | freeze-probes | check-probes | approve-task | build-task | reapprove-task | land-task
+suite freeze
+task stop-hook | dispatch | judge | merge | delegate | fanout | batch qualify | verify
 ```
 
 Code-backed capabilities:
@@ -650,6 +654,26 @@ independently rechecks it — A/B/C chain, protected digests, subject
 binding, journal continuity, attestation admission — printing the
 canonical facts and `PASS ... VERIFIED`, or refusing with `E-BATCH-*` and
 exit 1. Verification is read-only and authorizes nothing.
+
+### `ranex task stop-hook`
+
+`ranex task stop-hook` answers harness stop/pretooluse events for a governed
+repair loop: on `--mode stop` it judges whether the loop's miss budget
+(`--budget`) is exhausted, and on `--mode pretooluse` it gates the next tool
+call against the loop's gate and claim. It reads the committed gate catalog,
+suite manifest and producer keyring, and uses `--producer` and `--approver`
+(required) as the governed identities:
+
+```sh
+uv run --frozen ranex task stop-hook --mode stop --repository /path/to/repo \
+  --gate acceptance --claim tests-executed --producer worker \
+  --approver release-approver --budget 3
+```
+
+Its options are exactly: `--mode {stop,pretooluse}`, `--repository`, `--gate`,
+`--claim`, `--gate-catalog`, `--suite-manifest`, `--evidence`, `--producers`,
+`--journal`, `--verdicts-dir`, `--producer`, `--approver` (required),
+`--loop-id`, `--budget`, and `--external-repository`.
 
 Current limits visible in code:
 

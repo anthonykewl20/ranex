@@ -3,9 +3,8 @@
 **Updated:** 2026-10-02
 **Active slice:** docs/slices/SLICE-103-audit-findings-and-remediation.md
 
-SLICE-104 remediation integrated on branch captain/integrate-remediation;
-PR pending captain merge.
-Base: f9a56d184 (origin/main).
+SLICE-104 audit remediation merged to main via PR #227 (4b9206d98);
+57 audit issues closed with evidence.
 
 Measured validation so far: C1 pairing 19 passed; focused C1 + contract
 769 passed, 0 failed, 8 skipped after the slice/STATE documentation fixes.
