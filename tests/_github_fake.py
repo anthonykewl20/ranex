@@ -326,6 +326,9 @@ def seeded_governed_clone(path: Path) -> tuple[Path, str]:
     _git(path, "config", "user.email", "publisher-test@example.invalid")
     _git(path, "config", "user.name", "Publisher Test")
     signer_private, signer_public = generate_keypair()
+    signer_path = path.parent / f"{path.name}-verdict.key"
+    signer_path.write_text(signer_private)
+    signer_path.chmod(0o600)
     producer_private, producer_public = generate_keypair()
     governance = path / "governance"
     governance.mkdir(parents=True)
@@ -340,6 +343,7 @@ def seeded_governed_clone(path: Path) -> tuple[Path, str]:
         encoding="utf-8",
     )
     (path / "work.txt").write_text("pull request content\n", encoding="utf-8")
+    (path / ".gitignore").write_text("governance/observations.sqlite3*\ngovernance/evidence.json\ngovernance/journal.sqlite3*\ngovernance/verdicts/\n")
     _git(path, "add", "-A")
     _git(path, "commit", "-q", "-m", "the PR head and its trust root")
     head = _git(path, "rev-parse", "HEAD")
@@ -365,6 +369,7 @@ def seeded_governed_clone(path: Path) -> tuple[Path, str]:
         # evaluated at. The App refuses an anchorless record.
         "journal_head": "sha256:" + "1" * 64,
     }
+    content.update(certified_history(path, signer_private, signer_public))
     record = {**content, "record_digest": "sha256:" + canonical_sha256(content)}
     verdicts = governance / "verdicts"
     verdicts.mkdir(parents=True)
@@ -384,6 +389,26 @@ def seeded_governed_clone(path: Path) -> tuple[Path, str]:
         encoding="utf-8",
     )
     return path, head
+
+
+def checkpoint_for(repository: Path) -> Path:
+    return repository.parent / f"{repository.name}-history.json"
+
+
+def certified_history(repository: Path, private: str, public: str) -> dict[str, object]:
+    import _history
+
+    from ranex.governed_execution.adapters.persistence.history import checkpoint_record
+    from ranex.governed_execution.adapters.persistence.sqlite.observations import (
+        ObservationLog,
+        observations_path_for,
+    )
+
+    evidence = repository / "governance/evidence.json"
+    checkpoint = checkpoint_for(repository)
+    _history.establish(repository, "governance/evidence.json", checkpoint, private, public)
+    snapshot = ObservationLog(observations_path_for(evidence)).snapshot()
+    return {"history_verified": True, "observation_checkpoint": checkpoint_record(evidence, snapshot.head, snapshot.position)}
 
 
 WEBHOOK_SECRET = "webhook-secret-value"
@@ -429,12 +454,25 @@ def receiver_environment(tmp_path, *, with_verdict: bool = True):
             check=True,
             env={"PATH": os.environ["PATH"], "LC_ALL": "C"},
         )
+        document = yaml.safe_load((clone / "governance" / "producers.yaml").read_text())
+        private = (source.parent / f"{source.name}-verdict.key").read_text()
+        history = certified_history(clone, private, document["verdict_signer"]["public_key"])
+        # Delayed arrivals must carry the operator clone's independently
+        # retained history identity, not the source clone's absolute log ID.
+        from ranex.foundation.canonical import canonical_sha256
+        from ranex.foundation.verdict_signing import sign_verdict
+        for publication in (source / "governance" / "verdicts").iterdir():
+            envelope = json.loads(publication.read_bytes())
+            content = {key: value for key, value in envelope["record"].items() if key != "record_digest"}
+            content.update(history)
+            envelope["record"] = {**content, "record_digest": "sha256:" + canonical_sha256(content)}
+            envelope["signatures"][0]["signature"] = sign_verdict(content, private)
+            publication.write_text(json.dumps(envelope))
         if with_verdict:
             verdicts = clone / "governance" / "verdicts"
             verdicts.mkdir(parents=True)
             for publication in (source / "governance" / "verdicts").iterdir():
                 (verdicts / publication.name).write_bytes(publication.read_bytes())
-        document = yaml.safe_load((clone / "governance" / "producers.yaml").read_text())
         config = ReceiverConfig(
             repo_root=clone,
             remote=str(source),
@@ -451,6 +489,7 @@ def receiver_environment(tmp_path, *, with_verdict: bool = True):
                 AppCredentials(APP_ID, key_path, WEBHOOK_SECRET), api_root=fake.url
             ),
             state_dir=tmp_path / "state",
+            history_checkpoint_path=checkpoint_for(clone),
         )
 
         @dataclass

@@ -23,6 +23,7 @@ def record() -> dict[str, object]:
         "rejections": [], "self_approval": False,
         "reason": "no evidence for required claim: tests",
         "journal_head": "sha256:" + "c" * 64,
+        "history_verified": False, "observation_checkpoint": None,
     }
     return {**body, "record_digest": "sha256:" + canonical_sha256(body)}
 
@@ -54,6 +55,8 @@ def read(path: Path, keyring: dict[str, str], **context: object):
         catalog_digest=context.get("catalog_digest", CATALOG),
         approver_id=context.get("approver_id", "owner"),
         approvers=context.get("approvers"),
+        repository_root=context.get("repository_root"),
+        history_checkpoint_path=context.get("history_checkpoint_path"),
     )
 
 
@@ -68,7 +71,7 @@ def test_reader_state_mapping_is_total_without_default_arm() -> None:
     expected = {
         "absent", "malformed", "unsigned", "bad-signature", "unknown-signer",
         "wrong-payload-type", "missing-key", "context-mismatch", "unknown-cause",
-        "unapproved", "verified",
+        "unapproved", "unanchored", "verified",
     }
     assert {str(state) for state in verdict_reader.ReadState} == expected
     assert set(verdict_reader.STATE_PRESENTATION) == set(verdict_reader.ReadState)
@@ -88,10 +91,10 @@ def approver() -> tuple[str, str, dict[str, tuple[str, ...]]]:
     return private, public, {"owner": (public,)}
 
 
-def cosigned(private: str, approver_private: str) -> list[dict[str, object]]:
+def cosigned(private: str, approver_private: str, projected=None) -> list[dict[str, object]]:
     from ranex.foundation import verdict_signing
 
-    projected = record()
+    projected = projected if projected is not None else record()
     content = {key: value for key, value in projected.items() if key != "record_digest"}
     return [
         {"signer_id": SIGNER, "signature": verdict_signing.sign_verdict(content, private)},
@@ -100,13 +103,25 @@ def cosigned(private: str, approver_private: str) -> list[dict[str, object]]:
 
 
 def test_reader_verifies_every_signature_and_passes_cosigned_verdict(tmp_path: Path) -> None:
+    from ranex.governed_execution.adapters.persistence.history import bootstrap_history, log_id
+    from ranex.governed_execution.adapters.persistence.sqlite.observations import GENESIS
+
     private, public = generate_keypair()
     approver_private, _, approvers = approver()
-    value = envelope(private)
-    value["signatures"] = cosigned(private, approver_private)
+    repository = tmp_path / "subject"
+    repository.mkdir()
+    evidence = repository / "evidence.json"
+    checkpoint = tmp_path / "history.json"
+    bootstrap_history(evidence, checkpoint, private, public, repository)
+    value = envelope(private, record={
+        "history_verified": True,
+        "observation_checkpoint": {"log_id": log_id(evidence), "head": GENESIS, "position": 0},
+    })
+    value["signatures"] = cosigned(private, approver_private, value["record"])
     path = write(tmp_path / "verdict.json", value)
 
-    assert str(read(path, {SIGNER: public}, approvers=approvers).state) == "verified"
+    assert str(read(path, {SIGNER: public}, approvers=approvers,
+                    repository_root=repository, history_checkpoint_path=checkpoint).state) == "verified"
 
 
 def test_reader_returns_unapproved_when_catalogued_approver_did_not_sign(
@@ -130,7 +145,9 @@ def test_single_signature_stays_readable_without_the_approver_catalog(
     private, public = generate_keypair()
     path = write(tmp_path / "verdict.json", envelope(private))
 
-    assert str(read(path, {SIGNER: public}).state) == "verified"
+    from ranex.governed_execution.verdict_reader import read_verdict_unbound
+    assert str(read_verdict_unbound(path, {SIGNER: public}).state) == "verified"
+    assert str(read(path, {SIGNER: public}).state) == "unanchored"
 
 
 def test_reader_refuses_altered_or_foreign_approver_signature(tmp_path: Path) -> None:

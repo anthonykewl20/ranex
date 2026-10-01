@@ -34,7 +34,7 @@ def test_an_absent_verdict_is_remembered_and_published_when_it_lands(tmp_path: P
     with _github_fake.receiver_environment(tmp_path, with_verdict=False) as env:
         assert process_delivery(env.config, env.state, event_body(env.head), "d-early", "pull_request") == 200
         assert _conclusions(env) == ["action_required"]
-        awaiting = tmp_path / "state" / "awaiting" / f"{env.head}.json"
+        awaiting = receiver._awaiting_path(env.config, env.head, 1, "owner/name")
         assert json.loads(awaiting.read_bytes()) == {
             "delivery": "d-early", "installation_id": 1, "repository": "owner/name",
         }
@@ -47,7 +47,7 @@ def test_an_absent_verdict_is_remembered_and_published_when_it_lands(tmp_path: P
         _land_verdicts(tmp_path, env)
         assert refresh_awaiting(env.config, env.state) == {env.head: "success"}
         assert _conclusions(env) == ["action_required", "success"]
-        assert env.fake.check_requests[-1]["body"]["external_id"] == f"refresh:{env.head}"
+        assert env.fake.check_requests[-1]["body"]["external_id"] == f"refresh:{receiver._head_identity(1, 'owner/name', env.head)}"
         assert not awaiting.exists()
         journal = (tmp_path / "state" / "deliveries.jsonl").read_text()
         assert f'"head_sha": "{env.head}", "delivery": "d-early", "outcome": "refreshed:success"' in journal
@@ -60,7 +60,7 @@ def test_an_absent_verdict_is_remembered_and_published_when_it_lands(tmp_path: P
 def test_a_fresh_event_that_publishes_a_verdict_forgets_the_wait(tmp_path: Path) -> None:
     with _github_fake.receiver_environment(tmp_path, with_verdict=False) as env:
         process_delivery(env.config, env.state, event_body(env.head), "d-1", "pull_request")
-        awaiting = tmp_path / "state" / "awaiting" / f"{env.head}.json"
+        awaiting = receiver._awaiting_path(env.config, env.head, 1, "owner/name")
         assert awaiting.exists()
         _land_verdicts(tmp_path, env)
         process_delivery(env.config, env.state, event_body(env.head), "d-2", "pull_request")
@@ -75,7 +75,7 @@ def test_a_refresh_interrupted_after_publication_reconciles_on_the_next_pass(
     with _github_fake.receiver_environment(tmp_path, with_verdict=False) as env:
         process_delivery(env.config, env.state, event_body(env.head), "d-1", "pull_request")
         _land_verdicts(tmp_path, env)
-        awaiting = tmp_path / "state" / "awaiting" / f"{env.head}.json"
+        awaiting = receiver._awaiting_path(env.config, env.head, 1, "owner/name")
         record = awaiting.read_bytes()
 
         def keep(path, *args, **kwargs):
@@ -116,7 +116,7 @@ def test_a_busy_pipeline_and_damaged_records_leave_the_wait_in_place(tmp_path: P
             assert refresh_awaiting(env.config, env.state) == {"9" * 40: 500, env.head: 503}
         finally:
             env.state.lock.release()
-        assert not (tmp_path / "state" / "awaiting" / f"{env.head}.failed").exists()
+        assert not receiver._awaiting_path(env.config, env.head, 1, "owner/name").with_suffix(".failed").exists()
         (tmp_path / "state" / "awaiting" / f"{'9' * 40}.failed").unlink()
         env.state.demand = 1
         assert refresh_awaiting(env.config, env.state) == {}
@@ -144,4 +144,4 @@ def test_refresh_does_not_publish_after_repository_is_removed_from_allowlist(tmp
         revoked = replace(env.config, allowlist=frozenset())
         assert refresh_awaiting(revoked, env.state) == {env.head: "not-allowlisted"}
         assert len(env.fake.requests) == before
-        assert not (env.config.state_dir / "awaiting" / f"{env.head}.json").exists()
+        assert not receiver._awaiting_path(env.config, env.head, 1, "owner/name").exists()

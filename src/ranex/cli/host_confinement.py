@@ -2922,6 +2922,15 @@ def _duplicate_high(descriptor: int) -> int:
     return int(fcntl.fcntl(descriptor, fcntl.F_DUPFD_CLOEXEC, 64))
 
 
+def _isolate_worker_stdout() -> None:
+    """Keep controller fd 1 exclusively for its machine-readable result.
+
+    Worker output remains retained on the controller's diagnostic stream.
+    This runs only after fork, so the controller's descriptors are unchanged.
+    """
+    os.dup2(2, 1, inheritable=True)
+
+
 def _execveat(descriptor: int, argv: Sequence[str], environment: Mapping[str, str]) -> NoReturn:
     argument_values = [value.encode() for value in argv]
     environment_values = [f"{name}={value}".encode() for name, value in environment.items()]
@@ -4478,6 +4487,7 @@ def confinement_session(
                 os.set_inheritable(sealed.descriptor, True)
         child = os.fork()
         if child == 0:
+            _isolate_worker_stdout()
             _close_descriptor(gate_write)
             _close_descriptor(readiness_read)
             _close_descriptor(readiness_ack_write)

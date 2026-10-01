@@ -95,6 +95,7 @@ _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
     "RANEX_APPROVER_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
+    "RANEX_HISTORY_CHECKPOINT",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
     "COVERAGE_PROCESS_CONFIG",
@@ -103,6 +104,9 @@ _STRIPPED_ENV = (
     "RANEX_TRACE_EVENT",
     "RANEX_TRACE_PARENT_SID",
 )
+
+
+_HISTORY_ENV: dict[Path, dict[str, str]] = {}
 
 
 def ranex(
@@ -117,6 +121,7 @@ def ranex(
 
     env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
     env["PYTHONPATH"] = str(subject / "src")
+    env.update(_HISTORY_ENV.get(subject, {}))
     if key is not None:
         env["RANEX_SIGNING_KEY"] = str(key)
     env.update(extra_env or {})
@@ -248,6 +253,9 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> KeygenJourney:
     approver_match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", approver_generated.stdout)
     assert approver_match, approver_generated.stdout
     _approver.register_approver(keyring, "reviewer", approver_match.group(1))
+    from _history import mint_service, register_service
+    _, service_public, service_path = mint_service(base)
+    register_service(keyring, service_public)
     with (subject / "governance" / "gates.yaml").open("a", encoding="utf-8") as file:
         file.write(
             "  - gate_id: keygen-family\n"
@@ -263,6 +271,13 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> KeygenJourney:
         subject, "commit", "-q", "-m", "register the keygen-family producer and gate"
     )
     assert committed.returncode == 0, committed.stderr
+
+    _HISTORY_ENV[subject] = {
+        "RANEX_VERDICT_SIGNING_KEY": str(service_path),
+        "RANEX_HISTORY_CHECKPOINT": str(base / "history.checkpoint.json"),
+    }
+    established = ranex(subject, ["history", "bootstrap"])
+    assert established.returncode == 0, established.stdout + established.stderr
 
     # --- the kernel half: it signs with the keygen key, then accepts it ---
     recorded = ranex(

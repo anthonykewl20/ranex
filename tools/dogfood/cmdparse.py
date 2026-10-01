@@ -50,3 +50,24 @@ def pinned_argv(argv: list[str], pinned_python: str = PINNED_PYTHON) -> list[str
     if argv[0] in ("python", "python3"):
         return [pinned_python, *argv[1:]]
     return list(argv)
+
+
+
+def command_environment(assignments: list[str], base: dict[str, str]) -> dict[str, str]:
+    """Apply leading assignments to one command; duplicate names use the last value."""
+
+    environment = dict(base)
+    for assignment in assignments:
+        name, _, value = assignment.partition("=")
+        environment[name] = value
+    return environment
+
+
+def governed_argv(cmd: str, pinned_python: str = PINNED_PYTHON) -> list[str]:
+    """Bind assignment semantics in argv, so the hermetic runner need not inherit env."""
+
+    assignments, argv, _ = parse_cmd(cmd)
+    if not argv:
+        raise ValueError("task command carries no executable")
+    resolved = pinned_argv(argv, pinned_python)
+    return ["/usr/bin/env", *assignments, *resolved] if assignments else resolved

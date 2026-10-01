@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from ranex.foundation.canonical import canonical_sha256
-from ranex.foundation.signing import generate_keypair
+from ranex.foundation.signing import generate_keypair, public_key_for
 from ranex.foundation.verdict_signing import PAYLOAD_TYPE, SIGNED_FIELDS, sign_verdict
 from ranex.github_app.acceptance import (
     ABSENT_CODE,
@@ -61,6 +61,8 @@ def write_publication(
     directory: Path, binding: PrHeadBinding, private_key: str, *, signer: str = "verdict-signer"
 ) -> None:
     content = record_content(binding)
+    import _github_fake
+    content.update(_github_fake.certified_history(directory, private_key, public_key_for(private_key)))
     record = {**content, "record_digest": "sha256:" + canonical_sha256(content)}
     envelope = {
         "payload_type": PAYLOAD_TYPE,
@@ -84,7 +86,7 @@ def test_every_reader_state_has_exactly_one_outcome() -> None:
     assert set(ReadState) == {
         "absent", "malformed", "unsigned", "bad-signature", "unknown-signer",
         "wrong-payload-type", "missing-key", "context-mismatch",
-        "unknown-cause", "verified", "unapproved",
+        "unknown-cause", "verified", "unapproved", "unanchored",
     }
     publishable = [state for state in ReadState if code_for_state(state) == ACCEPTED]
     assert publishable == [ReadState.VERIFIED]
@@ -110,6 +112,7 @@ def test_a_verified_publication_is_the_one_publishable_outcome(
     acceptance = resolve_acceptance(
         tmp_path, binding, keys,
         gate_id=GATE, catalog_digest=None, approver_id=APPROVER,
+        repository_root=tmp_path, history_checkpoint_path=tmp_path.parent / f"{tmp_path.name}-history.json",
     )
     assert acceptance.code == ACCEPTED
     assert acceptance.state is ReadState.VERIFIED
@@ -118,10 +121,21 @@ def test_a_verified_publication_is_the_one_publishable_outcome(
     assert acceptance.record["subject_digest"] == binding.subject_digest
 
 
+def test_valid_signature_without_live_history_context_cannot_publish(tmp_path: Path, keyring) -> None:
+    keys, private = keyring
+    binding = binding_for("1" * 40)
+    write_publication(tmp_path, binding, private)
+    acceptance = resolve_acceptance(tmp_path, binding, keys,
+                                    gate_id=GATE, catalog_digest=None, approver_id=APPROVER)
+    assert acceptance.state is ReadState.UNANCHORED
+    assert not acceptance.publishable
+
+
 def test_no_publication_at_all_is_named_as_absence(tmp_path: Path) -> None:
     acceptance = resolve_acceptance(
         tmp_path, binding_for("2" * 40), {"verdict-signer": "ed25519:" + "A" * 43},
         gate_id=GATE, catalog_digest=None, approver_id=APPROVER,
+        repository_root=tmp_path, history_checkpoint_path=tmp_path.parent / f"{tmp_path.name}-history.json",
     )
     assert acceptance.code == ABSENT_CODE
     assert not acceptance.publishable
@@ -142,6 +156,7 @@ def test_a_publication_for_another_subject_is_a_rejection_not_an_absence(
     acceptance = resolve_acceptance(
         tmp_path, asked, keys,
         gate_id=GATE, catalog_digest=None, approver_id=APPROVER,
+        repository_root=tmp_path, history_checkpoint_path=tmp_path.parent / f"{tmp_path.name}-history.json",
     )
     assert acceptance.code == f"{REJECTED_PREFIX}context-mismatch"
     assert not acceptance.publishable
@@ -165,6 +180,7 @@ def test_a_forged_signature_is_a_named_rejection(
     acceptance = resolve_acceptance(
         tmp_path, binding, keys,
         gate_id=GATE, catalog_digest=None, approver_id=APPROVER,
+        repository_root=tmp_path, history_checkpoint_path=tmp_path.parent / f"{tmp_path.name}-history.json",
     )
     assert acceptance.code == f"{REJECTED_PREFIX}bad-signature"
     assert not acceptance.publishable
@@ -179,6 +195,7 @@ def test_a_stranger_signer_is_a_named_rejection(
     acceptance = resolve_acceptance(
         tmp_path, binding, keys,
         gate_id=GATE, catalog_digest=None, approver_id=APPROVER,
+        repository_root=tmp_path, history_checkpoint_path=tmp_path.parent / f"{tmp_path.name}-history.json",
     )
     assert acceptance.code == f"{REJECTED_PREFIX}unknown-signer"
     assert not acceptance.publishable

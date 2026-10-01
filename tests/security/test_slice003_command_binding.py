@@ -346,6 +346,8 @@ def invoke(
             _approver.strip_approvers(monkeypatch)
         else:
             monkeypatch.setenv(_approver.APPROVER_ENV, str(approver_path))
+        if argv[0] != "keygen":
+            _approver.history_for(repo).configure(monkeypatch, "evidence.json")
         return main(argv)
 
 
@@ -375,6 +377,7 @@ def register(repo: Path, tmp_path: Path) -> tuple[Path, Path]:
     )
     approver_path, approver_public = _approver.mint_approver(tmp_path)
     _approver.register_approver(keyring, "reviewer", approver_public)
+    _approver.register_history_service(repo, keyring, tmp_path)
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True
@@ -439,10 +442,7 @@ def test_a_record_naming_an_in_repository_executable_does_not_satisfy(
         digest=head_subject(repo),
         executable=str((repo / "sh").resolve()),
     )
-    (repo / "evidence.json").write_text(
-        json.dumps([{**body, "signature": sign_evidence(body, private)}], indent=2),
-        encoding="utf-8",
-    )
+    _approver.history_for(repo).write([{**body, "signature": sign_evidence(body, private)}], "evidence.json")
 
     capsys.readouterr()
     assert evaluate(repo, approver_path) == EXIT_FAIL, (
@@ -480,6 +480,7 @@ def test_a_hand_swapped_digest_is_reported_as_a_refusal_not_as_absence(
     )
     approver_path, approver_public = _approver.mint_approver(tmp_path)
     _approver.register_approver(keyring, "reviewer", approver_public)
+    _approver.register_history_service(repo, keyring, tmp_path)
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repo), "commit", "-q", "-m", "initial"], check=True
@@ -503,7 +504,7 @@ def test_a_hand_swapped_digest_is_reported_as_a_refusal_not_as_absence(
     (record,) = json.loads(path.read_text(encoding="utf-8"))
     record["command_digest"] = command_digest(BOUND)
     record["command"] = " ".join(BOUND)
-    path.write_text(json.dumps([record], indent=2) + "\n", encoding="utf-8")
+    _approver.history_for(repo).write([record], "evidence.json")
 
     capsys.readouterr()
     assert invoke(

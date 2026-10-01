@@ -38,6 +38,9 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
         if not name.startswith(("RANEX_", "GIT_", "PYTHON"))
     }
     environment["PYTHONPATH"] = str(KERNEL / "src")
+    environment["RANEX_HISTORY_CHECKPOINT"] = str(repo.parent / "history-checkpoint.json")
+    if (repo.parent / "verdict.key").exists():
+        environment["RANEX_VERDICT_SIGNING_KEY"] = str(repo.parent / "verdict.key")
     if key is not None:
         environment["RANEX_SIGNING_KEY"] = str(key)
     if verdict_key is not None:
@@ -82,7 +85,7 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str, Path]:
     (repo / "governance").mkdir()
     (repo / ".gitignore").write_text(
         "governance/evidence.json\ngovernance/suite_results.xml\n"
-        "governance/journal.sqlite3*\ngovernance/verdicts/\n"
+        "governance/journal.sqlite3*\ngovernance/observations.sqlite3*\ngovernance/verdicts/\n"
         "__pycache__/\n.pytest_cache/\n"
     )
     private, public = generate_keypair()
@@ -115,6 +118,8 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str, Path]:
         "        results_artifact: governance/suite_results.xml\n"
     )
     commit(repo)
+    from ranex.governed_execution.adapters.persistence.history import bootstrap_history
+    bootstrap_history(repo / "governance/evidence.json", repo.parent / "history-checkpoint.json", signing, verifying, repo)
     return repo, worker, signer, verifying, approver
 
 
@@ -151,12 +156,14 @@ def test_separate_src_application_freeze_observe_sign_reject_and_recover(applica
         repo / "governance/verdicts", binding, {"kernel-verdict-signer": verifying},
         gate_id="landing", catalog_digest=catalog_digest_for((repo / "governance/gates.yaml").read_bytes()),
         approver_id="pilot", approvers={"pilot": (pilot_key,)},
+        repository_root=repo, history_checkpoint_path=repo.parent / "history-checkpoint.json",
     )
     assert acceptance.publishable and acceptance.record["verdict"] == "PASS"
     evidence = repo / "governance/evidence.json"
     original = evidence.read_bytes()
     records = json.loads(original)
     records[0]["signature"] = "ed25519:" + "A" * 88
+    evidence.chmod(0o600)
     evidence.write_text(json.dumps(records))
     tampered = evaluate()
     # RISK-11: a signature rewrite changes the observation identity; the chain

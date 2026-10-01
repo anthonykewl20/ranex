@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import _history
 import pytest
 
 from ranex.foundation.signing import ENVELOPE_TYPE, generate_keypair, sign_evidence
@@ -65,6 +66,31 @@ class Signing:
     #: or it is refused as policy-context-mismatch — correctly, but for a
     #: reason the test did not intend to exercise.
     repo: Path | None = None
+    service_private: str = field(init=False)
+    service_public: str = field(init=False)
+    service_path: Path = field(init=False)
+    histories: dict[tuple[Path, str], Path] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        self.service_private, self.service_public, self.service_path = _history.mint_service(self.root)
+
+    def establish_history(self, repo: Path, name: str = "evidence.json") -> Path:
+        key = (repo.resolve(), name)
+        if key not in self.histories:
+            checkpoint = self.root / f"history-{len(self.histories)}.json"
+            _history.establish(repo, name, checkpoint, self.service_private, self.service_public)
+            self.histories[key] = checkpoint
+        return self.histories[key]
+
+    def configure_history(self, monkeypatch, repo: Path, name: str = "evidence.json") -> None:
+        checkpoint = self.establish_history(repo, name)
+        monkeypatch.setenv("RANEX_HISTORY_CHECKPOINT", str(checkpoint))
+        monkeypatch.setenv("RANEX_VERDICT_SIGNING_KEY", str(self.service_path))
+        monkeypatch.delenv("RANEX_VERDICT_DIR", raising=False)
+
+    def write_records(self, repo: Path, records, name: str = "evidence.json") -> None:
+        checkpoint = self.establish_history(repo, name)
+        _history.write_records(repo, name, records, checkpoint, self.service_private, self.service_public)
 
     def register(self, *producers: str) -> Signing:
         for producer in producers:
@@ -139,6 +165,7 @@ class Signing:
         (repo / name).write_text(
             f"producers:\n{lines}\nprincipals:\n{principals}\n", encoding="utf-8"
         )
+        _history.register_service(repo / name, self.service_public)
 
     def sign(self, content: dict[str, object], producer: str) -> dict[str, object]:
         """A record as `run` would have written it, for tests that hand-build

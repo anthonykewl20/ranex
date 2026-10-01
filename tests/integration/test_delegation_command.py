@@ -15,6 +15,7 @@ import threading
 import time
 from pathlib import Path
 
+import _history
 import pytest
 
 from ranex.cli.delegation import (
@@ -161,7 +162,7 @@ def configure_truthful_delegate(
 
 
 def test_candidate_manifest_edit_cannot_change_delegated_judgement(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     target = tmp_path / "target"
     target.mkdir()
@@ -201,6 +202,8 @@ def test_candidate_manifest_edit_cannot_change_delegated_judgement(
     (target / "governance" / "producers.yaml").write_text(
         f"producers:\n  worker: {public}\n", encoding="utf-8"
     )
+    history_private, history_public, _ = _history.mint_service(tmp_path)
+    _history.register_service(target / "governance/producers.yaml", history_public)
     (target / "governance" / "evidence.json").write_text("[]\n", encoding="utf-8")
     (target / "app.txt").write_text("base\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(target), "add", "-A"], check=True)
@@ -286,10 +289,13 @@ def test_candidate_manifest_edit_cannot_change_delegated_judgement(
             "gate_id": "landing",
             "catalog_digest": "sha256:" + "e" * 64,
         }
-        (worktree / "governance" / "evidence.json").write_text(
-            json.dumps([{**content, "signature": sign_evidence(content, private)}]),
-            encoding="utf-8",
-        )
+        checkpoint = tmp_path / f"checkpoint-{suffix}.json"
+        _history.establish(worktree, "governance/evidence.json", checkpoint,
+                           history_private, history_public)
+        _history.write_records(worktree, "governance/evidence.json",
+                               [{**content, "signature": sign_evidence(content, private)}],
+                               checkpoint, history_private, history_public)
+        monkeypatch.setenv("RANEX_HISTORY_CHECKPOINT", str(checkpoint))
         journal = tmp_path / f"journal-{suffix}.sqlite3"
         seed_dispatch(journal, task_id, worktree, base_commit)
         result = cmd_task_judge(

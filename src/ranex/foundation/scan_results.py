@@ -36,13 +36,12 @@ subject at run time: a region past the end of the file, or a snippet the file
 does not carry there, makes the artifact malformed — refused, and absence
 blocks. Nothing is relocated and nothing is guessed.
 
-The coverage boundary, recorded rather than papered over: SARIF's own coverage
-witnesses are `runs[].artifacts[]` and `runs[].invocations[]`, and a producer
-may emit neither — ruff 0.16.2 emits neither. When a witness is present it is
-enforced; when it is absent, a scope path is proved only to *exist* in the
-subject, and "the scanner exited 0 having read nothing" is caught by the run's
-exit code and by nothing else in the artifact. That residual is a GAP in the
-#95 vocabulary, not a pass.
+Frozen scope requires explicit path coverage in `runs[].artifacts[]`. An absent
+coverage declaration leaves every scope path missing, even when the scanner
+exits zero and those files exist. Successful `invocations` do not name paths
+and cannot replace coverage. Ruff 0.16.2 emits neither; a producer adapter can
+declare paths from actual scanner discovery, but must not invent them from the
+manifest. These are producer declarations, not controller-observed file reads.
 """
 
 from __future__ import annotations
@@ -55,10 +54,16 @@ from pathlib import Path
 from typing import Any, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
-from ranex.foundation.canonical import canonical_json_bytes
-from ranex.foundation.suite_results import validate_suite_results
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
+from ranex.foundation.subject_reader import SubjectReader, reader_for
+from ranex.foundation.suite_results import (
+    probe_results_artifact,
+    read_results_artifact,
+    validate_suite_results,
+)
 
-SCAN_REPORTERS = frozenset({"sarif-2.1.0"})
+REVIEW_REPORTER = "delegated-review-sarif-2.1.0"
+SCAN_REPORTERS = frozenset({"sarif-2.1.0", REVIEW_REPORTER})
 
 #: SARIF 2.1.0 §3.27.10. `none` is a level a result may carry; it decides
 #: nothing unless a manifest says it does.
@@ -156,11 +161,26 @@ def load_scan_manifest_bytes(raw: bytes) -> dict[str, object]:
     return cast(dict[str, object], manifest)
 
 
-def scan_manifest_digest(manifest: Mapping[str, object]) -> str:
+def scan_manifest_digest(
+    manifest: Mapping[str, object], *, require_review: bool = False
+) -> str:
     """Digest the exact canonical scan-manifest representation."""
 
     validated = validate_scan_manifest(dict(manifest))
-    return "sha256:" + hashlib.sha256(canonical_json_bytes(validated)).hexdigest()
+    return "sha256:" + canonical_sha256({
+        "schema": "ranex-scan-expectations-binding-v2",
+        "semantics": {
+            "review_identity": "excerpt-category-occurrence-v1",
+            "review_severity": "explicit-then-driver-default-v1",
+            "review_category": "rule-id-then-properties-category-v1",
+            "review_packet": "trusted-required-dispatch-v2",
+            "review_required": require_review,
+            "ingestion_core": "strict-interpreted-structure-v3-confined-subject-reads",
+            "coverage": "explicit-scope-witness-required-v2",
+            "generic_identity": "subject-region-v1",
+        },
+        "manifest": validated,
+    })
 
 
 def scan_expected_ids(manifest: Mapping[str, object]) -> tuple[str, ...]:
@@ -187,19 +207,92 @@ def finding_id(rule_id: str, path: str, start_line: int, end_line: int, region: 
     return f"{path}::{rule_id}::{fingerprint(rule_id, path, start_line, end_line, region)}"
 
 
+def _validated_driver(run: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Validate the rule metadata we interpret; never discard malformed severity."""
+
+    tool = run.get("tool")
+    driver = tool.get("driver") if isinstance(tool, Mapping) else None
+    if not isinstance(driver, Mapping):
+        raise ValueError("SARIF run requires tool.driver object")
+    name = driver.get("name")
+    if not isinstance(name, str) or not name:
+        raise ValueError("SARIF tool.driver requires a non-empty name")
+    if "rules" in driver:
+        rules = driver["rules"]
+        if not isinstance(rules, list):
+            raise ValueError("SARIF tool.driver.rules must be a list")
+        identifiers: set[str] = set()
+        for rule in rules:
+            if not isinstance(rule, Mapping):
+                raise ValueError("SARIF rule descriptors must be objects")
+            identifier = rule.get("id")
+            if not isinstance(identifier, str) or not identifier:
+                raise ValueError("SARIF rule descriptors require a non-empty id")
+            if identifier in identifiers:
+                raise ValueError(f"SARIF rule descriptors carry duplicate id: {identifier!r}")
+            identifiers.add(identifier)
+            if "defaultConfiguration" in rule:
+                configuration = rule["defaultConfiguration"]
+                if not isinstance(configuration, Mapping):
+                    raise ValueError("SARIF rule defaultConfiguration must be an object")
+                if "level" in configuration and (
+                    not isinstance(configuration["level"], str)
+                    or configuration["level"] not in SARIF_LEVELS
+                ):
+                    raise ValueError("SARIF rule defaultConfiguration carries an unknown level")
+    return driver
+
+
+def _validate_sarif_core(document: Mapping[str, Any]) -> None:
+    """Validate the interpreted ingestion profile, not the entire SARIF schema.
+
+    Tool identity, rule severity, invocation shape and mandatory result messages
+    are common to all consumers. Optional uninterpreted metadata and properties
+    extensions remain supported; each consumer enforces its own region contract.
+    """
+
+    if document.get("version") != _SARIF_VERSION:
+        raise ValueError(f"SARIF artifact must declare version {_SARIF_VERSION}")
+    runs = document.get("runs")
+    if not isinstance(runs, list) or not runs:
+        raise ValueError("SARIF artifact carries no runs")
+    for run in runs:
+        if not isinstance(run, Mapping):
+            raise ValueError("SARIF runs entries must be objects")
+        _validated_driver(run)
+        if "invocations" in run:
+            invocations = run["invocations"]
+            if not isinstance(invocations, list):
+                raise ValueError("SARIF invocations must be a list when present")
+            if any(not isinstance(invocation, Mapping) for invocation in invocations):
+                raise ValueError("SARIF invocations entries must be objects")
+        results = run.get("results", [])
+        if not isinstance(results, list):
+            raise ValueError("SARIF runs[].results must be a list when present")
+        for result in results:
+            if not isinstance(result, Mapping):
+                raise ValueError("SARIF results entries must be objects")
+            message = result.get("message")
+            if not isinstance(message, Mapping) or not ({"text", "id"} & message.keys()):
+                raise ValueError("SARIF result requires a message with text or id")
+            for field in ("text", "id", "markdown"):
+                if field in message and not isinstance(message[field], str):
+                    raise ValueError(f"SARIF message {field} must be a string")
+            if "arguments" in message:
+                arguments = message["arguments"]
+                if not isinstance(arguments, list) or any(not isinstance(arg, str) for arg in arguments):
+                    raise ValueError("SARIF message arguments must be a list of strings")
+
+
 def _driver_levels(run: Mapping[str, Any]) -> dict[str, str]:
     """`ruleId -> defaultConfiguration.level`, for results that omit a level."""
 
-    driver = run.get("tool", {}).get("driver", {}) if isinstance(run.get("tool"), dict) else {}
+    driver = _validated_driver(run)
     levels: dict[str, str] = {}
-    for rule in driver.get("rules", []) if isinstance(driver.get("rules"), list) else []:
-        if not isinstance(rule, dict):
-            continue
-        rule_id = rule.get("id")
-        configuration = rule.get("defaultConfiguration")
-        level = configuration.get("level") if isinstance(configuration, dict) else None
-        if isinstance(rule_id, str) and isinstance(level, str) and level in SARIF_LEVELS:
-            levels[rule_id] = level
+    for rule in driver.get("rules", []):
+        configuration = rule.get("defaultConfiguration", {})
+        if "level" in configuration:
+            levels[rule["id"]] = configuration["level"]
     return levels
 
 
@@ -220,7 +313,7 @@ def _subject_relative(uri: object, subject_root: Path) -> str:
     candidate = Path(raw)
     if candidate.is_absolute():
         try:
-            relative = candidate.resolve().relative_to(subject_root.resolve())
+            relative = candidate.absolute().relative_to(subject_root.absolute())
         except ValueError as exc:
             raise ValueError(
                 f"SARIF result names {uri!r}, which is outside the materialised subject"
@@ -232,8 +325,27 @@ def _subject_relative(uri: object, subject_root: Path) -> str:
     return relative.as_posix()
 
 
+def _subject_file_bytes(subject_root: Path, path: str) -> bytes:
+    """Bounded bytes from a regular subject file, with no symlink traversal."""
+
+    return read_results_artifact(path, subject_root=subject_root)
+
+
+def _subject_file_present(subject_root: Path, path: str) -> bool:
+    """Only absence is missing; unsafe or oversized scope files refuse."""
+
+    try:
+        probe_results_artifact(path, subject_root=subject_root)
+    except ValueError as exc:
+        if isinstance(exc.__cause__, FileNotFoundError):
+            return False
+        raise
+    return True
+
+
 def _region_bytes(
-    subject_root: Path, path: str, start_line: int, end_line: int, snippet: object
+    subject_root: Path, path: str, start_line: int, end_line: int, snippet: object,
+    *, reader: SubjectReader | None = None,
 ) -> bytes:
     """The subject's own bytes at a reported region — or the artifact is malformed.
 
@@ -242,14 +354,12 @@ def _region_bytes(
     there, is a claim about a line that was never read.
     """
 
-    subject_file = subject_root / path
     try:
-        raw = subject_file.read_bytes()
+        lines = reader_for(subject_root, reader).lines(path)
     except OSError as exc:
         raise ValueError(
             f"SARIF result names {path!r}, which the materialised subject does not carry"
         ) from exc
-    lines = raw.splitlines(keepends=True)
     if start_line < 1 or end_line < start_line or end_line > len(lines):
         raise ValueError(
             f"SARIF region {start_line}-{end_line} lies outside {path!r} "
@@ -269,9 +379,12 @@ def _region_bytes(
 
 
 def _findings(
-    sarif: Mapping[str, Any], subject_root: Path
-) -> tuple[list[tuple[str, str, str]], set[str]]:
+    sarif: Mapping[str, Any], subject_root: Path, *, reader: SubjectReader | None = None,
+) -> tuple[list[tuple[str, str, str]], set[str] | None]:
     """Every result as `(finding_id, path, level)`, plus the witnessed paths."""
+
+    reader = reader_for(subject_root, reader)
+    _validate_sarif_core(sarif)
 
     if sarif.get("version") != _SARIF_VERSION:
         raise ValueError(f"SARIF artifact must declare version {_SARIF_VERSION}")
@@ -280,7 +393,7 @@ def _findings(
         raise ValueError("SARIF artifact carries no runs")
 
     findings: list[tuple[str, str, str]] = []
-    witnessed: set[str] = set()
+    witnessed: set[str] | None = None
     for run in runs:
         if not isinstance(run, dict):
             raise ValueError("SARIF runs entries must be objects")
@@ -298,10 +411,21 @@ def _findings(
                         "SARIF invocation did not report executionSuccessful; a scan that "
                         "declares its own failure is refused, and absence blocks"
                     )
-        for artifact in run.get("artifacts", []) if isinstance(run.get("artifacts"), list) else []:
-            location = artifact.get("location") if isinstance(artifact, dict) else None
-            if isinstance(location, dict):
-                witnessed.add(_subject_relative(location.get("uri"), subject_root))
+        if "artifacts" in run:
+            artifacts = run["artifacts"]
+            if not isinstance(artifacts, list):
+                raise ValueError("SARIF artifacts must be a list when present")
+            if witnessed is None:
+                witnessed = set()
+            for artifact in artifacts:
+                if not isinstance(artifact, dict):
+                    raise ValueError("SARIF artifacts entries must be objects")
+                location = artifact.get("location")
+                if not isinstance(location, dict):
+                    raise ValueError("SARIF artifact coverage requires a location object")
+                path = _subject_relative(location.get("uri"), subject_root)
+                _subject_file_present(subject_root, path)
+                witnessed.add(path)
 
         levels = _driver_levels(run)
         results = run.get("results", [])
@@ -342,7 +466,7 @@ def _findings(
             snippet = region.get("snippet", {}).get("text") if isinstance(
                 region.get("snippet"), dict
             ) else None
-            material = _region_bytes(subject_root, path, start_line, end_line, snippet)
+            material = _region_bytes(subject_root, path, start_line, end_line, snippet, reader=reader)
             findings.append(
                 (finding_id(rule_id, path, start_line, end_line, material), path, level)
             )
@@ -352,22 +476,25 @@ def _findings(
 def _sarif_packet_digest(document: Mapping[str, Any]) -> str | None:
     """A delegated-review SARIF names its packet; scanners leave this absent."""
 
+    declarations: list[str] = []
+    containers: list[Mapping[str, Any]] = [document]
     runs = document.get("runs")
-    if isinstance(runs, list) and runs and isinstance(runs[0], dict):
-        props = runs[0].get("properties")
-        if isinstance(props, Mapping):
-            digest = props.get("packet_digest")
-            if isinstance(digest, str) and digest.startswith("sha256:"):
-                return digest
-    props = document.get("properties")
-    if isinstance(props, Mapping):
-        digest = props.get("packet_digest")
-        if isinstance(digest, str) and digest.startswith("sha256:"):
-            return digest
-    return None
+    if isinstance(runs, list):
+        containers.extend(run for run in runs if isinstance(run, Mapping))
+    for container in containers:
+        props = container.get("properties")
+        if not isinstance(props, Mapping) or "packet_digest" not in props:
+            continue
+        digest = props["packet_digest"]
+        if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+            raise ValueError("SARIF properties.packet_digest must be sha256:<64-hex>")
+        declarations.append(digest)
+    if len(set(declarations)) > 1:
+        raise ValueError("SARIF properties.packet_digest declarations conflict; substitution refused")
+    return declarations[0] if declarations else None
 
 
-def _materialised_packet_digest(subject_root: Path) -> str | None:
+def _materialised_packet_digest(subject_root: Path, *, reader: SubjectReader | None = None) -> str | None:
     """Re-derive the expected packet digest from the subject's committed packet.
 
     ``governance/review-packet.json`` is the bound packet a delegated-review
@@ -375,14 +502,18 @@ def _materialised_packet_digest(subject_root: Path) -> str | None:
     (ordinary scanner SARIF); presence means substitution is detectable.
     """
 
-    packet_path = subject_root / "governance" / "review-packet.json"
-    if not packet_path.is_file():
-        return None
+    packet_path = "governance/review-packet.json"
+    try:
+        raw = reader_for(subject_root, reader).read(packet_path)
+    except ValueError as exc:
+        if isinstance(exc.__cause__, FileNotFoundError):
+            return None
+        raise
     # Lazy: delegated_review imports this module's region helpers.
     from ranex.foundation.delegated_review import packet_digest, validate_packet
 
     try:
-        payload = json.loads(packet_path.read_text(encoding="utf-8"))
+        payload = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(
             f"refusing delegated-review packet at {packet_path}: {exc}"
@@ -398,6 +529,7 @@ def scan_results_from_sarif(
     *,
     subject_root: Path,
     expected_packet_digest: str | None = None,
+    require_review: bool = False,
 ) -> dict[str, object]:
     """Summarise one SARIF artifact against a previously frozen scan manifest.
 
@@ -431,24 +563,41 @@ def scan_results_from_sarif(
     if not isinstance(document, dict):
         raise ValueError("SARIF artifact must be a JSON object")
 
+    reader = SubjectReader(subject_root)
     claimed_packet = _sarif_packet_digest(document)
+    required = require_review or expected_packet_digest is not None
+    if required and claimed_packet is None:
+        raise ValueError("required delegated-review SARIF must carry properties.packet_digest")
     if claimed_packet is not None:
-        expected = expected_packet_digest or _materialised_packet_digest(subject_root)
+        materialised = _materialised_packet_digest(subject_root, reader=reader)
+        if required and materialised is None:
+            raise ValueError("required delegated-review SARIF needs a materialised review packet")
+        if materialised is not None and expected_packet_digest is not None and materialised != expected_packet_digest:
+            raise ValueError("expected_packet_digest does not match materialised review packet")
+        expected = expected_packet_digest or materialised
         if expected is None:
             raise ValueError(
                 "delegated-review SARIF carries properties.packet_digest but the "
                 "subject has no governance/review-packet.json to re-derive against"
             )
-        from ranex.foundation.delegated_review import delegated_review_results_from_sarif
+        from ranex.foundation.delegated_review import validated_review_findings
 
-        return delegated_review_results_from_sarif(
-            sarif_bytes,
-            validated,
-            subject_root=subject_root,
-            expected_packet_digest=expected,
-        )
+        findings, witnessed = validated_review_findings(document, subject_root, expected, reader=reader)
+        return _reduce_scan_findings(findings, witnessed, validated, subject_root, require_review=required)
 
-    findings, witnessed = _findings(document, subject_root)
+    findings, witnessed = _findings(document, subject_root, reader=reader)
+    return _reduce_scan_findings(findings, witnessed, validated, subject_root)
+
+
+def _reduce_scan_findings(
+    findings: list[tuple[str, str, str]],
+    witnessed: set[str] | None,
+    validated: ScanManifest,
+    subject_root: Path,
+    *, require_review: bool = False,
+) -> dict[str, object]:
+    """One outcome reduction for generic and re-derived review identities."""
+
     scope = list(validated["scope"])
     accepted = dict(validated["accepted"])
     blocking = set(validated["blocking_levels"])
@@ -464,11 +613,10 @@ def scan_results_from_sarif(
         if path in outcomes:
             outcomes[path] = "failed"
 
-    subject = subject_root.resolve()
     missing = sorted(
         path
         for path in scope
-        if not (subject / path).is_file() or (witnessed and path not in witnessed)
+        if not _subject_file_present(subject_root, path) or witnessed is None or path not in witnessed
     )
     expected = set(scan_expected_ids(validated))
     observed = set(outcomes)
@@ -482,7 +630,7 @@ def scan_results_from_sarif(
     }
     ordered = dict(sorted(outcomes.items()))
     result: dict[str, object] = {
-        "manifest_digest": scan_manifest_digest(validated),
+        "manifest_digest": scan_manifest_digest(validated, require_review=require_review),
         "counts": counts,
         "non_passed": [
             [identifier, kind] for identifier, kind in ordered.items() if kind != "passed"
@@ -499,13 +647,14 @@ def parse_scan_artifact(
     manifest: Mapping[str, object],
     *,
     subject_root: Path,
+    require_review: bool = False,
 ) -> dict[str, object]:
     """Read a present SARIF artifact no larger than 50 MiB and summarise it."""
 
-    from ranex.foundation.suite_results import read_results_artifact
-
+    relative = Path(path).absolute().relative_to(subject_root.absolute())
     return scan_results_from_sarif(
-        read_results_artifact(path), manifest, subject_root=subject_root
+        _subject_file_bytes(subject_root, str(relative)), manifest,
+        subject_root=subject_root, require_review=require_review
     )
 
 
@@ -525,7 +674,7 @@ def claim_expectations(
     if reporter in SCAN_REPORTERS:
         manifest = validate_scan_manifest(load_scan_manifest_bytes(raw))
         return (
-            scan_manifest_digest(manifest),
+            scan_manifest_digest(manifest, require_review=reporter == REVIEW_REPORTER),
             scan_expected_ids(manifest),
             scan_expected_skips(manifest),
         )
@@ -557,7 +706,8 @@ def claim_expectations(
 
 
 def observed_findings(
-    sarif_bytes: bytes, subject_root: Path
+    sarif_bytes: bytes, subject_root: Path, *, require_review: bool = False,
+    required_scope: tuple[str, ...] | None = None,
 ) -> tuple[tuple[str, str, str], ...]:
     """Every finding a run reported, as `(finding_id, path, level)`.
 
@@ -575,7 +725,26 @@ def observed_findings(
         raise ValueError(f"cannot parse SARIF artifact: {exc}") from exc
     if not isinstance(document, dict):
         raise ValueError("SARIF artifact must be a JSON object")
-    findings, _ = _findings(document, subject_root)
+    reader = SubjectReader(subject_root)
+    claimed_packet = _sarif_packet_digest(document)
+    if require_review and claimed_packet is None:
+        raise ValueError("required delegated-review SARIF must carry properties.packet_digest")
+    if claimed_packet is not None:
+        expected = _materialised_packet_digest(subject_root, reader=reader)
+        if expected is None:
+            raise ValueError("delegated-review findings require a materialised packet")
+        from ranex.foundation.delegated_review import validated_review_findings
+
+        findings, witnessed = validated_review_findings(document, subject_root, expected, reader=reader)
+    else:
+        findings, witnessed = _findings(document, subject_root, reader=reader)
+    if required_scope:
+        missing = sorted(
+            path for path in required_scope
+            if not _subject_file_present(subject_root, path) or witnessed is None or path not in witnessed
+        )
+        if missing:
+            raise ValueError("scan coverage missing frozen scope path(s): " + ", ".join(missing))
     return tuple(findings)
 
 

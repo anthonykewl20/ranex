@@ -5,6 +5,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+import _task_history
 import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
@@ -37,6 +38,7 @@ def git(repository: Path, *arguments: str) -> str:
 
 def invoke(repository: Path, arguments: list[str]) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
+        _task_history.configure(monkeypatch, repository, arguments)
         monkeypatch.chdir(repository)
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repository.resolve()
@@ -72,8 +74,9 @@ class Scenario:
             f"producers:\n  worker: {worker_public}\n  owner: {approver_public}\n",
             encoding="utf-8",
         )
+        _task_history.register(repository)
         (repository / ".gitignore").write_text(
-            "governance/evidence.json\ngovernance/journal.sqlite3\napproval.json\n",
+            "governance/evidence.json\ngovernance/journal.sqlite3\ngovernance/observations.sqlite3*\napproval.json\n",
             encoding="utf-8",
         )
         (repository / "base.txt").write_text("base\n", encoding="utf-8")
@@ -121,12 +124,9 @@ def make_candidate(scenario: Scenario, worktree: Path, task_id: str) -> tuple[st
         "confinement_profile_digest": "sha256:" + "d" * 64,
         "envelope_type": "ranex-evidence-envelope-v1",
         "gate_id": "landing",
-        "catalog_digest": "sha256:" + "e" * 64,
+        "catalog_digest": catalog_digest_for(CATALOG),
     }
-    (worktree / "governance" / "evidence.json").write_text(
-        json.dumps([{**body, "signature": sign_evidence(body, scenario.worker_private)}]),
-        encoding="utf-8",
-    )
+    _task_history.record(worktree, [{**body, "signature": sign_evidence(body, scenario.worker_private)}])
     return candidate, subject
 
 
@@ -237,7 +237,7 @@ def test_merge_default_evidence_comes_from_dispatched_worktree(
     assert git(scenario.repository, "rev-parse", "refs/heads/main") == candidate
 
 
-def test_merge_refuses_deleted_worktree_evidence_as_sad_path_5(
+def test_merge_uses_retained_history_after_projection_deletion(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     scenario = Scenario.create(tmp_path)
@@ -255,9 +255,9 @@ def test_merge_refuses_deleted_worktree_evidence_as_sad_path_5(
             scenario.repository,
             merge_arguments("task-missing-evidence", candidate, signed_approval),
         )
-        == 1
+        == 0
     )
-    assert "sad-path-5 satisfying-evidence-missing" in capsys.readouterr().err
+    assert "PUBLISHED" in capsys.readouterr().out
 
 
 def test_merge_explicit_journal_and_evidence_override_defaults(
@@ -278,12 +278,17 @@ def test_merge_explicit_journal_and_evidence_override_defaults(
     ) == 1
     assert "sad-path-11 candidate-row-missing" in capsys.readouterr().err
 
-    empty_evidence = scenario.repository / "governance" / "empty-evidence.json"
+    empty_evidence = scenario.repository / "governance" / "empty" / "evidence.json"
+    empty_evidence.parent.mkdir()
     empty_evidence.write_text("[]\n", encoding="utf-8")
+    from ranex.foundation.signing import public_key_for
+    from ranex.governed_execution.adapters.persistence.history import bootstrap_history
+    service = (scenario.repository.parent / "history-service.key").read_text().strip()
+    bootstrap_history(empty_evidence, _task_history.checkpoint(scenario.repository, "governance/empty/evidence.json"), service, public_key_for(service), scenario.repository)
     assert invoke(
         scenario.repository,
         merge_arguments("task-overrides", candidate, signed_approval)
-        + ["--evidence", "governance/empty-evidence.json"],
+        + ["--evidence", "governance/empty/evidence.json"],
     ) == 1
     assert "sad-path-5 satisfying-evidence-missing" in capsys.readouterr().err
 
@@ -311,12 +316,9 @@ def test_merge_legacy_candidate_without_dispatch_uses_governed_evidence(tmp_path
         "confinement_profile_digest": "sha256:" + "d" * 64,
         "envelope_type": "ranex-evidence-envelope-v1",
         "gate_id": "landing",
-        "catalog_digest": "sha256:" + "e" * 64,
+        "catalog_digest": catalog_digest_for(CATALOG),
     }
-    (scenario.repository / "governance" / "evidence.json").write_text(
-        json.dumps([{**body, "signature": sign_evidence(body, scenario.worker_private)}]),
-        encoding="utf-8",
-    )
+    _task_history.record(scenario.repository, [{**body, "signature": sign_evidence(body, scenario.worker_private)}])
     Journal(scenario.journal).append(TaskCandidate("legacy", "landing", subject, ()))
     signed_approval = approval(scenario, "legacy", candidate, subject, scenario.journal)
 

@@ -257,9 +257,13 @@ def _enclosing_subject_root(repository: Path) -> Path | None:
         expected = {
             "HOME": enclosing / "home",
             "TMPDIR": enclosing / "tmp",
-            "UV_PROJECT_ENVIRONMENT": enclosing / "deps" / "env",
-            "VIRTUAL_ENV": enclosing / "deps" / "env",
         }
+        # Self-contained observations have no dependency environment. When a
+        # dependency root exists, preserve the exact canonical layout check;
+        # dangling symlinks must not masquerade as an absent optional root.
+        deps = enclosing / "deps"
+        if deps.exists() or deps.is_symlink():
+            expected["VIRTUAL_ENV"] = deps / "env"
         for path in expected.values():
             try:
                 candidate = path.absolute()

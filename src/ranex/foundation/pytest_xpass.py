@@ -30,6 +30,13 @@ def pytest_configure(config):
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_logreport(report):
+    # JUnit's classname flattens module and nested classes into one dotted
+    # string. Retain the observed selection identity before that lossy step.
+    # Replace any user-supplied reserved property with the actual report ID.
+    report.user_properties = [
+        (name, value) for name, value in report.user_properties
+        if name != "ranex.pytest_nodeid"
+    ] + [("ranex.pytest_nodeid", report.nodeid)]
     # Normalize completed local or distributed reports before normal hooks
     # count failures and serialize JUnit. Match pytest's strict-XPASS shape.
     if report.passed and hasattr(report, "wasxfail"):

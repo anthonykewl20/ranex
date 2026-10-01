@@ -29,6 +29,7 @@ Three boundaries hold by construction:
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -154,7 +155,12 @@ class PromotionDecision:
 
 
 def _is_number(value: object) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def is_safe_freeze_id(value: object) -> bool:
@@ -305,6 +311,8 @@ def validate_promotion_claim(value: object) -> dict[str, object]:
     if not isinstance(value, Mapping):
         raise ValueError("promotion claim must be a JSON object")
     claim = dict(value)
+    if any(not isinstance(key, str) for key in claim):
+        raise ValueError("promotion claim keys must be strings")
     unknown = sorted(set(claim) - _CLAIM_KEYS)
     missing = sorted(_CLAIM_KEYS - set(claim) - {"tau"})
     if unknown:
@@ -325,12 +333,18 @@ def validate_promotion_claim(value: object) -> dict[str, object]:
         if not isinstance(tau, list):
             raise ValueError("tau must be a list when present")
         for entry in tau:
-            if not isinstance(entry, Mapping) or set(entry) != _TAU_ENTRY_KEYS:
-                raise ValueError("each tau entry carries exactly axis and value")
-            if not _is_number(entry["value"]):
-                raise ValueError("tau value must be numeric")
+            _validate_tau_entry(entry)
     _require_digest64(claim["evidence_receipts_digest"], "evidence_receipts_digest")
     return claim
+
+
+def _validate_tau_entry(entry: object) -> None:
+    if not isinstance(entry, Mapping) or set(entry) != _TAU_ENTRY_KEYS:
+        raise ValueError("each tau entry carries exactly axis and value")
+    if not isinstance(entry["axis"], str) or _AXIS.fullmatch(entry["axis"]) is None:
+        raise ValueError("tau axis must name subject.metric")
+    if not _is_number(entry["value"]):
+        raise ValueError("tau value must be finite and numeric")
 
 
 def _validate_delta(delta: object, index: int) -> None:
@@ -365,43 +379,23 @@ def derived_tau(freeze: Mapping[str, object], axis: str) -> float:
 
 
 def _claim_schema_causes(claim: object) -> list[PromotionCause]:
-    """Structural claim problems as refusal data, mirroring the kernel's
-    grammar: rejections reach the caller as structured causes, not crashes."""
+    """Use the complete validator, keeping semantic diagnostics in the judge."""
 
-    if not isinstance(claim, Mapping):
-        return [
-            PromotionCause(
-                "claim-schema", "a promotion claim must be a JSON object"
-            )
-        ]
-    causes: list[PromotionCause] = []
-    unknown = sorted(set(claim) - _CLAIM_KEYS)
-    if unknown:
-        causes.append(
-            PromotionCause(
-                "claim-schema",
-                "unknown claim key(s): " + ", ".join(unknown),
-            )
-        )
-    if claim.get("schema") != CLAIM_SCHEMA:
-        causes.append(
-            PromotionCause(
-                "claim-schema",
-                f"claim schema must be {CLAIM_SCHEMA}",
-            )
-        )
-    if not isinstance(claim.get("claim_id"), str) or not claim.get("claim_id"):
-        causes.append(
-            PromotionCause("claim-schema", "claim_id must be a non-empty string")
-        )
-    deltas = claim.get("marginal_deltas")
-    if isinstance(deltas, list):
-        for index, delta in enumerate(deltas):
-            try:
-                _validate_delta(delta, index)
-            except ValueError as exc:
-                causes.append(PromotionCause("malformed-delta", str(exc)))
-    return causes
+    try:
+        validate_promotion_claim(claim)
+    except ValueError as exc:
+        # These fields have more specific refusal causes below. All other
+        # structure still uses the same complete validator as boundary callers.
+        semantic = {"base_freeze", "evidence_receipts_digest", "marginal_deltas"}
+        missing = _CLAIM_KEYS - set(claim) - {"tau"} if isinstance(claim, Mapping) else set()
+        detail = str(exc)
+        if missing and missing <= semantic:
+            return []
+        if detail.startswith("evidence_receipts_digest") or detail == "marginal_deltas must be a list":
+            return []
+        cause = "malformed-delta" if detail.startswith("marginal_deltas[") else "claim-schema"
+        return [PromotionCause(cause, detail)]
+    return []
 
 
 def evaluate_promotion(
@@ -484,9 +478,14 @@ def evaluate_promotion(
             )
         )
     else:
-        for delta in deltas:
-            if not isinstance(delta, Mapping) or set(delta) != _DELTA_KEYS:
-                continue  # already named as malformed-delta above
+        for index, delta in enumerate(deltas):
+            try:
+                _validate_delta(delta, index)
+            except ValueError as exc:
+                cause = PromotionCause("malformed-delta", str(exc))
+                if cause not in causes:
+                    causes.append(cause)
+                continue
             axis = delta["axis"]
             if freeze is not None:
                 if axis not in axes:
@@ -532,13 +531,10 @@ def evaluate_promotion(
     tau_entries = claim.get("tau", []) if isinstance(claim, Mapping) else []
     if freeze is not None and isinstance(tau_entries, list):
         for entry in tau_entries:
-            if not isinstance(entry, Mapping) or set(entry) != _TAU_ENTRY_KEYS:
-                causes.append(
-                    PromotionCause(
-                        "tau-not-derived-from-freeze",
-                        "each tau entry carries exactly axis and value",
-                    )
-                )
+            try:
+                _validate_tau_entry(entry)
+            except ValueError as exc:
+                causes.append(PromotionCause("tau-not-derived-from-freeze", str(exc)))
                 continue
             axis, value = entry["axis"], entry["value"]
             frozen = axes.get(axis)

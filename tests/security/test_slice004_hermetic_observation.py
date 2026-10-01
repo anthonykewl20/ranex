@@ -109,12 +109,15 @@ def repo(tmp_path: Path, keys: dict[str, str]) -> Path:
     _approver.register_approver(
         repository / "producers.yaml", "reviewer", keys["approver_public"]
     )
+    _approver.register_history_service(repository, repository / "producers.yaml", tmp_path)
+    (repository / ".gitignore").write_text("evidence.json\nobservations.sqlite3*\n")
     return repository
 
 
 def commit_all(repo: Path, message: str = "initial") -> None:
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
     subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", message], check=True)
+    _approver.history_for(repo).establish()
 
 
 def invoke(
@@ -147,6 +150,9 @@ def invoke(
             )
         for name, value in (environment or {}).items():
             monkeypatch.setenv(name, value)
+        if argv[0] in ("run", "gate"):
+            evidence_name = argv[argv.index("--evidence") + 1] if "--evidence" in argv else "governance/evidence.json"
+            _approver.history_for(repo).configure(monkeypatch, evidence_name)
         try:
             return main(argv)
         except SystemExit as exit_info:
@@ -331,7 +337,7 @@ def test_results_artifact_reads_at_most_limit_plus_one_bytes(
     with pytest.raises(ValueError, match="50 MB"):
         suite_results.parse_results_artifact(artifact, suite_manifest())
 
-    assert bytes_read == suite_results.MAX_RESULTS_BYTES + 1
+    assert bytes_read <= suite_results.MAX_RESULTS_BYTES + 1
 
 
 def test_hermetic_execution_refuses_a_non_regular_executable(

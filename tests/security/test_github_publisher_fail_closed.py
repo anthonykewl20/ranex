@@ -133,11 +133,12 @@ def test_a_key_inside_the_repository_is_refused(tmp_path: Path) -> None:
             os.environ.pop(key, None)
 
 
-def cli_env(fake_url: str, key_path: Path) -> dict[str, str]:
+def cli_env(fake_url: str, key_path: Path, repository: Path) -> dict[str, str]:
     return {
         "PATH": os.path.dirname(sys.executable) + os.pathsep + os.defpath,
         "PYTHONPATH": "src",
         "LC_ALL": "C",
+        "RANEX_HISTORY_CHECKPOINT": str(_github_fake.checkpoint_for(repository)),
         "RANEX_GITHUB_APP_ID": _github_fake.APP_ID,
         "RANEX_GITHUB_APP_PRIVATE_KEY": str(key_path),
         "RANEX_GITHUB_WEBHOOK_SECRET": "webhook-secret-value",
@@ -158,7 +159,7 @@ def test_the_cli_refuses_an_api_error_without_retrying(tmp_path: Path) -> None:
                 "--repository", str(clone), "--approver", "operator",
             ],
             capture_output=True, text=True, check=False,
-            env=cli_env(fake.url, key_path),
+            env=cli_env(fake.url, key_path, clone),
         )
 
     assert result.returncode == 2
@@ -180,7 +181,7 @@ def test_no_secret_value_reaches_the_output(tmp_path: Path) -> None:
                 "--repository", str(clone), "--approver", "operator",
             ],
             capture_output=True, text=True, check=False,
-            env=cli_env(fake.url, key_path),
+            env=cli_env(fake.url, key_path, clone),
         )
 
     assert result.returncode == 0, result.stderr
@@ -205,7 +206,7 @@ def test_a_malformed_key_file_refuses_cleanly(tmp_path: Path) -> None:
                 "--repository", str(clone), "--approver", "operator",
             ],
             capture_output=True, text=True, check=False,
-            env=cli_env(fake.url, key_path),
+            env=cli_env(fake.url, key_path, clone),
         )
 
     assert result.returncode == 2

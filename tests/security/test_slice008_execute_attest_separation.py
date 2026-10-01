@@ -18,6 +18,8 @@ from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 
+import _approver
+
 from ranex.foundation.signing import SIGNED_FIELDS, generate_keypair, verify_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
@@ -73,6 +75,7 @@ def build_target(tmp_path: Path) -> tuple[Path, Path, str]:
     (target / "producers.yaml").write_text(
         f"producers:\n  worker: {public}\n", encoding="utf-8"
     )
+    _approver.register_history_service(target, target / "producers.yaml", tmp_path)
     (target / "app.txt").write_text("governed\n", encoding="utf-8")
     subprocess.run(
         ["git", "-C", str(target), "add", "-A"],
@@ -457,6 +460,13 @@ def run_task_judge(
     emitted_commit: str,
     journal: Path,
 ) -> subprocess.CompletedProcess[str]:
+    from _task_history import checkpoint
+
+    from ranex.governed_execution.adapters.persistence.history import bootstrap_history
+    service = _approver.history_for(target)
+    anchor = checkpoint(emitted_worktree, "evidence.json")
+    bootstrap_history(emitted_worktree / "evidence.json", anchor,
+                      service.private, service.public, emitted_worktree)
     return subprocess.run(
         [
             sys.executable,
@@ -476,7 +486,8 @@ def run_task_judge(
         capture_output=True,
         text=True,
         check=False,
-        env=environment_for_process(home=tmp_home(target), python_path=target / "src"),
+        env=environment_for_process(home=tmp_home(target), python_path=target / "src",
+                                    extra={"RANEX_HISTORY_CHECKPOINT": str(anchor)}),
     )
 
 

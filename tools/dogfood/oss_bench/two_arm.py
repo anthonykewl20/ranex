@@ -43,7 +43,6 @@ import argparse
 import hashlib
 import json
 import os
-import shlex
 import shutil
 import subprocess
 import sys
@@ -67,7 +66,14 @@ if _state.is_file():
 
 sys.path.insert(0, str(RANEX_REPO / "src"))
 sys.path.insert(0, str(HERE.parent))
-from cmdparse import PINNED_PYTHON, parse_cmd, pinned_argv  # noqa: E402
+from cmdparse import (  # noqa: E402
+    PINNED_PYTHON,
+    command_environment,
+    governed_argv,
+    parse_cmd,
+)
+from history_service import history_environment, install_service  # noqa: E402
+
 from ranex.foundation.signing import generate_keypair  # noqa: E402
 
 APPROVER = "oss-bench-approver"
@@ -295,17 +301,20 @@ def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
     )
     (repo / "governance").mkdir(exist_ok=True)
     (repo / "governance" / "producers.yaml").write_text(
-        "producers:\n  {}: {}\n".format(PRODUCER, public))
+        f"producers:\n  {PRODUCER}: {public}\n")
+    install_service(repo / "governance" / "producers.yaml", out / "keys" / "history-service.key", APPROVER)
     (repo / "governance" / "gates.yaml").write_text(
         "gates:\n  - gate_id: landing\n    rule_id: TASK_TESTS\n    blocking: true\n"
         "    required_claims:\n" + claims_yaml)
     # Evidence is gitignored, mirroring the kernel repo: records are bound to
     # the exact tree digest, so the file must never be committed.
-    (repo / ".gitignore").write_text("governance/evidence.json\n")
+    (repo / ".gitignore").write_text("governance/evidence.json\ngovernance/observations.sqlite3*\ngovernance/journal.sqlite3*\n")
     assert _git(repo, "add", "-A").returncode == 0
     assert _git(repo, "commit", "-qm",
                 "vendor ranex kernel; governance: bench keyring and task gate").returncode == 0
-    (repo / "governance" / "evidence.json").write_text("[]\n")
+    established = _ranex(repo, str(key_path), "history", "bootstrap")
+    if established.returncode != 0:
+        raise RuntimeError(f"history bootstrap failed: {established.stderr}")
     return repo, str(key_path)
 
 
@@ -314,7 +323,9 @@ def _governed_environment(repo: Path, key_path: str) -> dict[str, str]:
     vendored-kernel PYTHONPATH and the signing key (#114 arm 4 retention)."""
 
     env = dict(os.environ)
+    env.pop("RANEX_VERDICT_DIR", None)
     env["RANEX_SIGNING_KEY"] = str(key_path)
+    env.update(history_environment(Path(key_path)))
     env["PYTHONPATH"] = str(Path(repo) / "src")
     return env
 
@@ -387,6 +398,10 @@ def mode_plumbing(task_dir: Path, out: Path) -> dict[str, Any]:
     return report
 
 
+class GoldPatchFailed(RuntimeError):
+    """The gold arm has no provenance; no benchmark receipt may be emitted."""
+
+
 def run_bare_arm(task_dir: Path, entries: list[dict[str, Any]],
                  env: dict[str, str] | None = None,
                  python: str | None = None) -> dict[str, Any]:
@@ -401,17 +416,29 @@ def run_bare_arm(task_dir: Path, entries: list[dict[str, Any]],
     env = bare_environment() if env is None else env
     probes = 0
     child_env: dict[str, str] = {}
+    command_envs: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory() as tmp:
         bare_repo = Path(tmp) / "repo"
         shutil.copytree(task_dir / "repo", bare_repo)
         copy_hidden_tests(task_dir / "tests", bare_repo)
+        # Pin the bytes actually applied, and prevent Git finding an enclosing
+        # repository and silently skipping paths outside its current directory.
+        try:
+            patch_bytes = (task_dir / "gold_patch.diff").read_bytes()
+        except OSError as exc:
+            raise GoldPatchFailed("gold patch cannot be read; ground truth refused") from exc
+        frozen_patch = Path(tmp) / "gold.patch"
+        frozen_patch.write_bytes(patch_bytes)
+        if _git(bare_repo, "init", "-q").returncode != 0:
+            raise GoldPatchFailed("gold patch repository could not be initialized")
         gold = subprocess.run(
-            ["git", "-C", str(bare_repo), "apply", str(task_dir / "gold_patch.diff")],
+            ["git", "-C", str(bare_repo), "apply", str(frozen_patch)],
             capture_output=True, text=True, check=False)
+        if gold.returncode != 0:
+            raise GoldPatchFailed("gold patch failed to apply; ground truth refused")
         bare_gold, bare_empty = [], []
-        targets = [("gold", bare_gold, gold.returncode == 0),
-                   ("empty", bare_empty, True)]
-        for arm, sink, _ in targets:
+        targets = [("gold", bare_gold), ("empty", bare_empty)]
+        for arm, sink in targets:
             for entry in entries:
                 if arm == "empty":
                     subprocess.run(["git", "-C", str(bare_repo), "checkout", "--", "."],
@@ -421,21 +448,35 @@ def run_bare_arm(task_dir: Path, entries: list[dict[str, Any]],
                     shutil.rmtree(bare_repo)
                     shutil.copytree(task_dir / "repo", bare_repo)
                     copy_hidden_tests(task_dir / "tests", bare_repo)
-                child_env = assert_bare_environment(env, bare_repo, python=python)
+                assignments, argv, _ = parse_cmd(entry["cmd"])
+                if not argv:
+                    raise ValueError("task command carries no executable")
+                task_env = command_environment(assignments, env)
+                child_env = assert_bare_environment(task_env, bare_repo, python=python)
                 probes += 1
-                result = subprocess.run(shlex.split(entry["cmd"]), cwd=str(bare_repo),
+                measured = json.dumps(child_env, sort_keys=True, separators=(",", ":"))
+                command_envs.append({
+                    "arm": arm, "name": entry["name"], "child_env": child_env,
+                    "child_env_sha256": hashlib.sha256(measured.encode()).hexdigest(),
+                })
+                result = subprocess.run(argv, cwd=str(bare_repo),
                                         capture_output=True, text=True, check=False,
-                                        timeout=300, env=env)
+                                        timeout=300, env=task_env)
                 sink.append({"name": entry["name"], "exit": result.returncode})
     metadata = json.loads((task_dir / "metadata.json").read_text())
     canonical = json.dumps(child_env, sort_keys=True, separators=(",", ":"))
     return {
         "schema": "ranex-oss-bench-bare-v1", "task": metadata["id"],
         "gold": bare_gold, "empty": bare_empty,
+        "gold_patch": {
+            "applied": True,
+            "sha256": "sha256:" + hashlib.sha256(patch_bytes).hexdigest(),
+        },
         "environment": {
             "probe": "in-child canary (two_arm.BARE_CANARY) before every "
                      "command; the receipt records the environment used",
             "probes": probes,
+            "commands": command_envs,
             "child_env": child_env,
             "child_env_sha256": hashlib.sha256(canonical.encode()).hexdigest(),
             "contamination_findings": contamination_findings(child_env),
@@ -466,6 +507,9 @@ def mode_tasks(task_dir: Path, out: Path,
         print("No ground truth is written; a contaminated bare arm fails "
               "loudly instead of reporting a cleaner diff.", file=sys.stderr)
         return 3
+    except GoldPatchFailed as caught:
+        print(f"UNVERIFIED: {caught}", file=sys.stderr)
+        return 2
     print(f"[gold ] bare {sum(1 for r in bare['gold'] if r['exit'] == 0)}/{len(entries)}")
     print(f"[empty] bare {sum(1 for r in bare['empty'] if r['exit'] == 0)}/{len(entries)}")
     (out / "bare_ground_truth.json").write_text(json.dumps(bare, indent=2) + "\n")
@@ -479,7 +523,7 @@ def mode_tasks(task_dir: Path, out: Path,
         if not node_ids:
             print(f"cmd yields no test node ids, refusing: {entry['cmd']!r}")
             return 2
-        claim_commands.append((entry["name"], pinned_argv(argv, PINNED_PYTHON)))
+        claim_commands.append((entry["name"], governed_argv(entry["cmd"], PINNED_PYTHON)))
     arms = []
     for arm, patch in (("gold", "gold"), ("empty", None)):
         started = time.perf_counter()
@@ -497,6 +541,9 @@ def mode_tasks(task_dir: Path, out: Path,
             "ambient_variable_count": len(governed_env) - 2,
             "PYTHONPATH": "src (vendored kernel; scratch-absolute per run)",
             "RANEX_SIGNING_KEY": "keys/bench.key (scratch-absolute per run)",
+            "RANEX_APPROVER_SIGNING_KEY": "keys/approver.key (scratch-absolute per run)",
+            "RANEX_VERDICT_SIGNING_KEY": "keys/history-service.key (scratch-absolute per run)",
+            "RANEX_HISTORY_CHECKPOINT": "keys/history.checkpoint.json (scratch-absolute per run)",
             "governed_env_sha256": hashlib.sha256(json.dumps(
                 {"variable_names": sorted(governed_env)},
                 sort_keys=True, separators=(",", ":")).encode()).hexdigest(),

@@ -101,6 +101,7 @@ def admit_with_policy(
         None,
         gate_id=gate_id,
         catalog_digest=catalog_digest_for(catalog.encode("utf-8")),
+        allow_unanchored_history=True,
     )
 
 
@@ -255,7 +256,7 @@ def test_omitting_the_policy_context_verifies_signatures_only(
     evidence = tmp_path / "evidence.json"
     evidence.write_text(json.dumps([signed(private, gate_id="release")]), encoding="utf-8")
 
-    admitted = admit_records(evidence, {"worker": public}, None)
+    admitted = admit_records(evidence, {"worker": public}, None, allow_unanchored_history=True)
 
     assert admitted.rejections == ()
     assert len(admitted.evidence) == 1

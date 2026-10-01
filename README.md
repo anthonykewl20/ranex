@@ -269,6 +269,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
+- [SLICE-104-audit-remediation-and-qualification](docs/slices/done/SLICE-104-audit-remediation-and-qualification.md)
+
 - [SLICE-102 — Approved live acceptance task loop](docs/slices/done/SLICE-102-approved-live-task-loop.md): signed authority, scoped builds, three misses, reapproval and exact integration (ADR-061 / #119).
 
 - [SLICE-098 — External verdict witness](docs/slices/done/SLICE-098-external-verdict-witness.md): DSSE-wrapped verdicts anchored in Rekor; `gate evaluate --witness` and `journal verify --witnessed` (ADR-067 / #108).

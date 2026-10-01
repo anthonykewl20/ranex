@@ -107,6 +107,7 @@ FAMILY_COMMAND = ("git", "status", "--porcelain")
 _STRIPPED_ENV = (
     "RANEX_SIGNING_KEY",
     "RANEX_VERDICT_SIGNING_KEY",
+    "RANEX_HISTORY_CHECKPOINT",
     "RANEX_VERDICT_DIR",
     "COVERAGE_PROCESS_START",
     "COVERAGE_PROCESS_CONFIG",
@@ -140,6 +141,9 @@ _FETCHED_RE = re.compile(
 _DEPSET_RE = re.compile(r"^[ \t]+depset=(sha256:[0-9a-f]{64})$", re.MULTILINE)
 
 
+_HISTORY_ENV: dict[Path, dict[str, str]] = {}
+
+
 def ranex(
     subject: Path,
     argv: list[str],
@@ -153,6 +157,7 @@ def ranex(
 
     env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
     env["PYTHONPATH"] = str(subject / "src")
+    env.update(_HISTORY_ENV.get(subject, {}))
     if key is not None:
         env["RANEX_SIGNING_KEY"] = str(key)
     env.update(extra_env or {})
@@ -309,10 +314,20 @@ def journey(
     # not a registration failure).
     public = _keygen(subject, FAMILY_PRODUCER, key)
     _register_family_gate(subject, FAMILY_PRODUCER, public)
+    from _history import mint_service, register_service
+    _, service_public, service_path = mint_service(base)
+    register_service(subject / "governance/producers.yaml", service_public)
     committed = git(
         subject, "commit", "-q", "-am", "register the provisioning-family producer and gate"
     )
     assert committed.returncode == 0, committed.stderr
+
+    _HISTORY_ENV[subject] = {
+        "RANEX_VERDICT_SIGNING_KEY": str(service_path),
+        "RANEX_HISTORY_CHECKPOINT": str(base / "history.checkpoint.json"),
+    }
+    established = ranex(subject, ["history", "bootstrap"])
+    assert established.returncode == 0, established.stdout + established.stderr
 
     # --- fetch 1: fresh store, the golden journey -------------------------
     first = ranex(subject, ["deps", "fetch", "--repository", ".", "--store", str(store)])

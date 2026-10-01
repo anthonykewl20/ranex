@@ -123,6 +123,7 @@ class Task:
         signature=raw['signatures'][0]
         require(raw['payload_type']==PAYLOAD_TYPE and signature['signer_id']=='task-publisher' and verify_verdict(content,signature['signature'],self.context['identities']['publisher'],payload_type=raw['payload_type']),'ANCHOR: invalid publisher signature')
         require(raw['record']['record_digest']=='sha256:'+canonical_sha256(content),'ANCHOR: record digest mismatch')
+        require(content['observation_checkpoint'] is None and content['history_verified'] is False,'ANCHOR: task journal receipt cannot certify repository observation history')
         require(self.journal.verify(expected_head=content['journal_head']),'ANCHOR: journal changed or an interrupted append needs operator recovery')
         self.last_verdict=content
         grant=self.context['grant'];window=grant['time_window']
@@ -139,6 +140,9 @@ class Task:
     def anchor(self, evaluation=None):
         content=dict(self.last_verdict if evaluation is None else {**evaluation.as_record(),'rejections':[]})
         content['journal_head']=self.journal.head()
+        # This operator-approved controller owns its task journal, not a
+        # repository observation log. Generic acceptance must stay unanchored.
+        content.update(observation_checkpoint=None,history_verified=False)
         private=_regular_read(self.root,'publisher.key').decode()
         require(public_key_for(private)==self.context['identities']['publisher'],'ANCHOR: wrong publisher key')
         record={**content,'record_digest':'sha256:'+canonical_sha256(content)}
@@ -225,7 +229,7 @@ def approve(args, previous=None):
         for value in (issued.approved_event,issued.implementable_event,issued.grant_issued_event):journal.append_if_head(journal.head() if (state/'journal.sqlite3').exists() else None,value)
         gate=Gate('live-acceptance','frozen-live-observations',(Claim('live-acceptance',checked['command_digest']),),True)
         evaluation=evaluate(gate,(),subject_digest=subject,catalog_digest=payload_digest(b),approver_id=args.principal)
-        content={**evaluation.as_record(),'rejections':[],'journal_head':journal.head()}
+        content={**evaluation.as_record(),'rejections':[],'journal_head':journal.head(),'observation_checkpoint':None,'history_verified':False}
         publish_verdict(state/'verdict.json',{**content,'record_digest':'sha256:'+canonical_sha256(content)},root=state,signer_id='task-publisher',private_key=keys['publisher'][0])
     except BaseException:
         if previous is None: shutil.rmtree(state)

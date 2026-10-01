@@ -36,5 +36,6 @@ def depset_digest(lock_bytes: bytes, target: TargetEnvironment) -> str:
         "python_version": list(target.python_version),
         "platforms": list(target.platforms),
         "marker_environment": dict(target.marker_environment),
+        "supported_tags": list(target.supported_tags),
     }
     return "sha256:" + canonical_sha256(payload)

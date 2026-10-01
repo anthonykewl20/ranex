@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import stat
+import sys
 from pathlib import Path
 from urllib.error import URLError
 
@@ -34,7 +36,7 @@ from ranex.provisioning.pins import (
 )
 from ranex.provisioning.root import RootError, _seal, verified_wheel_paths
 from ranex.provisioning.store import StoreError, WheelStore
-from ranex.provisioning.target import TargetError, _platforms, probe_target
+from ranex.provisioning.target import TargetError, probe_target
 
 TARGET = TargetEnvironment(
     implementation="cp", python_version=(3, 12),
@@ -283,10 +285,18 @@ def test_store_quarantine_other_oserror_refuses(tmp_path: Path, monkeypatch: pyt
         WheelStore(tmp_path).verified_path(address)
 
 
-@pytest.mark.parametrize("glibc", ["glibc x.y", "musl 1.2"])
-def test_platforms_fall_back_when_glibc_is_unusable(glibc: str) -> None:
-    # Input: probe reports malformed or non-glibc libc data.
-    assert _platforms("x86_64", glibc) == ("linux_x86_64",)
+@pytest.mark.parametrize("platform_tag", ["win_amd64", "musllinux_1_2_x86_64"])
+def test_probe_uses_measured_platform_tags_without_glibc_guessing(
+    tmp_path: Path, platform_tag: str
+) -> None:
+    measured = f"cp312-cp312-{platform_tag}"
+    output = json.dumps({"python_version": [3, 12], "markers": {},
+                         "implementation_name": "cpython",
+                         "supported_tags": [measured, "py3-none-any"]})
+    interpreter = script(tmp_path, "printf '%s\\n' '" + output + "'")
+    target = probe_target(interpreter)
+    assert target.platforms == (platform_tag,)
+    assert target.supported_tags == (measured, "py3-none-any")
 
 
 def unseal(root: Path) -> None:
@@ -621,6 +631,65 @@ def test_assemble_root_refuses_a_failing_environment_builder(tmp_path: Path) -> 
                           descriptor, tmp_path / "root")
     finally:
         os.close(descriptor)
+
+
+@pytest.mark.parametrize("replace_entry", [False, True])
+def test_installer_consumes_a_private_snapshot_after_store_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replace_entry: bool
+) -> None:
+    from ranex.provisioning.root import assemble_root
+
+    payload = b"approved wheel bytes"
+    store = WheelStore(tmp_path / "store")
+    store.publish(digest(payload), payload)
+    entry = store.verified_path(digest(payload))
+    original_read = Path.read_bytes
+    changed = False
+
+    def swap_after_read(path: Path) -> bytes:
+        nonlocal changed
+        data = original_read(path)
+        if path == entry and not changed:
+            changed = True
+            if replace_entry:
+                replacement = tmp_path / "replacement"
+                replacement.write_bytes(b"unapproved wheel bytes")
+                os.replace(replacement, entry)
+            else:
+                entry.chmod(0o600)
+                entry.write_bytes(b"unapproved wheel bytes")
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", swap_after_read)
+    # The verified resolver is a real subprocess. Its installer boundary
+    # checks bytes and link ownership, rather than mocking subprocess.run.
+    resolver = tmp_path / "resolver"
+    resolver.write_text(
+        f"#!{sys.executable}\n"
+        "import pathlib, sys\n"
+        "if sys.argv[1] == 'venv':\n"
+        "    pathlib.Path(sys.argv[-1], 'bin').mkdir(parents=True)\n"
+        "else:\n"
+        "    wheel = pathlib.Path(sys.argv[-1])\n"
+        f"    assert wheel.read_bytes() == {payload!r}\n"
+        "    assert wheel.stat().st_nlink == 1\n"
+    )
+    resolver.chmod(0o700)
+    descriptor = os.open(resolver, os.O_RDONLY)
+    destination = tmp_path / "root"
+    item = WheelArtifact("pkg", "1", "pkg-1-py3-none-any.whl",
+                         "https://files.example/pkg-1-py3-none-any.whl", digest(payload))
+    try:
+        assemble_root((item,), store, pins_for(resolver), descriptor, destination)
+        assert changed
+        staged = destination / "wheels" / item.filename
+        assert staged.stat().st_ino != entry.stat().st_ino
+        staged.chmod(0o600)
+        staged.write_bytes(b"local tamper")
+        assert original_read(entry) == b"unapproved wheel bytes"
+    finally:
+        os.close(descriptor)
+        unseal(destination)
 
 
 def test_assemble_root_refuses_a_failing_installer(tmp_path: Path) -> None:

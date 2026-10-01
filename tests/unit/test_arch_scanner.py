@@ -13,6 +13,8 @@ nothing.
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -456,3 +458,95 @@ def test_a_missing_freeze_exits_two(
     )
     assert code == 2
     assert "cannot complete the scan" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "from pkg import foundation, exported_value",
+        "from pkg import exported_value, foundation",
+        "from pkg import foundation as base, exported_value as value, other_value as other",
+        "from . import foundation as base, exported_value as value",
+        "from . import exported_value as value, other_value as other, foundation as base",
+    ],
+)
+def test_cli_mixed_import_keeps_the_package_edge(
+    tmp_path: Path, statement: str
+) -> None:
+    """A resolved submodule must not hide attributes from the package body."""
+
+    raw = subject(
+        tmp_path,
+        **{
+            "pkg/__init__.py": "exported_value = 1\nother_value = 2\n",
+            "pkg/cli.py": statement + "\n",
+        },
+    )
+    output = tmp_path / "mixed.sarif"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ranex.foundation.arch_scan",
+            "check",
+            "--root",
+            str(tmp_path),
+            "--freeze",
+            str(tmp_path / FREEZE_REL),
+            "--expected-freeze-digest",
+            freeze_digest_of_bytes(raw),
+            "--output-file",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert findings(output.read_bytes()) == [(RULE_FORBIDDEN, "pkg/cli.py", 1)]
+
+
+def test_mixed_relative_import_exposes_a_forbidden_cycle_return_edge(
+    tmp_path: Path,
+) -> None:
+    """The freeze decides the edge; the scanner does not invent cycle policy."""
+
+    cycle_freeze = freeze_bytes(
+        allowed_edges=[*PRISTINE_FREEZE["allowed_edges"], ["root", "cli"]]
+    )
+    raw = subject(
+        tmp_path,
+        _freeze=cycle_freeze,
+        **{
+            "pkg/__init__.py": "exported_value = 1\nfrom . import cli\n",
+            "pkg/cli.py": "from . import foundation as base, exported_value as value\n",
+        },
+    )
+    assert findings(scan(tmp_path, raw)) == [(RULE_FORBIDDEN, "pkg/cli.py", 1)]
+    # Explicitly approving the return edge permits the same cyclic graph.
+    approved = freeze_bytes(
+        allowed_edges=sorted(
+            [*PRISTINE_FREEZE["allowed_edges"], ["root", "cli"], ["cli", "root"]]
+        )
+    )
+    raw = subject(
+        tmp_path,
+        _freeze=approved,
+        **{
+            "pkg/__init__.py": "exported_value = 1\nfrom . import cli\n",
+            "pkg/cli.py": "from . import foundation as base, exported_value as value\n",
+        },
+    )
+    assert findings(scan(tmp_path, raw)) == []
+
+
+def test_shipped_repository_obeys_its_pinned_architecture_graph() -> None:
+    root = Path(__file__).resolve().parents[2]
+    relative = "governance/architecture-freeze.json"
+    raw = (root / relative).read_bytes()
+    output = arch_sarif_bytes(
+        root, raw, freeze_relative=relative,
+        expected_digest=freeze_digest_of_bytes(raw),
+    )
+    assert findings(output) == []

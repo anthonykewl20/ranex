@@ -321,16 +321,20 @@ def build_repository(
     _approver.register_approver(
         governance / "producers.yaml", "reviewer", approver_public
     )
+    service_directory = tmp_path / f"{root.name}-history-service"
+    service_directory.mkdir()
+    _approver.register_history_service(root, governance / "producers.yaml", service_directory)
     key_path = tmp_path / f"{root.name}.key"
     key_path.write_text(private_key + "\n")
     key_path.chmod(0o600)
     (root / ".gitignore").write_text(
-        "governance/evidence.json\ngovernance/journal.sqlite3\n"
+        "governance/evidence.json\ngovernance/journal.sqlite3*\ngovernance/observations.sqlite3*\n"
     )
     subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(root), "commit", "-q", "-m", "initial"], check=True
     )
+    _approver.history_for(root).establish("governance/evidence.json")
     return root, tmp_path / f"store-{root.name}", key_path
 
 
@@ -340,6 +344,7 @@ def provision_and_run(
     """Walk the operator's whole path: fetch, approve, run. Returns run's exit."""
 
     monkeypatch.chdir(root)
+    _approver.history_for(root).configure(monkeypatch, "governance/evidence.json")
     monkeypatch.setattr(
         "ranex.cli.main.governed_repository_root", lambda: root.resolve()
     )

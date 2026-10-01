@@ -133,7 +133,7 @@ def default_coverage_home() -> Path:
     return DEFAULT_COVERAGE_HOME
 
 
-# --- the six frozen probes -----------------------------------------------------
+# --- prerequisite probes -------------------------------------------------------
 #
 # A probe answers "is this precondition present on this host, right now" as
 # exactly (ok, reason). It is lazy (nothing runs until a consuming fixture
@@ -146,6 +146,7 @@ def default_coverage_home() -> Path:
 PROBE_NAMES = (
     "pinned_resolver",
     "network_available",
+    "rekor_network",
     "signing_key",
     "harness_fork",
     "openrouter_key",
@@ -206,6 +207,33 @@ def network_available() -> tuple[bool, str]:
     finally:
         probe.close()
     return True, f"{REASON_PREFIX}network_available: present (pypi.org:443 reachable)"
+
+
+def rekor_network() -> tuple[bool, str]:
+    """Probe the public log using the witness client's own HTTPS transport.
+
+    A read-only HEAD needs no entry or payload. An HTTP refusal still proves
+    connectivity, so protocol/service failures stay failures in the live arms.
+    """
+
+    import urllib.error
+    import urllib.request
+    from urllib.parse import urlsplit
+
+    from ranex.governed_execution.witness import DEFAULT_WITNESS_URL
+
+    url = DEFAULT_WITNESS_URL
+    endpoint = urlsplit(url)
+    address = f"{endpoint.hostname}:{endpoint.port or 443}"
+    request = urllib.request.Request(url, method="HEAD")
+    try:
+        with urllib.request.urlopen(request, timeout=3):
+            pass
+    except urllib.error.HTTPError as response:
+        response.close()
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return False, f"{REASON_PREFIX}rekor_network: {address} unreachable"
+    return True, f"{REASON_PREFIX}rekor_network: present ({address} reachable)"
 
 
 def signing_key() -> tuple[bool, str]:
@@ -346,6 +374,7 @@ def _qualification_host_limitation() -> str | None:
 _PROBES = {
     "pinned_resolver": pinned_resolver,
     "network_available": network_available,
+    "rekor_network": rekor_network,
     "signing_key": signing_key,
     "harness_fork": harness_fork,
     "openrouter_key": openrouter_key,

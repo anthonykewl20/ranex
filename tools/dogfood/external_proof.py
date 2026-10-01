@@ -97,8 +97,18 @@ def _kernel_env(repo: Path, key: Path | None) -> dict[str, str]:
     repository: PYTHONPATH precedes site-packages, so the vendored copy under
     <repo>/src wins over the venv's own installed project."""
     env = dict(os.environ)
+    for name in ("RANEX_SIGNING_KEY", "RANEX_APPROVER_SIGNING_KEY",
+                 "RANEX_VERDICT_SIGNING_KEY", "RANEX_HISTORY_CHECKPOINT", "RANEX_VERDICT_DIR"):
+        env.pop(name, None)
     if key is not None:
-        env["RANEX_SIGNING_KEY"] = str(key)
+        env["RANEX_SIGNING_KEY"] = str(key.resolve())
+        directory = key.resolve().parent
+        if (directory / "history-service.key").is_file():
+            env.update({
+                "RANEX_APPROVER_SIGNING_KEY": str(directory / "approver.key"),
+                "RANEX_VERDICT_SIGNING_KEY": str(directory / "history-service.key"),
+                "RANEX_HISTORY_CHECKPOINT": str(directory / "history.checkpoint.json"),
+            })
     env["PYTHONPATH"] = str(repo / "src")
     return env
 
@@ -107,6 +117,16 @@ def _ranex(kernel: Path, repo: Path, key: Path | None, *args: str,
            timeout: int = 900) -> subprocess.CompletedProcess[str]:
     return _run([kernel / ".venv" / "bin" / "python", "-m", "ranex.cli.main", *args],
                 cwd=repo, env=_kernel_env(repo, key), timeout=timeout)
+
+
+def history_capability(kernel: Path, repo: Path, key: Path) -> bool:
+    """Inspect the actual selected kernel, retaining explicit old-tag behavior."""
+    probe = _ranex(kernel, repo, key, "history", "bootstrap", "--help", timeout=30)
+    if probe.returncode == 0 and "--history-checkpoint" in probe.stdout:
+        return True
+    if probe.returncode == 2 and "invalid choice: 'history'" in probe.stderr:
+        return False
+    raise StepFailure("history-capability", f"exit {probe.returncode}: {probe.stderr[-400:]}")
 
 
 def _kernel_python(kernel: Path, repo: Path, *args: str,
@@ -264,7 +284,8 @@ def onboard_governance(kernel: Path, repo: Path, scratch: Path, tag: str,
     # whatever their rules were keeping out.
     governance_ignores = ("governance/evidence.json\n"
                           "governance/suite_results.xml\n"
-                          "governance/journal.sqlite3\n"
+                          "governance/journal.sqlite3*\n"
+                          "governance/observations.sqlite3*\n"
                           "__pycache__/\n*.pyc\n.pytest_cache/\n")
     gitignore = repo / ".gitignore"
     existing_ignores = gitignore.read_text(encoding="utf-8") if gitignore.is_file() else ""
@@ -294,6 +315,12 @@ def onboard_governance(kernel: Path, repo: Path, scratch: Path, tag: str,
     (repo / "governance").mkdir(exist_ok=True)
     (repo / "governance" / "producers.yaml").write_text(
         f"producers:\n  {PRODUCER}: {public[0]}\n")
+    anchored_history = history_capability(kernel, repo, key)
+    if anchored_history:
+        sys.path.insert(0, str(REPO_ROOT / "src"))
+        from history_service import install_service
+        install_service(repo / "governance" / "producers.yaml",
+                        scratch / "history-service.key", APPROVER)
     # The manifest is frozen by the RELEASED kernel's own code, serialised in
     # its own canonical form — never a re-implementation (F-005 item 2).
     probe = scratch / "freeze.xml"
@@ -325,7 +352,12 @@ def onboard_governance(kernel: Path, repo: Path, scratch: Path, tag: str,
             "governance: producer keyring, frozen manifest, results-bound gate"
             ).returncode != 0:
         raise StepFailure("governance-commit", "git commit failed")
+    if anchored_history:
+        established = _ranex(kernel, repo, key, "history", "bootstrap")
+        if established.returncode != 0:
+            raise StepFailure("history-bootstrap", established.stderr[-400:])
     return {"key": key, "argv": argv, "selected": len(selected),
+            "history_mode": "signed-external-checkpoint" if anchored_history else "legacy-release-without-history",
             "manifest_ids": int(freeze.stdout.strip() or 0),
             "vendored_src_tree": vendored_tree,
             "elapsed_s": round(time.monotonic() - started, 1)}

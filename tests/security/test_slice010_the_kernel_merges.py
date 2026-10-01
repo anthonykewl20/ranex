@@ -5,6 +5,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+import _task_history
 import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
@@ -40,6 +41,7 @@ def git(repo: Path, *args: str, check: bool = True) -> str:
 def invoke(repo: Path, argv: list[str]) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
+        _task_history.configure(monkeypatch, repo, argv)
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
         )
@@ -83,8 +85,9 @@ class MergeScenario:
             f"producers:\n  worker: {worker_public}\n  owner: {approver_public}\n",
             encoding="utf-8",
         )
+        _task_history.register(repo)
         (repo / ".gitignore").write_text(
-            "governance/evidence.json\ngovernance/journal.sqlite3\n",
+            "governance/evidence.json\ngovernance/journal.sqlite3*\ngovernance/observations.sqlite3*\n",
             encoding="utf-8",
         )
         (repo / "base.txt").write_text("base\n", encoding="utf-8")
@@ -190,19 +193,11 @@ class MergeScenario:
             "confinement_profile_digest": "sha256:" + "d" * 64,
             "envelope_type": "ranex-evidence-envelope-v1",
             "gate_id": "landing",
-            "catalog_digest": "sha256:" + "e" * 64,
+            "catalog_digest": catalog_digest_for(CATALOG),
         }
-        (governance / "evidence.json").write_text(
-            json.dumps(
-                [
-                    {
-                        **evidence_body,
-                        "signature": sign_evidence(evidence_body, worker_private),
-                    }
-                ]
-            ),
-            encoding="utf-8",
-        )
+        _task_history.record(repo, [
+            {**evidence_body, "signature": sign_evidence(evidence_body, worker_private)}
+        ])
         journal = Journal(governance / "journal.sqlite3")
         candidate_value = TaskCandidate(
             "task-1", "landing", subject, missing_claims
@@ -366,17 +361,9 @@ def test_sad_path_5_evidence_for_other_subject_refuses_at_digest_evidence(
         **scenario.evidence_body,
         "subject_digest": "sha256:" + "0" * 64,
     }
-    (scenario.repo / "governance" / "evidence.json").write_text(
-        json.dumps(
-            [
-                {
-                    **evidence_body,
-                    "signature": sign_evidence(evidence_body, scenario.worker_private),
-                }
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _task_history.record(scenario.repo, [
+        {**evidence_body, "signature": sign_evidence(evidence_body, scenario.worker_private)}
+    ])
 
     assert_refused(
         scenario,

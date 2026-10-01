@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import _approver
 import pytest
 
 from ranex.cli import main as cli
@@ -47,12 +48,14 @@ def repository(tmp_path: Path) -> tuple[Path, Path]:
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(PROJECT / relative, destination)
-    (root / ".gitignore").write_text("evidence.json\n.local/\n", encoding="utf-8")
+    _approver.register_history_service(root, root / "producers.yaml", tmp_path)
+    (root / ".gitignore").write_text("evidence.json\n*.sqlite3*\n.local/\n", encoding="utf-8")
     subprocess.run(["git", "init", "-q", str(root)], check=True)
     subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
     subprocess.run(["git", "-C", str(root), "config", "user.name", "test"], check=True)
     subprocess.run(["git", "-C", str(root), "add", "."], check=True)
     subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "initial"], check=True)
+    _approver.history_for(root).establish()
     return root, key
 
 
@@ -110,6 +113,7 @@ def _run_bound(root: Path, key: Path, monkeypatch: pytest.MonkeyPatch, capsys: p
     monkeypatch.chdir(root)
     monkeypatch.setattr(cli, "governed_repository_root", lambda: root)
     monkeypatch.setenv("RANEX_SIGNING_KEY", str(key))
+    _approver.history_for(root).configure(monkeypatch)
     monkeypatch.setattr(cli.subprocess, "Popen", popen)
     code = cli.cmd_run(_arguments())
     return code, capsys.readouterr().err, calls
@@ -216,3 +220,22 @@ def test_only_host_confinement_module_may_name_host_confinement() -> None:
         ):
             offenders.append(path.relative_to(source_root).as_posix())
     assert not offenders
+
+
+def test_worker_progress_cannot_contaminate_controller_protocol():
+    script = """import json, os
+from ranex.cli.host_confinement import _isolate_worker_stdout
+pid = os.fork()
+if pid == 0:
+    _isolate_worker_stdout()
+    os.write(1, b'ordinary worker progress\\n')
+    os.write(2, b'ordinary worker error\\n')
+    os._exit(0)
+_, status = os.waitpid(pid, 0)
+print(json.dumps({'worker_status': status}))
+"""
+    completed = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, timeout=10, check=False)
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == {"worker_status": 0}
+    assert "ordinary worker progress" in completed.stderr
+    assert "ordinary worker error" in completed.stderr

@@ -62,6 +62,9 @@ EXPECTED_VERSION_ONLY_FIELDS = ("evt", "exe")
 CLI_DISPATCH_GROUPS = (
     "run",
     "gate.evaluate",
+    "history.bootstrap",
+    "history.migrate",
+    "history.recover",
     "journal.verify",
     "promotion.evaluate",
     "suite.freeze",

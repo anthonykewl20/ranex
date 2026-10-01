@@ -15,7 +15,7 @@ from unittest.mock import patch
 import _github_fake
 
 from ranex.github_app.client import ClientRefusal
-from ranex.github_app.receiver import process_delivery, refresh_awaiting
+from ranex.github_app.receiver import _awaiting_path, process_delivery, refresh_awaiting
 
 event_body = _github_fake.pull_request_event_body
 
@@ -40,7 +40,7 @@ def test_an_absent_verdict_head_is_remembered_even_when_publication_refuses(
         assert status == 500
         assert env.fake.check_requests == []
         # The head must already be remembered: the outage must not lose it.
-        awaiting = tmp_path / "state" / "awaiting" / f"{env.head}.json"
+        awaiting = _awaiting_path(env.config, env.head, 1, "owner/name")
         assert awaiting.exists(), (
             "a head whose action_required publication was refused must still be "
             "remembered for the periodic refresh (ADR-054)"
@@ -56,7 +56,7 @@ def test_a_refused_refresh_keeps_the_head_for_the_next_pass(tmp_path) -> None:
     with _github_fake.receiver_environment(tmp_path, with_verdict=False) as env:
         process_delivery(env.config, env.state, event_body(env.head), "d-1", "pull_request")
         _land_verdicts(tmp_path, env)
-        awaiting = tmp_path / "state" / "awaiting" / f"{env.head}.json"
+        awaiting = _awaiting_path(env.config, env.head, 1, "owner/name")
 
         def refused(*args, **kwargs):
             raise ClientRefusal("E-GITHUB-API-REFUSED", "injected outage")
