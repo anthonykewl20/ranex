@@ -1,6 +1,6 @@
 # ADR-071 — central settings layer
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-10-01
 **Decision-makers:** repo owner
 **Issue:** #224
