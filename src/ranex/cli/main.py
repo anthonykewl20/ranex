@@ -431,10 +431,71 @@ def admit_records(
     records, _removed = load_reconciled_records(path)
     admission = admit(records, keyring)
     if repository_root is not None:
-        admission = refuse_executables_inside(admission, len(records), repository_root)
+        admission = refuse_executables_inside(admission, records, repository_root)
     if gate_id is None or catalog_digest is None:
         return admission
     return refuse_foreign_policy_context(admission, records, gate_id, catalog_digest)
+
+
+def _checked_record_pairs(
+    admission: Admission, records: Sequence[Any],
+) -> tuple[tuple[int, Evidence], ...] | Admission:
+    """Check the order-preserving admission contract before using raw fields.
+
+    Equal lengths alone cannot establish identity. Compare every kernel field
+    with its signed source, and refuse ambiguous duplicate envelopes. A broken
+    contract is data to refuse, not an exception or permission to truncate.
+    """
+    refused = {rejection.index for rejection in admission.rejections}
+    positions = [index for index in range(len(records)) if index not in refused]
+    pairs = tuple(zip(positions, admission.evidence))
+    valid = (
+        len(positions) == len(admission.evidence)
+        and len(refused) == len(admission.rejections)
+        and all(0 <= index < len(records) for index in refused)
+    )
+    identities: set[str] = set()
+    try:
+        for index, item in pairs:
+            record = records[index]
+            if not isinstance(record, Mapping):
+                valid = False
+                break
+            identity = canonical_sha256(record)
+            if identity in identities:
+                valid = False
+            identities.add(identity)
+            for field in (
+                "claim_id", "subject_digest", "producer_id", "command",
+                "command_digest", "executable_path", "exit_code", "suite_results",
+            ):
+                source = record[field]
+                if field == "suite_results" and record["claim_id"] == "host-qualification":
+                    source = None  # The closed qualification report is checked by admit.
+                if source != getattr(item, field):
+                    valid = False
+    except (KeyError, TypeError, ValueError, UnicodeError):
+        valid = False
+    if valid:
+        return pairs
+    added = tuple(
+        Rejection(
+            index=index,
+            reason=RejectionReason.MALFORMED_RECORD,
+            detail="evidence/record identity is missing, duplicate, or mismatched",
+            producer_id=(records[index].get("producer_id")
+                         if isinstance(records[index], Mapping)
+                         and isinstance(records[index].get("producer_id"), str) else None),
+            claim_id=(records[index].get("claim_id")
+                      if isinstance(records[index], Mapping)
+                      and isinstance(records[index].get("claim_id"), str) else None),
+        )
+        for index in positions
+    )
+    return Admission(
+        evidence=(),
+        rejections=tuple(sorted(admission.rejections + added, key=lambda r: r.index)),
+    )
 
 
 def refuse_foreign_policy_context(
@@ -457,21 +518,21 @@ def refuse_foreign_policy_context(
 
     Read from the raw records rather than from admitted `Evidence`, because the
     kernel dataclass carries no policy fields and adding them would move the
-    kernel for a check that does not need it. `admit` produces exactly one
-    outcome per record, so the admitted evidence lines up in order with the
-    record positions no rejection claimed — the same alignment
-    `refuse_executables_inside` relies on.
+    kernel for a check that does not need it. Admission preserves record order;
+    `_checked_record_pairs` verifies lengths and signed identity before either
+    this filter or executable containment may use that alignment.
 
     Refused rather than dropped. The record exists and is signed; reporting it
     as absence would file "work done under other rules" as work never done.
     """
 
-    already_refused = {rejection.index for rejection in admission.rejections}
-    positions = [i for i in range(len(records)) if i not in already_refused]
+    pairs = _checked_record_pairs(admission, records)
+    if isinstance(pairs, Admission):
+        return pairs
 
     kept: list[Evidence] = []
     added: list[Rejection] = []
-    for index, item in zip(positions, admission.evidence, strict=True):
+    for index, item in pairs:
         record = records[index]
         record_gate = record.get("gate_id") if isinstance(record, Mapping) else None
         record_catalog = record.get("catalog_digest") if isinstance(record, Mapping) else None
@@ -531,7 +592,7 @@ def refuse_foreign_policy_context(
 
 def refuse_executables_inside(
     admission: Admission,
-    record_count: int,
+    records: Sequence[Any],
     repository_root: Path,
 ) -> Admission:
     """Refuse records whose executable lives in the tree they describe.
@@ -547,17 +608,17 @@ def refuse_executables_inside(
     Refused rather than quietly dropped. The record exists and is signed, so
     reporting it as absence would file an attack under work never done.
 
-    `admit` produces exactly one outcome per record, so the admitted evidence
-    lines up in order with the record positions no rejection claimed. That is
-    what lets a rejection raised here still name the record a human must open.
+    Admission preserves order, and `_checked_record_pairs` checks identity
+    before attributing a containment refusal to a signed record.
     """
 
-    already_refused = {rejection.index for rejection in admission.rejections}
-    positions = [i for i in range(record_count) if i not in already_refused]
+    pairs = _checked_record_pairs(admission, records)
+    if isinstance(pairs, Admission):
+        return pairs
 
     kept: list[Evidence] = []
     added: list[Rejection] = []
-    for index, item in zip(positions, admission.evidence, strict=True):
+    for index, item in pairs:
         executable = Path(item.executable_path)
         if not executable.is_absolute():
             detail = (
