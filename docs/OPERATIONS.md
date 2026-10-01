@@ -7,6 +7,27 @@ Start with the public quickstart for a small real-repository demonstration.
 
 ## Running it
 
+After committing the policy, public keyring and frozen test manifest,
+provisioning dependencies and configuring the signing key, initialize the
+independently retained history checkpoint before the first judgment:
+
+```sh
+export RANEX_APPROVER_SIGNING_KEY=$HOME/.config/ranex/approver.key
+export RANEX_VERDICT_SIGNING_KEY=$HOME/.config/ranex/verdict.key
+export RANEX_HISTORY_CHECKPOINT=$HOME/.local/state/ranex/my-repository-history.json
+uv run --frozen ranex history bootstrap
+uv run --frozen ranex run \
+  --claim tests-executed --producer worker -- uv run pytest -q
+uv run --frozen ranex gate evaluate HEAD --approver release-approver
+uv run --frozen ranex journal verify
+```
+
+The committed keyring must register the separate `kernel-verdict-signer`
+public key. `history bootstrap` creates a new external checkpoint for empty
+history; existing observation logs require explicit `history migrate`.
+`history recover` repairs an interrupted append/publication under the trusted
+service key. These operations refuse to reset an existing checkpoint.
+
 ```sh
 uv run --frozen pytest -q
 
