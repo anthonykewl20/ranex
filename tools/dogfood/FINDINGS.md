@@ -39,35 +39,11 @@ match the kernel silently.
   governed arm is byte-identical before and after the change (elapsed
   zeroed) on the pinned task; environment digests are stable across 3
   repeats per arm.
+- The proving driver is `tools/dogfood/bare_purity_probe.py` — prove the
+  two-arm benchmark's bare arm is actually bare (its `--contaminate`
+  channels are the negative controls above).
 
-### F-040 — census baseline drift; both blockers answered 2026-09-11 (was OPEN on the owner)
-
-Both causes this finding was blocked on have been addressed by the session that
-wrote the code it was blocked by, so it no longer waits on the owner.
-
-Cause 2, the undeclared environment skips in `tests/e2e/test_scan_claim_real.py`,
-is fixed rather than declared. The loop's reading — "declaring them is a frozen
-manifest owner act" — would have frozen the wrong thing: the arms were skipping
-because a hermetic run pins `PATH` to `/usr/bin:/bin` AND redirects `HOME`, so
-both the PATH lookup and a `Path.home()` fallback missed ruff. Declaring that as
-an expected skip would have made a suite that stops running inside the
-materialisation look intended. The binary is now resolved from the passwd
-database, which neither variable can move, and the arms run there: verified
-`PATH=/usr/bin:/bin HOME=<scratch> pytest tests/e2e/test_scan_claim_real.py` ->
-14 passed. `tests/e2e/test_gating_real_suite.py` is green end to end,
-15 passed 4 skipped, with `skipped_ids <= declared_skip_ids` holding.
-
-Cause 1, the `/etc/ld.so.cache` build-input drift in the strict-local session
-arm, does not reproduce here: that arm now **skips** rather than failing, because
-F-035 made an absent launcher refuse as `HOST-FACT-MISSING` instead of
-`EXEC-OBJECT-DRIFT`, and an unqualified host is a declared skip rather than a
-red. The underlying re-trace question is real and unchanged — a traced input
-that moves does require a deliberate re-trace — but it is not currently blocking
-a green suite, so the census re-record is no longer gated on it.
-
-Original entry follows.
-
-### F-040 (as filed by the loop) — census baseline drift from the SARIF/absence-semantics slices
+### F-040 — census baseline drift from the SARIF/absence-semantics slices
 
 - Anchor: three committed slices since the iteration-27 baseline
   (`2e048a0c4`), most visibly `54b622288` (arm 8 — SARIF 2.1.0 scan claim)
@@ -96,6 +72,31 @@ Original entry follows.
   (locally reverted unpushed when the full suite came back red), re-iterate
   confirming the re-record would have closed the drift. Left open for the
   owner exactly as iteration 29 did.
+
+**Answer 2026-09-11 — both blockers answered (was OPEN on the owner):**
+
+Both causes this finding was blocked on have been addressed by the session that
+wrote the code it was blocked by, so it no longer waits on the owner.
+
+Cause 2, the undeclared environment skips in `tests/e2e/test_scan_claim_real.py`,
+is fixed rather than declared. The loop's reading — "declaring them is a frozen
+manifest owner act" — would have frozen the wrong thing: the arms were skipping
+because a hermetic run pins `PATH` to `/usr/bin:/bin` AND redirects `HOME`, so
+both the PATH lookup and a `Path.home()` fallback missed ruff. Declaring that as
+an expected skip would have made a suite that stops running inside the
+materialisation look intended. The binary is now resolved from the passwd
+database, which neither variable can move, and the arms run there: verified
+`PATH=/usr/bin:/bin HOME=<scratch> pytest tests/e2e/test_scan_claim_real.py` ->
+14 passed. `tests/e2e/test_gating_real_suite.py` is green end to end,
+15 passed 4 skipped, with `skipped_ids <= declared_skip_ids` holding.
+
+Cause 1, the `/etc/ld.so.cache` build-input drift in the strict-local session
+arm, does not reproduce here: that arm now **skips** rather than failing, because
+F-035 made an absent launcher refuse as `HOST-FACT-MISSING` instead of
+`EXEC-OBJECT-DRIFT`, and an unqualified host is a declared skip rather than a
+red. The underlying re-trace question is real and unchanged — a traced input
+that moves does require a deliberate re-trace — but it is not currently blocking
+a green suite, so the census re-record is no longer gated on it.
 
 ### F-028 — the paused-fetch driver raced its own ignored probe
 
@@ -249,7 +250,7 @@ writer fairness or establish its original root cause. Evidence:
 ### F-003 (CONFIRMED, environmental prerequisite) — governing third-party repos needs a vendored CLI and root-installed test tooling
 
 - Verified 2026-09-03 while building the OSS two-arm benchmark:
-  1. `governed_repository_root()` (cli/repository.py:331) resolves the
+  1. `governed_repository_root()` (cli/repository.py:333) resolves the
      governed repo from the CLI's own location, NOT caller cwd — so the CLI
      governs the repo that contains it. Governing a third-party task repo
      requires vendoring `src/ranex` into that repo and running with
@@ -281,7 +282,7 @@ writer fairness or establish its original root cause. Evidence:
 - Anchor: `tools/dogfood/oss_bench/run_divergence.py:102` built the governed
   claim command as `pytest -q --rootdir=. --junitxml=… <ids>` with no
   `-o xfail_strict=true`; the kernel's `reject_pytest_xfail_blindness`
-  (`src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:147`,
+  (`src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:223`,
   the F-010 hardening) refuses exactly that shape, so every governed arm of
   the 2026-09-09 batch returned `gate=ERROR` (`ranex run` exit 2) instead of
   a verdict.
@@ -362,6 +363,8 @@ writer fairness or establish its original root cause. Evidence:
 - Earlier history retained: 2026-09-05 `--expected-head` (operator-retained
   anchor), the 2026-09-03 audit source, the closed canonical-JSON and
   `argv[3]` items.
+- `tools/dogfood/journal_anchor_journey.py` — verify retained live signed
+  journal anchors and refuse invalid anchor inputs.
 
 ### F-002 (CLOSED 2026-09-08) — session/location-dependent skip arms are now explicitly declared
 
@@ -379,16 +382,17 @@ and
 `tests/e2e/test_gating_real_suite.py::test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted`
 skip mid-test at `record_host_qualification`'s `qualified_host` probe when
 the session's delegated cgroup lacks a controller (observed live: "the
-delegated cgroup is missing required controllers: cpu"). Both arms are now
-declared `ranex-context:host-capability:` (166 → 168 declarations) — the
-tier the cross-check reports but never byte-compares — so a plain shell, a
-delegated scope, a fresh worktree and the sealed freeze all observe declared
-skips only. The finding's open counting question is answered: `suite freeze`
+delegated cgroup is missing required controllers: cpu"). Current disposition:
+both arms are in `suite` and **undeclared** at the current tree —
+`governance/suite_manifest.json`'s `expected_skips` carries neither ID — so
+the declared-skips-only outcome is not in place. The finding's open counting question is answered: `suite freeze`
 never counts observed skips — `freeze_manifest` freezes the observed junitxml
 ID set and carries the `--expected-skip` declarations verbatim — so the
 manifest's total is the declaration count across contexts (host-capability
 71, hermetic-freeze 87, delegated-scope 4, fanout-gated 1, operator-action 2,
-probe-backed signing_key 3), never one run's skip count; the historical
+probe-backed signing_key 3 — historical figures as filed 2026-09-08; the live
+per-context totals live in `governance/suite_manifest.json`), never one run's
+skip count; the historical
 166-vs-34/59 divergence was the manifest describing several contexts at
 once, which is its design. Final-commit verification in both session shapes
 is recorded in issue #91. No kernel file changed.
@@ -511,6 +515,9 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   `xdist_probe.py` runs with ephemeral `pytest-xdist==3.8.0`; the live driver
   exposes `--mutation explicit-xpass --installed-kernel` for prepared probe
   repositories. Live runs require configured credentials and create/merge PRs.
+- The live driver is `tools/dogfood/live_evidence_evaluation.py` — real
+  GitHub-origin webhooks and fresh upstream Six evidence (its `--mutation`
+  probes the prepared repositories above).
 - Historical status for comparison, `--refs v0.1.0 HEAD` at kernel 22a46a9eb:
   `nonstrict-xpass` was **GAP at both refs**. `strict-xpass`, `xfail`, `undeclared-skip` and
   `deselected-test` are VERIFIED at both. The audit's gap_detail now names this
@@ -559,9 +566,10 @@ discovers the enclosing repository and — documented git behavior — silently
 ignores patched paths outside the current directory, exiting 0 with nothing
 applied. The "task base (+gold)" commit then carried the 3-line empty stub,
 every governed run exited 1, and the gold arm's gate FAILed on bare-proven
-6/6-green code: a harness-produced FALSE REJECTION at v0.1.005
-(`.local/campaign/twoarm-v005-semver/validation.json`; kernel verdict honest on
-its inputs). Prior studies ran with `--out` outside any worktree, where
+6/6-green code: a harness-produced FALSE REJECTION at v0.1.005 (the
+validation receipt is operator-local scratch at
+.local/campaign/twoarm-v005-semver/validation.json — gitignored, not
+committed; kernel verdict honest on its inputs). Prior studies ran with `--out` outside any worktree, where
 no-index apply works — the fault only appears in the inside-checkout layout.
 Closed by initializing the nested repository before any patch application.
 Post-fix, the identical inside-checkout invocation reports bare gold 6/6 vs
@@ -585,8 +593,8 @@ Receipt: `audits/2026-09-06-harness-faults/` (issue #89).
 
 At v0.1.004 (85037d1d9) the canonical `uv run --frozen pytest -q` failed on
 the qualified operator host with 9 failures while release CI reported green:
-`_tracked_markdown()` (tests/contract/test_docs_discipline.py:117) walks the
-filesystem with `REPO_ROOT.rglob("*.md")`, and `_SKIP_DIRS` (line 24) omitted
+`_tracked_markdown()` (tests/contract/test_docs_discipline.py:123) walks the
+filesystem with `REPO_ROOT.rglob("*.md")`, and `_SKIP_DIRS` (line 25) omitted
 `.local`. The documented workflow retains real receipts under gitignored
 `.local/` — the #84 release-validation clones under
 `.local/public-release/quickstart*/**` carry full documentation trees — so the
@@ -599,8 +607,9 @@ finding. Controls on the fixed tree: a stray `CAMPAIGN-SCRATCH.md` at the
 repository root still fails the cap (1 failed, 2026-09-06), and the same file
 under `.local/` passes (1 passed). No repository document left the cap's
 scope; no assertion was weakened. Evidence: issue #85 and the baseline run
-receipt in `.local/campaign/baseline-pytest.log` (9 failed, 1750 passed,
-36 skipped at 85037d1d9, 1559.86s).
+receipt (operator-local scratch at .local/campaign/baseline-pytest.log —
+gitignored, not committed; 9 failed, 1750 passed, 36 skipped at 85037d1d9,
+1559.86s).
 
 ### F-032 — the cold-start journey pinned the pre-rewrite README and failed on the qualified host
 
@@ -742,7 +751,7 @@ artifact refusals; no unobserved test outcomes are invented. Evidence:
 
 Historical observation retained:
 
-- Anchor: `src/ranex/foundation/suite_results.py:125` (`_test_id` refuses a
+- Anchor: `src/ranex/foundation/suite_results.py:135` (`_test_id` refuses a
   testcase whose `classname` is empty) and the run's `ERROR  junitxml testcase
   must carry classname and name` (run exit 2).
 - Verified 2026-09-03 by the dogfood trainer's preflight over the real
@@ -759,7 +768,7 @@ Historical observation retained:
   misfiling the kernel elsewhere refuses to make (see `_diagnosis`,
   verdict.py:291-306, and the admission header's trust-chain note).
 - Behaviour is fail-closed (verdict never wrong); the defect is diagnostic.
-- Pinned by: trainer corpus class `corpus/preflight-failed` with reason
+- Pinned by: trainer classification `preflight-failed` with reason
   `junitxml testcase must carry classname and name` (23 tasks, cached in
   `tools/dogfood/training/corpus.json`), plus the probe transcript above.
   Candidate kernel direction (owner decision — suite trust surface, not to
@@ -1047,7 +1056,7 @@ real code and were corrected by reading the source, not by relaxing the check:
 `Gate` requires an explicit `blocking=True` argument (a non-blocking gate is
 refused at construction — `verdict.py:208`), `Journal.append` takes structured
 records with `.as_record()` (not dicts), and junitxml test IDs are synthesised
-as `classname.py::name` (`suite_results.py:129`). Recorded because it is the
+as `classname.py::name` (`suite_results.py:135`). Recorded because it is the
 loop working as designed: assumptions die when they meet the parser.
 
 ## Receiver retry storm after restart — F-037 (2026-09-08)
