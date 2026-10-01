@@ -76,7 +76,7 @@ settings foundation, each with its own issue in milestone #9, in C4's order
 new literals of the migrated kinds in `src/` outside `settings.py`, trust pins
 and the platform table.
 
-### Decisions C1–C6 (captain decisions resolving review 014 F1–F5; C1–C6 win over D1–D7 on conflict)
+### Decisions C1–C6 (captain decisions resolving review 014 F1–F5; C1–C6 win over D1–D7 on conflict, and E1–E3 win over C1–C6 and D1–D7)
 
 **C1 (F1) Scope per key.** Every key in `settings.py` carries
 `scope = policy | mechanics`. Classification rule: any key read on an
@@ -121,7 +121,9 @@ the repository or a persistent path.
 loader, schema with scope metadata, `settings_digest`, admission check behind
 `requires_settings_binding`, `ranex settings show|get` CLI, and the contract
 test that forbids new literals of migrated kinds in `src/` outside
-`settings.py`, trust pins and the platform table. Then one PR per section, each
+`settings.py`, trust pins and the platform table (E1 adds the v6 envelope,
+version dispatch, live-acceptance binding and gate-catalog flag to PR-0).
+Then one PR per section, each
 its own issue, in this order: catalogs, github, witness, execution,
 supervisor/confinement/launcher, journal/history/logs/redaction/observability,
 subject/delegation/repair/qualification, acceptance/observer, toolchain, ci,
@@ -130,9 +132,11 @@ exactly one of these; the migration table states rows per section and the
 counts reconcile to the inventory's 120 CONFIG-CANDIDATE + 39
 AGNOSTIC-VIOLATION. Native launcher: its limits are generated into a C header
 from the Python platform/settings table at build time, with a test that the
-header matches. CI workflows and tools read values via `ranex settings get
-<key>`. Migration starts after the remediation integration (order 011) merges,
-so remediation-only files are covered.
+header matches. Committed CI workflows are generated from central settings by
+`ranex settings render-ci` with drift validation; tools and workflow steps read
+step-time values via `ranex settings get <key>` (E2). Migration starts after
+the remediation integration (order 011) merges, so remediation-only files are
+covered.
 
 **C5 (F4/D5) Platform table.** `src/ranex/foundation/platform.py` maps (os,
 arch) to syscall numbers, loader paths and triples; unsupported platforms are
@@ -141,6 +145,34 @@ refused, never configured.
 **C6 (F5) Wording.** Say "no centralized typed settings layer exists" (catalogs
 do exist); configurable defaults live only in `settings.py`; scattered new
 literals of migrated kinds are forbidden.
+
+### Decisions E1–E3 (captain decisions resolving re-review 016 N1–N3; E1–E3 win over C1–C6 and D1–D7 on conflict)
+
+**E1 (N1) Authenticated settings binding.** The settings binding is carried in
+a versioned evidence envelope: version 6 = the v5 `SIGNED_FIELDS` of
+`src/ranex/foundation/signing.py` plus `settings_digest` and
+`settings_schema_version`, both signed. Producers emit v6 once PR-0 lands; the
+verifier dispatches by envelope version; v5 evidence is accepted only for gates
+whose catalog does not declare `requires_settings_binding: true`. PR-0 owns:
+`signing.py` (v6 fields + version dispatch), `admission.py` (digest check vs
+the evaluated ref), `src/ranex/cli/acceptance_task.py` and
+`src/ranex/bootstrap/composition.py` (the live-acceptance path must apply the
+same binding check before calling evaluate; it may not bypass admission), and
+gate catalog support for `requires_settings_binding`. `verdict.py` stays
+byte-identical.
+
+**E2 (N2) CI consumption.** Committed workflow files are GENERATED from central
+settings by a ranex command (`ranex settings render-ci`), and a contract test
+fails when the committed workflows differ from the render (drift validation).
+Static fields (triggers, schedules, branches, runner, setup-python version)
+come from that generation; step-time values use `ranex settings get <key>`. The
+ci section PR owns the generator and the drift test; the default-branch
+projection is owned by the github section.
+
+**E3 (N3) Digest-invalidation wording.** "Any change to
+`governance/settings.toml`" is replaced by "any change to the resolved policy
+subset or its settings schema version": mechanics-only edits, comments and
+equivalent TOML representations do not change `settings_digest`.
 
 ## Consequences
 
@@ -166,8 +198,9 @@ Bad:
   refuse to load, so a bad `settings.toml` blocks the run instead of degrading
   gracefully (D2).
 - Recording the policy digest in every evidence record means any change to
-  `governance/settings.toml` changes `settings_digest` and breaks continuity
-  with prior evidence — deliberate, but it makes settings edits weighty (C1).
+  the resolved policy subset or its settings schema version changes
+  `settings_digest` and breaks continuity with prior evidence — deliberate,
+  but it makes settings edits weighty (C1, E3).
 - Host operators can no longer tune policy from outside the repository: a
   host-file, env or CLI attempt on a policy key is refused, which some
   deployments will call inflexible (D3, C2).
@@ -230,6 +263,8 @@ confinement, `antislop.*`/`oss_bench.*`/`trainer.*` to `dogfood.*`,
 `provisioning.store_root` to `toolchain.*`, `site.benchmark_url` to `github.*`).
 The 10 `commit=rem` rows (9 CONFIG-CANDIDATE, 1 TRUST-PIN) are covered by the
 sections above and are migrated only after the remediation integration (order
-011) merges (C4). CI workflows and tools consume values via `ranex settings get
-<key>` (C4). Every migration PR keeps current values as defaults, so each is
-behaviour-identical before any operator opts into a settings file.
+011) merges (C4). Committed CI workflows are generated by `ranex settings
+render-ci` with drift validation, and step-time values are consumed via `ranex
+settings get <key>` (C4, E2). Every migration PR keeps current values as
+defaults, so each is behaviour-identical before any operator opts into a
+settings file.
