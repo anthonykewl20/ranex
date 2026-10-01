@@ -36,3 +36,6 @@ governance/evidence.json
 # Signed verdict read channel; runtime state, never part of its own subject.
 governance/verdicts/
 .worktrees/
+
+# Firstmate crew fleet for this repo (code root + operational home); local only.
+/.local/firstmate/
