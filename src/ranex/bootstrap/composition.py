@@ -77,6 +77,7 @@ class GateEvaluator:
         *,
         subject_digest: str,
         approver_id: str,
+        settings_binding_verified: bool = False,
     ) -> Evaluation:
         """The verdict alone, for the callers that do not publish one."""
 
@@ -85,6 +86,7 @@ class GateEvaluator:
             evidence,
             subject_digest=subject_digest,
             approver_id=approver_id,
+            settings_binding_verified=settings_binding_verified,
         )
         return evaluation
 
@@ -95,6 +97,7 @@ class GateEvaluator:
         *,
         subject_digest: str,
         approver_id: str,
+        settings_binding_verified: bool = False,
     ) -> tuple[Evaluation, str | None]:
         """Evaluate, and return the journal chain link this evaluation created.
 
@@ -109,6 +112,10 @@ class GateEvaluator:
         """
         catalog_digest = catalog_digest_for(self.gate_catalog)
         definition = load_gate_text(self.gate_catalog.decode("utf-8"), gate_id)
+        if definition.requires_settings_binding and not settings_binding_verified:
+            raise ValueError(
+                f"gate {gate_id!r}: settings binding requires the CLI admission path"
+            )
         expectations: dict[str, tuple[str, tuple[str, ...], dict[str, str]]] = {}
         for claim in definition.required_claims:
             if claim.results_artifact is None:

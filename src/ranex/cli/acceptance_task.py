@@ -59,6 +59,14 @@ _ENV=re.compile(r'[A-Z_][A-Z0-9_]*\Z')
 
 def refuse(detail): raise ValueError('E-TASK-'+detail)
 
+
+def live_acceptance_gate(command_digest: str, *, requires_settings_binding: bool = False) -> Gate:
+    """Unsigned observer receipts cannot opt into settings binding (issue #236)."""
+    if requires_settings_binding:
+        refuse('SETTINGS-BINDING: live-acceptance requires issue #236')
+    return Gate('live-acceptance', 'frozen-live-observations',
+                (Claim('live-acceptance', command_digest),), True)
+
 def require(condition,detail):
     if not condition: refuse(detail)
 
@@ -118,7 +126,7 @@ class Task:
         expected={'module':module_digest(),'worker':self.context['worker'],'identities':self.context['identities']}
         require(payload_digest(expected)==self.payload['profile_digests']['harness'],'DRIFT: task controller or worker profile changed')
         self.candidate=self.root/'candidate';self.journal=Journal(self.root/'journal.sqlite3')
-        self.gate=Gate('live-acceptance','frozen-live-observations',(Claim('live-acceptance',self.context['command_digest']),),True)
+        self.gate=live_acceptance_gate(self.context['command_digest'])
         raw=read(self.root/'verdict.json');content={key:raw['record'][key] for key in SIGNED_FIELDS}
         signature=raw['signatures'][0]
         require(raw['payload_type']==PAYLOAD_TYPE and signature['signer_id']=='task-publisher' and verify_verdict(content,signature['signature'],self.context['identities']['publisher'],payload_type=raw['payload_type']),'ANCHOR: invalid publisher signature')
@@ -227,7 +235,7 @@ def approve(args, previous=None):
             with os.fdopen(fd,'w') as stream: stream.write(keys['publisher'][0])
         journal=Journal(state/'journal.sqlite3')
         for value in (issued.approved_event,issued.implementable_event,issued.grant_issued_event):journal.append_if_head(journal.head() if (state/'journal.sqlite3').exists() else None,value)
-        gate=Gate('live-acceptance','frozen-live-observations',(Claim('live-acceptance',checked['command_digest']),),True)
+        gate=live_acceptance_gate(checked['command_digest'])
         evaluation=evaluate(gate,(),subject_digest=subject,catalog_digest=payload_digest(b),approver_id=args.principal)
         content={**evaluation.as_record(),'rejections':[],'journal_head':journal.head(),'observation_checkpoint':None,'history_verified':False}
         publish_verdict(state/'verdict.json',{**content,'record_digest':'sha256:'+canonical_sha256(content)},root=state,signer_id='task-publisher',private_key=keys['publisher'][0])

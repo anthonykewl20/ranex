@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TypedDict
 
 from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.platform import current
 
 try:
     from elftools.common.exceptions import ELFError
@@ -30,8 +31,8 @@ _PREFIX = {"loader": "loader/", "entrypoint": "bin/", "shared-library": "lib/",
            "native-extension": "lib/", "runtime-data": "data/"}
 _TAGS = ("rpath", "runpath", "filter", "auxiliary", "audit", "depaudit")
 _SHA = re.compile(r"sha256:[0-9a-f]{64}\Z")
-_LOADER_NAME = "ld-" + "linux-x86-64.so.2"
-_LOADER_SELF_ID = "/lib64/" + _LOADER_NAME
+_LOADER_NAME = current().loader_name
+_LOADER_SELF_ID = current().loader_path
 _F_SEAL_WRITE = 0x0008
 _F_SEAL_GROW = 0x0004
 _F_SEAL_SHRINK = 0x0002
