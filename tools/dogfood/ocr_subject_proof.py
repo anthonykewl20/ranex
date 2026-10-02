@@ -92,7 +92,7 @@ QUALIFICATION = ".local/ranex/qualification/strict-local-v1.json"
 
 WORKER = "ocr-subject-worker"
 APPROVER = "ocr-subject-approver"
-SIGNER = "ocr-subject-signer"
+SIGNER = "kernel-verdict-signer"
 EVIDENCE = ".local/ranex-105/evidence.json"
 
 # The bound command: the pinned OCR binary's own SARIF-writing review argv.
@@ -1517,6 +1517,8 @@ def main() -> int:
 
     summary = {
         "proof_commit": _git(REPOSITORY, "rev-parse", "HEAD"),
+        "execution_note": "proof run under umask 022 pending https://github.com/anthonykewl20/ranex/issues/241",
+        "verdict_signer": SIGNER,
         "completed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "host": host["hostname"],
         "issue": 105,
