@@ -8,6 +8,7 @@ in GitHub milestone #9 (umbrella #186).
 
 Documentation is synchronised with the code (PRs #228-#232, #234): README,
 OPERATIONS, STATE, MAP, dogfood docs, ADR/slice status lines.
+Removed stray tool output (.playwright-mcp, .video_agent); ignored going forward.
 
 Central settings (ADR-071, accepted; issue #226):
 - PR-0a merged (#235): `ranex.foundation.settings` (catalogs section, scoped
