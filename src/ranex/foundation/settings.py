@@ -41,6 +41,13 @@ class Catalogs:
 
 
 @dataclass(frozen=True)
+class Witness:
+    url: str = setting("url", "https://rekor.sigstore.dev", "mechanics", "Transparency log base URL")
+    log_public_key_path: str = setting("log_public_key_path", "governance/rekor_public_key.pem", "policy", "Transparency log public key")
+    request_timeout_seconds: int = setting("request_timeout_seconds", 60, "mechanics", "Transparency log request timeout")
+
+
+@dataclass(frozen=True)
 class Github:
     check_name: str = setting("check_name", "ranex/acceptance", "policy", "Required check context")
     ruleset_name: str = setting("ruleset_name", "ranex-acceptance", "policy", "Repository ruleset name")
@@ -52,7 +59,7 @@ class Github:
     evaluation_timeout_seconds: int = setting("evaluation_timeout_seconds", 60, "mechanics", "Evaluation subprocess timeout")
 
 
-SCHEMA: Mapping[str, type] = MappingProxyType({"catalogs": Catalogs, "github": Github})
+SCHEMA: Mapping[str, type] = MappingProxyType({"catalogs": Catalogs, "github": Github, "witness": Witness})
 
 
 @dataclass(frozen=True)
@@ -104,6 +111,11 @@ class Settings:
     @property
     def catalogs(self) -> Catalogs:
         return self.sections["catalogs"]
+
+    @property
+    @property
+    def witness(self) -> Witness:
+        return self.sections["witness"]
 
     @property
     def github(self) -> Github:

@@ -5,6 +5,10 @@ Collection journey (#270): supplies signing/history inputs and ignores generated
 **Updated:** 2026-10-02
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
+- Settings migration 3 part A: new `witness` section (url,
+  log_public_key_path, request_timeout_seconds) is the single source of the
+  witness defaults in `governed_execution/witness.py` (#268).
+
 Audit remediation: SLICE-104 merged via PR #227; open follow-ups are tracked
 in GitHub milestone #9 (umbrella #186). Static-worker closure tests skip on
 foreign hosts (#194 part 1).

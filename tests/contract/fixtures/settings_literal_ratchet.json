@@ -78,10 +78,6 @@
   "src/ranex/governed_execution/domain/admission.py": {
     "host-path": 14
   },
-  "src/ranex/governed_execution/witness.py": {
-    "governance-path": 1,
-    "url": 1
-  },
   "src/ranex/observability/emitter.py": {
     "host-path": 3
   },
