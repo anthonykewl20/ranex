@@ -245,7 +245,7 @@ def test_rejection_reason_set_is_closed(adm) -> None:
         "malformed-record", "missing-signature", "malformed-signature",
         "unknown-producer", "bad-signature", "stale-host-state",
         "executable-inside-subject", "policy-context-mismatch",
-        "unsupported-envelope",
+        "unsupported-envelope", "settings-binding-mismatch",
     }
 
 

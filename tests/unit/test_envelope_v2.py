@@ -6,7 +6,7 @@ import pytest
 
 from ranex.foundation import signing as sg
 from ranex.foundation.canonical import canonical_sha256
-from ranex.foundation.settings import load_settings, settings_digest
+from ranex.foundation.settings import load_settings, settings_digest, settings_schema_version
 
 CONTENT = {
     "claim_id": "tests-executed",
@@ -37,7 +37,7 @@ V1_SIGNATURE = (
 def v2():
     settings = load_settings(Path(__file__).resolve().parents[2], environ={})
     return {**CONTENT, "envelope_type": "ranex-evidence-envelope-v2",
-            "settings_digest": settings_digest(settings), "settings_schema_version": 1}
+            "settings_digest": settings_digest(settings), "settings_schema_version": settings_schema_version}
 
 
 def test_v1_round_trip():
@@ -81,6 +81,8 @@ def test_malformed_envelopes_refused(v2, change):
         content["settings_digest"] = ""
     else:
         content["settings_digest"] = None
-    with pytest.raises(ValueError, match="envelope_type" if change in {"unknown", "missing-type"} else None):
+    message = ("envelope_type" if change in {"unknown", "missing-type"}
+               else "must be exactly" if change == "extra-v1" else None)
+    with pytest.raises(ValueError, match=message):
         sg.sign_evidence(content, PRIVATE)
     assert not sg.verify_evidence(content, V1_SIGNATURE, PUBLIC)

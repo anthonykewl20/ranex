@@ -88,9 +88,11 @@ from ranex.foundation.scan_results import (
     parse_scan_artifact,
     validate_scan_manifest,
 )
+from ranex.foundation.settings import load_settings, settings_digest, settings_schema_version
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
+    ENVELOPE_TYPE_V2,
     generate_keypair,
     public_key_for,
     sign_evidence,
@@ -130,6 +132,7 @@ from ranex.governed_execution.domain.admission import (
     Rejection,
     RejectionReason,
     admit,
+    apply_settings_binding,
 )
 from ranex.governed_execution.domain.deps import DepsApproval, DepsDerivation
 from ranex.governed_execution.domain.task import (
@@ -430,6 +433,7 @@ def admit_records(
     history_checkpoint_path: Path | None = None,
     allow_unanchored_history: bool = False,
     held_history_lock: HistoryLock | None = None,
+    settings_binding: tuple[str, int] | None = None,
 ) -> Admission:
     """The same, from a keyring already in hand rather than a path to one.
 
@@ -460,9 +464,14 @@ def admit_records(
         )
     if repository_root is not None:
         admission = refuse_executables_inside(admission, records, repository_root)
-    if gate_id is None or catalog_digest is None:
-        return admission
-    return refuse_foreign_policy_context(admission, records, gate_id, catalog_digest)
+    if gate_id is not None and catalog_digest is not None:
+        admission = refuse_foreign_policy_context(admission, records, gate_id, catalog_digest)
+    if settings_binding is not None:
+        admission = apply_settings_binding(
+            admission, records, expected_digest=settings_binding[0],
+            expected_schema_version=settings_binding[1],
+        )
+    return admission
 
 
 def _checked_record_pairs(
@@ -1214,10 +1223,15 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         # gate and catalog digest are passed for the same reason: a record binds
         # the rulebook it was produced under, and a bound field nothing re-checks
         # is decoration.
+        settings_binding = (
+            (settings_digest(load_settings(root, evaluated_ref=args.ref)), settings_schema_version)
+            if definition.requires_settings_binding else None
+        )
         admission = admit_records(
             evidence_path,
             keyring,
             root,
+            settings_binding=settings_binding,
             gate_id=args.gate,
             catalog_digest=catalog_digest_for(catalog_source),
             history_public_key=load_trust_keyring_text(
@@ -1236,6 +1250,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             admission.evidence,
             subject_digest=subject,
             approver_id=args.approver,
+            settings_binding_verified=settings_binding is not None,
         )
         projected = project_verdict(
             result, admission,
@@ -1836,8 +1851,14 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
             args.evidence if args.evidence is not None else DEFAULT_EVIDENCE,
         )
         keyring = load_keyring_text(keyring_source.decode("utf-8"), args.producers)
+        definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
+        settings_binding = (
+            (settings_digest(load_settings(worktree, evaluated_ref=commit)), settings_schema_version)
+            if definition.requires_settings_binding else None
+        )
         admission = admit_records(
             evidence_path, keyring, worktree,
+            settings_binding=settings_binding,
             gate_id=args.gate, catalog_digest=catalog_digest_for(catalog_source),
             history_public_key=load_trust_keyring_text(
                 keyring_source.decode("utf-8"), args.producers,
@@ -1855,6 +1876,7 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
             admission.evidence,
             subject_digest=subject,
             approver_id=pending_approver,
+            settings_binding_verified=settings_binding is not None,
         )
         missing = result.missing_claims
         journal.append(TaskCandidate(args.task_id, args.gate, subject, missing))
@@ -2287,8 +2309,14 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         held_history_lock = history_transaction.enter_context(
             history_lock(checkpoint_path(getattr(args, "history_checkpoint", None), evidence_root))
         )
+        definition = load_gate_text(catalog_source.decode("utf-8"), gate_id)
+        settings_binding = (
+            (settings_digest(load_settings(repository_root, evaluated_ref=candidate)), settings_schema_version)
+            if definition.requires_settings_binding else None
+        )
         admission = admit_records(
             evidence_path, keyring, evidence_root,
+            settings_binding=settings_binding,
             gate_id=gate_id, catalog_digest=catalog_digest_for(catalog_source),
             history_checkpoint_path=held_history_lock.path,
             held_history_lock=held_history_lock,
@@ -2340,6 +2368,7 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         ).evaluate(
             gate_id, admission.evidence,
             subject_digest=actual_subject, approver_id=approver_id,
+            settings_binding_verified=settings_binding is not None,
         )
         if candidate_record.get("missing_claims") or result.verdict != Verdict.PASS:
             return _merge_refuse(journal, intent, "digest_evidence", "sad-path-5 satisfying-evidence-missing")
@@ -4271,6 +4300,13 @@ def cmd_run(args: argparse.Namespace) -> int:
                 else catalog_digest_for(catalog_source)
             ),
         }
+        if (catalog_source is not None
+                and load_gate_text(catalog_source.decode("utf-8"), args.gate).requires_settings_binding):
+            content.update(
+                envelope_type=ENVELOPE_TYPE_V2,
+                settings_digest=settings_digest(load_settings(root, evaluated_ref=started_at)),
+                settings_schema_version=settings_schema_version,
+            )
         signed_record = {**content, "signature": sign_evidence(content, private_key)}
         if strict_local_sources is None:
             record_evidence(

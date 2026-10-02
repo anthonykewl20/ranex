@@ -1,10 +1,19 @@
 # State
 
 **Updated:** 2026-10-02
-**Active slice:** docs/slices/SLICE-103-audit-findings-and-remediation.md
+**Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
 Audit remediation: SLICE-104 merged via PR #227; open follow-ups are tracked
-in GitHub milestone #9 (umbrella #186).
+in GitHub milestone #9 (umbrella #186). Static-worker closure tests skip on
+foreign hosts (#194 part 1).
+
+ADR-071 PR-0b settings binding enforcement on captain/binding-enforcement.
+- Catalog gates opt into settings-bound evidence with a boolean flag.
+- CLI admission compares signed envelope-v2 bindings with evaluated-commit settings.
+- Binding evaluators refuse bypasses; missing claims remain journaled FAILs.
+- Non-binding gates retain existing behavior; the verdict kernel is unchanged.
+- Live acceptance remains explicitly non-binding pending #236.
+- Next: PR-0c consumer migration for centralized settings.
 
 Documentation is synchronised with the code (PRs #228-#232, #234): README,
 OPERATIONS, STATE, MAP, dogfood docs, ADR/slice status lines.
@@ -12,6 +21,7 @@ Removed stray tool output (.playwright-mcp, .video_agent); ignored going forward
 
 Central settings (ADR-071, accepted; issue #226):
 - C4 literal ratchet guards src configuration literals; migrations must lower its baseline.
+- Platform table centralizes Linux x86-64 ABI facts and refuses unsupported platforms (C5).
 - PR-0a merged (#235): `ranex.foundation.settings` (catalogs section, scoped
   precedence, policy refusal, settings_digest, secret references) and
   `ranex settings show|get`. No consumer migrated yet.
