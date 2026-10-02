@@ -997,7 +997,7 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
 
         wall_ms = int((time.monotonic() - started) * 1000)
         common = {
-            "verdict_digest": digests1[0] if digests1 else "",
+            "record_digest": digests1[0] if digests1 else "",
             "record_digest": str(records[0]["record_digest"]) if records else "",
         }
         _record(
@@ -1040,13 +1040,13 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
             digests={
                 **common,
                 "repeats": f"{len(set(digests2))} distinct of {len(digests2)}",
-                "arm1_verdict_digest": digests1[0] if digests1 else "",
+                "arm1_record_digest": digests1[0] if digests1 else "",
             },
             notes=(
                 "same journey, same commit, model credential SET on the host "
                 f"(HOME config api_key + OCR_LLM_*/ANTHROPIC_* = probe values). "
                 f"verdict={[r['verdict'] for r in arm2_runs]} "
-                f"verdict_digests={digests2}; identical to arm 1: {digests2 == digests1} "
+                f"projected_record_digests={digests2}; identical to arm 1: {repeat_identical} "
                 "(INVARIANT: removing every model credential must not change a verdict). "
                 f"refused connect (real binary, real key, refused socket): "
                 f"exit={probe_set['exit']} refused={probe_set['refused_connect']} "
@@ -1074,7 +1074,7 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
                 "all": f"{len(set(digests1 + digests2))} distinct of {len(digests1 + digests2)}",
             },
             notes=(
-                f"arm1 x{len(digests1)} + arm2 x{len(digests2)} verdict digests: "
+                f"arm1 x{len(digests1)} + arm2 x{len(digests2)} projected record digests: "
                 f"{sorted(set(digests1 + digests2))}; every run FAILed on the "
                 "unsatisfied ocr-review claim with the artifact absent."
             ),
