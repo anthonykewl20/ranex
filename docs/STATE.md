@@ -1,5 +1,7 @@
 # State
 
+Collection journey (#270): supplies signing/history inputs and ignores generated verdict artifacts in its temporary repository.
+
 **Updated:** 2026-10-02
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
