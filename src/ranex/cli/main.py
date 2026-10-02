@@ -88,7 +88,12 @@ from ranex.foundation.scan_results import (
     parse_scan_artifact,
     validate_scan_manifest,
 )
-from ranex.foundation.settings import Github, load_settings, settings_digest, settings_schema_version
+from ranex.foundation.settings import (
+    Github,
+    load_settings,
+    settings_digest,
+    settings_schema_version,
+)
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
