@@ -47,7 +47,19 @@ class Witness:
     request_timeout_seconds: int = setting("request_timeout_seconds", 60, "mechanics", "Transparency log request timeout")
 
 
-SCHEMA: Mapping[str, type] = MappingProxyType({"catalogs": Catalogs, "witness": Witness})
+@dataclass(frozen=True)
+class Github:
+    check_name: str = setting("check_name", "ranex/acceptance", "policy", "Required check context")
+    ruleset_name: str = setting("ruleset_name", "ranex-acceptance", "policy", "Repository ruleset name")
+    identity_file: str = setting("identity_file", "identity.json", "mechanics", "App identity file name")
+    key_file: str = setting("key_file", "app.pem", "mechanics", "App private key file name")
+    webhook_secret_file: str = setting("webhook_secret_file", "webhook-secret", "mechanics", "Webhook secret file name")
+    token_refresh_margin_seconds: int = setting("token_refresh_margin_seconds", 60, "mechanics", "Installation token refresh margin")
+    fetch_timeout_seconds: int = setting("fetch_timeout_seconds", 30, "mechanics", "Pull request head fetch timeout")
+    evaluation_timeout_seconds: int = setting("evaluation_timeout_seconds", 60, "mechanics", "Evaluation subprocess timeout")
+
+
+SCHEMA: Mapping[str, type] = MappingProxyType({"catalogs": Catalogs, "github": Github, "witness": Witness})
 
 
 @dataclass(frozen=True)
@@ -101,8 +113,13 @@ class Settings:
         return self.sections["catalogs"]
 
     @property
+    @property
     def witness(self) -> Witness:
         return self.sections["witness"]
+
+    @property
+    def github(self) -> Github:
+        return self.sections["github"]
 
     def show(self) -> dict[str, Any]:
         return {section: {f.name: {"value": _value(getattr(instance, f.name)),

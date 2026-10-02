@@ -27,6 +27,10 @@ from typing import Any
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
+from ranex.foundation.settings import Github
+
+_GITHUB = Github()
+
 API_ROOT = "https://api.github.com"
 # The pinned API version of the docs this client was written against
 # (docs.github.com/rest, verified at this slice's landing). Bumped
@@ -46,7 +50,7 @@ OPERATOR_TOKEN_FALLBACK = "GITHUB_TOKEN"
 _IAT_DRIFT_SECONDS = 60
 _EXP_SECONDS = 600
 # Refresh a token this far ahead of its expiry, per the documented ~1h life.
-_TOKEN_REFRESH_MARGIN = 60
+_TOKEN_REFRESH_MARGIN = _GITHUB.token_refresh_margin_seconds
 
 
 class ClientRefusal(ValueError):

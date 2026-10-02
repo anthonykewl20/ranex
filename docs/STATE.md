@@ -1,5 +1,7 @@
 # State
 
+Collection journey (#270): supplies signing/history inputs and ignores generated verdict artifacts in its temporary repository.
+
 **Updated:** 2026-10-02
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
@@ -24,6 +26,7 @@ OPERATIONS, STATE, MAP, dogfood docs, ADR/slice status lines.
 Removed stray tool output (.playwright-mcp, .video_agent); ignored going forward.
 
 Central settings (ADR-071, accepted; issue #226):
+- GitHub App defaults now come from the eight-key `github` section (#258 part A; no runtime loading).
 - C4 literal ratchet guards src configuration literals; migrations must lower its baseline.
 - Platform table centralizes Linux x86-64 ABI facts and refuses unsupported platforms (C5).
 - PR-0a merged (#235): `ranex.foundation.settings` (catalogs section, scoped
@@ -41,3 +44,6 @@ Live-acceptance binding is tracked separately in #236.
 Dogfood finding ids F-035..F-037 de-duplicated (#233).
 OCR #221: v3 anchored-history receipts verify arms 0/1/2/3/5 and controls; arm 4 out of scope.
 C1 pairing check hardened (#223): `_checked_record_pairs` refuses malformed pairing inputs without raising; two refusal cases pinned.
+
+Install staging modes are umask-independent (#241): explicit fchmod at the
+launcher-install staging open; cgroup mkdir sites carry no exact-mode assertion.

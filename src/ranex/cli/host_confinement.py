@@ -1672,6 +1672,7 @@ def launcher_install(
                 0o555,
                 dir_fd=parent,
             )
+            os.fchmod(staged, 0o555)
             while block := os.read(opened.descriptor, 1024 * 1024):
                 view = memoryview(block)
                 while view:

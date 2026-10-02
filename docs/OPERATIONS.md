@@ -23,6 +23,7 @@ Mechanics precedence is defaults < repository `governance/settings.toml` <
 Policy precedence is defaults < repository settings at the evaluated ref
 (working-tree file when no ref is supplied); host/env/CLI policy overrides
 are refused. Merges are per key; `catalogs` keys are policy-scoped.
+The eight-key `github` section supplies GitHub App defaults (#258 part A); runtime settings loading is not wired yet.
 The policy digest includes the settings schema version; mechanics-only
 changes do not change it.
 

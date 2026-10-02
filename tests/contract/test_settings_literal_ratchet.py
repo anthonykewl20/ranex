@@ -1,11 +1,11 @@
 """Ratchet configuration literals until centralized-settings migrations remove them."""
 
 import ast
-from collections import Counter
 import json
-from pathlib import Path
 import re
 import sys
+from collections import Counter
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = ROOT / "tests/contract/fixtures/settings_literal_ratchet.json"

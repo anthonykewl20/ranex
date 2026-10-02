@@ -38,11 +38,20 @@ def main() -> int:
         repo, external = proof.clone_external(scratch, proof.EXTERNAL_URL, proof.EXTERNAL_REV)
         baseline = proof.measure_baseline(repo, scratch)
         setup = proof.onboard_governance(scratch / 'kernel', repo, scratch, 'HEAD', baseline['passing'], 0)
+        exclude = repo / '.git/info/exclude'
+        exclude.parent.mkdir(parents=True, exist_ok=True)
+        with exclude.open('a') as ignored:
+            ignored.write('\ngovernance/verdicts/\n')
         shutil.copyfile(scratch / 'baseline.xml', out / 'baseline.xml')
         for name in ('producers.yaml', 'gates.yaml', 'suite_manifest.json'):
             shutil.copyfile(repo / 'governance' / name, out / name)
         env = {'PATH': '/usr/bin:/bin', 'HOME': str(scratch), 'LANG': 'C.UTF-8',
                'PYTHONPATH': str(repo / 'src'), 'RANEX_SIGNING_KEY': str(setup['key'])}
+        signing_env = proof._kernel_env(repo, setup['key'])
+        for name in ('RANEX_APPROVER_SIGNING_KEY', 'RANEX_VERDICT_SIGNING_KEY',
+                     'RANEX_HISTORY_CHECKPOINT'):
+            if name in signing_env:
+                env[name] = signing_env[name]
         measured = bool(os.environ.get('COVERAGE_PROCESS_START'))
         if measured:
             (out / 'coverage').mkdir()
@@ -85,9 +94,14 @@ def main() -> int:
                     raise RuntimeError('independent pytest did not report the broken collection')
                 collector_name = collectors[0]
             observation = cli('run', '--producer', proof.PRODUCER, '--claim', 'tests-executed', '--', *setup['argv'])
+            evidence_path = repo / 'governance/evidence.json'
+            if not evidence_path.is_file():
+                raise RuntimeError(
+                    f'observation produced no evidence: returncode={observation.returncode}\n'
+                    f'stdout:\n{observation.stdout}\nstderr:\n{observation.stderr}'
+                )
             gate = cli('gate', 'evaluate', 'HEAD', '--approver', proof.APPROVER,
                        '--journal', 'governance/journal.sqlite3')
-            evidence_path = repo / 'governance/evidence.json'
             evidence = json.loads(evidence_path.read_bytes())[0]
             shutil.copyfile(evidence_path, out / f'{phase}-evidence.json')
             summary = evidence['suite_results']
