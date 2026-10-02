@@ -37,6 +37,11 @@ kernel: "settings binding requires the CLI admission path". Non-binding
 gates retain v1 production and existing evaluation semantics.
 Live acceptance remains non-binding pending issue #236.
 
+Platform facts: `ranex.foundation.platform` selects an immutable ABI table
+from the running OS and normalized machine; only Linux x86-64 is supported.
+Syscall numbers, target triple and loader identity come from that table.
+Unsupported platforms raise `PlatformUnsupported`; settings cannot override it.
+
 ## Running it
 
 After committing the policy, public keyring and frozen test manifest,
