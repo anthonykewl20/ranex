@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 from launcher_host import build_closure_limitation
+
 from ranex.cli.host_confinement import _pinned_inputs, _trace_inputs, _verify_observed_closure
 
 
