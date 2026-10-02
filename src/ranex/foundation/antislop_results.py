@@ -357,7 +357,7 @@ def antislop_results_from_sarif(
         {
             path
             for path in scope
-            if not _subject_file_present(subject_root, path) or (witnessed is not None and path not in witnessed)
+            if not _subject_file_present(subject_root, path) or (witnessed is None or path not in witnessed)
         }
         | {test_id for test_id in frozen_tests if test_id not in census}
     )

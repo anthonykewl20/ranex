@@ -480,6 +480,66 @@ def test_explicit_empty_artifacts_does_not_certify_antislop_scope(tmp_path):
     assert kernel_verdict(manifest, result) == "FAIL"
 
 
+def _sarif_with_artifacts(root: Path, uris: list[str] | None) -> bytes:
+    """Re-serialize the subject's SARIF with a chosen artifacts inventory."""
+    document = json.loads(antislop_sarif_bytes(root))
+    if uris is None:
+        del document["runs"][0]["artifacts"]
+    else:
+        document["runs"][0]["artifacts"] = [
+            {"location": {"uri": uri}} for uri in uris
+        ]
+    return canonical_json_bytes(document)
+
+
+def test_absent_inventory_blocks_every_scope_path(tmp_path: Path):
+    root = build(tmp_path / "subject", APPROVED)
+    raw = antislop_sarif_bytes(root)
+    manifest = freeze_antislop_expectations(raw, subject_root=root)
+    result = antislop_results_from_sarif(
+        _sarif_with_artifacts(root, None), manifest, subject_root=root
+    )
+    assert result["missing"] == ["test_six.py"]
+    assert kernel_verdict(manifest, result) == "FAIL"
+
+
+def test_complete_inventory_qualifies(tmp_path: Path):
+    root = build(tmp_path / "subject", APPROVED)
+    raw = antislop_sarif_bytes(root)
+    manifest = freeze_antislop_expectations(raw, subject_root=root)
+    result = antislop_results_from_sarif(
+        _sarif_with_artifacts(root, ["test_six.py"]), manifest, subject_root=root
+    )
+    assert result["missing"] == []
+    assert kernel_verdict(manifest, result) == "PASS"
+
+
+def test_partial_inventory_lists_uncovered_paths(tmp_path: Path):
+    approved = {
+        "test_a.py": "def test_a():\n    assert operation() == 1\n",
+        "test_z.py": "def test_z():\n    assert operation() == 2\n",
+    }
+    root = build(tmp_path / "subject", approved)
+    raw = antislop_sarif_bytes(root)
+    manifest = freeze_antislop_expectations(raw, subject_root=root)
+    result = antislop_results_from_sarif(
+        _sarif_with_artifacts(root, ["test_a.py"]), manifest, subject_root=root
+    )
+    assert result["missing"] == ["test_z.py"]
+    assert kernel_verdict(manifest, result) == "FAIL"
+
+
+def test_empty_inventory_blocks_every_scope_path(tmp_path: Path):
+    root = build(tmp_path / "subject", APPROVED)
+    raw = antislop_sarif_bytes(root)
+    manifest = freeze_antislop_expectations(raw, subject_root=root)
+    result = antislop_results_from_sarif(
+        _sarif_with_artifacts(root, []), manifest, subject_root=root
+    )
+    assert result["missing"] == ["test_six.py"]
+    assert kernel_verdict(manifest, result) == "FAIL"
+
+
 @pytest.mark.parametrize("artifacts", [None, {}, [None], [{"location": {}}]])
 def test_antislop_malformed_artifact_witness_is_refused(tmp_path, artifacts):
     root = build(tmp_path / "subject", APPROVED)
