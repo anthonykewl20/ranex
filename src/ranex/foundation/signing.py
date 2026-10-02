@@ -44,6 +44,7 @@ from ranex.foundation.canonical import canonical_json_bytes
 EVIDENCE_DOMAIN = b"ranex-evidence-v5\n"
 
 ENVELOPE_TYPE = "ranex-evidence-envelope-v1"
+ENVELOPE_TYPE_V2 = "ranex-evidence-envelope-v2"
 
 # What `catalog_digest` carries when the run had no committed gate catalog to
 # name. A sentinel rather than a placeholder digest, because a well-formed
@@ -92,6 +93,8 @@ SIGNED_FIELDS: tuple[str, ...] = (
     "catalog_digest",
 )
 
+SIGNED_FIELDS_V2 = SIGNED_FIELDS + ("settings_digest", "settings_schema_version")
+
 _PREFIX = "ed25519:"
 
 
@@ -136,7 +139,8 @@ def _decode(value: object, *, expected: int | None, field: str) -> bytes:
 def signed_payload(content: Mapping[str, Any]) -> bytes:
     """The exact bytes a signature covers.
 
-    Refuses a record that is not exactly `SIGNED_FIELDS`. Silently signing an
+    Refuses a record that does not match its envelope type's exact field set.
+    Silently signing an
     extra field would let the producer cover something the verifier does not
     check; silently dropping it would let an attacker append a field the
     signature never protected. It is also what makes a downgrade unspellable:
@@ -144,8 +148,16 @@ def signed_payload(content: Mapping[str, Any]) -> bytes:
     not match and the domain prefix differs besides.
     """
 
+    envelope_type = content.get("envelope_type")
+    if envelope_type == ENVELOPE_TYPE:
+        fields = SIGNED_FIELDS
+    elif envelope_type == ENVELOPE_TYPE_V2:
+        fields = SIGNED_FIELDS_V2
+    else:
+        raise ValueError(f"unknown envelope_type: {envelope_type!r}")
+
     present = set(content)
-    expected = set(SIGNED_FIELDS)
+    expected = set(fields)
     if present != expected:
         unexpected = sorted(present - expected)
         missing = sorted(expected - present)
@@ -154,8 +166,16 @@ def signed_payload(content: Mapping[str, Any]) -> bytes:
             detail.append(f"unexpected {', '.join(unexpected)}")
         if missing:
             detail.append(f"missing {', '.join(missing)}")
-        raise ValueError(f"evidence content must be exactly {list(SIGNED_FIELDS)}: "
+        raise ValueError(f"evidence content must be exactly {list(fields)}: "
                          + "; ".join(detail))
+
+    if envelope_type == ENVELOPE_TYPE_V2:
+        digest = content["settings_digest"]
+        if not isinstance(digest, str) or not digest:
+            raise ValueError("settings_digest must be a non-empty str")
+        version = content["settings_schema_version"]
+        if not isinstance(version, int) or isinstance(version, bool):
+            raise ValueError("settings_schema_version must be an int (not bool)")
 
     # canonical_json_bytes sorts keys, so field order on disk cannot change the
     # signature.
@@ -192,7 +212,7 @@ def public_key_for(private_key: str) -> str:
 
 
 def sign_evidence(content: Mapping[str, Any], private_key: str) -> str:
-    """Sign exactly `SIGNED_FIELDS`. Deterministic per RFC 8032."""
+    """Sign the declared envelope's exact field set. Deterministic per RFC 8032."""
 
     raw = _decode(private_key, expected=32, field="private key")
     key = Ed25519PrivateKey.from_private_bytes(raw)
