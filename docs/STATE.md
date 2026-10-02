@@ -4,7 +4,8 @@
 **Active slice:** docs/slices/SLICE-103-audit-findings-and-remediation.md
 
 Audit remediation: SLICE-104 merged via PR #227; open follow-ups are tracked
-in GitHub milestone #9 (umbrella #186).
+in GitHub milestone #9 (umbrella #186). Static-worker closure tests skip on
+foreign hosts (#194 part 1).
 
 Documentation is synchronised with the code (PRs #228-#232, #234): README,
 OPERATIONS, STATE, MAP, dogfood docs, ADR/slice status lines.

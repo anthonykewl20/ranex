@@ -490,8 +490,7 @@ def test_static_worker_twice_built_bytes_have_required_elf_properties(
     limitation = static_closure_limitation(manifest_path)
     if limitation is not None:
         pytest.skip(
-            "ranex-context:host-capability: pinned static-worker build closure "
-            f"does not match this host ({limitation})"
+            f"ranex-context:host-capability: pinned static-worker build closure does not match this host ({limitation})"
         )
     source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
     manifest = json.loads(manifest_path.read_bytes())
@@ -1725,8 +1724,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     )
     if limitation is not None:
         pytest.skip(
-            "ranex-context:host-capability: pinned static-worker build closure "
-            f"does not match this host ({limitation})"
+            f"ranex-context:host-capability: pinned static-worker build closure does not match this host ({limitation})"
         )
     governed = materialize_governed_checkout(sandbox / "governed")
     governed_source_before = source_manifest(governed)

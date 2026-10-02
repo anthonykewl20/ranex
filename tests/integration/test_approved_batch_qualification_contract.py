@@ -614,8 +614,7 @@ def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
     limitation = static_closure_limitation(ROOT / static["build_manifest"])
     if limitation is not None:
         pytest.skip(
-            "ranex-context:host-capability: pinned static-worker build closure "
-            f"does not match this host ({limitation})"
+            f"ranex-context:host-capability: pinned static-worker build closure does not match this host ({limitation})"
         )
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]
@@ -642,8 +641,7 @@ def test_static_worker_succeeds_with_stdout_closed_and_only_exact_output_file(
     limitation = static_closure_limitation(ROOT / static["build_manifest"])
     if limitation is not None:
         pytest.skip(
-            "ranex-context:host-capability: pinned static-worker build closure "
-            f"does not match this host ({limitation})"
+            f"ranex-context:host-capability: pinned static-worker build closure does not match this host ({limitation})"
         )
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]
