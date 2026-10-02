@@ -725,7 +725,7 @@ def _open_verified(
     except FileNotFoundError as exc:
         # Absence is not drift: answering "the executable drifted" for a file
         # that was never installed sends an operator to diff a binary that does
-        # not exist (F-035, which cost three red journeys).
+        # not exist (F-042, which cost three red journeys).
         raise HostConfinementError(
             absent_code, f"{path} is absent, so there is no object to verify"
         ) from exc

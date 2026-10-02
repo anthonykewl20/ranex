@@ -21,3 +21,5 @@ Next: binding enforcement (catalog `requires_settings_binding`, admission
 filter, CLI and evaluator wiring, producer emits v2 for binding gates), then
 PR-0c (platform table and no-literal contract test), then section migrations.
 Live-acceptance binding is tracked separately in #236.
+
+Dogfood finding ids F-035..F-037 de-duplicated (#233).

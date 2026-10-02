@@ -1537,7 +1537,7 @@ def test_an_absent_object_is_missing_not_drifted(tmp_path: Path) -> None:
     that was never installed sends an operator to diff a binary that does not
     exist; it also cost this repository three red journeys on 2026-09-10, where
     one uninstalled launcher inside a materialisation read as an attack on the
-    exec object (F-035). The closed set already has the honest word for it.
+    exec object (F-042). The closed set already has the honest word for it.
     """
 
     from ranex.cli import host_confinement
