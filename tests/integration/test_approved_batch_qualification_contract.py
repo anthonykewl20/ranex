@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
-from _static_worker import build_worker
+from _static_worker import build_worker, static_closure_limitation
 from launcher_host import require_unprivileged_userns
 
 from ranex.cli.fanout import cmd_task_fanout
@@ -611,6 +611,12 @@ def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
     assert static["success_exit_code"] == 0
     assert static["input_refusal_exit_code"] == 92
     assert static["output_failure_exit_code"] == 95
+    limitation = static_closure_limitation(ROOT / static["build_manifest"])
+    if limitation is not None:
+        pytest.skip(
+            "ranex-context:host-capability: pinned static-worker build closure "
+            f"does not match this host ({limitation})"
+        )
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]
     assert file_digest(source) == static["source_sha256"]
@@ -633,6 +639,12 @@ def test_static_worker_succeeds_with_stdout_closed_and_only_exact_output_file(
         return
     require_unprivileged_userns()
     static = EXPECTED_VALUES["static_worker"]
+    limitation = static_closure_limitation(ROOT / static["build_manifest"])
+    if limitation is not None:
+        pytest.skip(
+            "ranex-context:host-capability: pinned static-worker build closure "
+            f"does not match this host ({limitation})"
+        )
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]
     worker = tmp_path / "slice036-worker"

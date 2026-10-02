@@ -31,7 +31,7 @@ from pathlib import Path
 
 import _prereqs
 import pytest
-from _static_worker import build_worker
+from _static_worker import build_worker, static_closure_limitation
 
 from ranex.foundation.canonical import (
     canonical_json_bytes,
@@ -487,6 +487,12 @@ def test_static_worker_twice_built_bytes_have_required_elf_properties(
     """Claims in the manifest do not substitute for inspecting both artifacts."""
 
     manifest_path = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+    limitation = static_closure_limitation(manifest_path)
+    if limitation is not None:
+        pytest.skip(
+            "ranex-context:host-capability: pinned static-worker build closure "
+            f"does not match this host ({limitation})"
+        )
     source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
     manifest = json.loads(manifest_path.read_bytes())
     artifacts: list[bytes] = []
@@ -1714,6 +1720,14 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
 
     sandbox = tmp_path / "slice036"
     sandbox.mkdir()
+    limitation = static_closure_limitation(
+        ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+    )
+    if limitation is not None:
+        pytest.skip(
+            "ranex-context:host-capability: pinned static-worker build closure "
+            f"does not match this host ({limitation})"
+        )
     governed = materialize_governed_checkout(sandbox / "governed")
     governed_source_before = source_manifest(governed)
     assert not historical_build_input_drift(governed), "reviewed native build closure drifted"
