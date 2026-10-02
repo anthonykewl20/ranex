@@ -4,7 +4,8 @@
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
 Audit remediation: SLICE-104 merged via PR #227; open follow-ups are tracked
-in GitHub milestone #9 (umbrella #186).
+in GitHub milestone #9 (umbrella #186). Static-worker closure tests skip on
+foreign hosts (#194 part 1).
 
 ADR-071 PR-0b settings binding enforcement on captain/binding-enforcement.
 - Catalog gates opt into settings-bound evidence with a boolean flag.
@@ -20,6 +21,7 @@ Removed stray tool output (.playwright-mcp, .video_agent); ignored going forward
 
 Central settings (ADR-071, accepted; issue #226):
 - GitHub App defaults now come from the eight-key `github` section (#258 part A; no runtime loading).
+- C4 literal ratchet guards src configuration literals; migrations must lower its baseline.
 - Platform table centralizes Linux x86-64 ABI facts and refuses unsupported platforms (C5).
 - PR-0a merged (#235): `ranex.foundation.settings` (catalogs section, scoped
   precedence, policy refusal, settings_digest, secret references) and
