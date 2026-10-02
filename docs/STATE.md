@@ -1,5 +1,7 @@
 # State
 
+Bubblewrap lifecycle qualification fails closed after a finite 10-second probe deadline (#214).
+
 Collection journey (#270): supplies signing/history inputs and ignores generated verdict artifacts in its temporary repository.
 
 **Updated:** 2026-10-02
