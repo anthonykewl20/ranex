@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "parse_runtime_manifest",
+    "parsed_runtime_graph",
+    "honest-ocr-closure"
+  ],
+  "cwd": "/home/soultransit/.cache/ranex/ocr/v1.12.9",
+  "digests": {
+    "closure_attempt": "sha256:a120efabd3c37e787e03052b6ebf7d7a0b3128148e73cc9e7a5c431db707bbf6",
+    "graph_rows": "sha256:d249ca1cd503f4a9c2d675f9c14a72bcf20072e71ec78c535e0fdb9dd4cab4f1",
+    "ocr_sha256": "sha256:9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+    "release_pin": "9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8"
+  },
+  "exit_code": 0,
+  "expectation": "arm0-v3-entrypoint-admission",
+  "notes": "pin=v1.12.9 floor=14b84f08a3af7f042d702c721f21f7952d841970 asset=opencodereview-linux-amd64 elf=ET_EXEC pt_interp=None static_v2=ADMITTED positive=['ADMITTED', 'ADMITTED', 'ADMITTED'] realized=['MATCH', 'MATCH', 'MATCH'] repeats=3. negatives: corrupted-digest=REFUSED:runtime digest differs; static-shape-lie-over-dynamic-bytes=REFUSED:cannot parse ELF bin/opencodereview: static entrypoint shape (static-v2: REFUSED:v2 worker is not a self-contained x86-64 ET_EXEC object); old-dynamic-binding-over-static-bytes=REFUSED:cannot parse ELF bin/opencodereview: native runtime object has no dynamic section (the pre-fix refusal, kept as a negative control). findings stay ADVISORY (never required_claims).",
+  "status": "VERIFIED",
+  "wall_ms": 531
+}

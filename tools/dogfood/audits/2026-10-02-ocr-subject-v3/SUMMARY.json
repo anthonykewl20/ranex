@@ -1,0 +1,22 @@
+{
+  "completed_at": "2026-10-02T06:20:54Z",
+  "execution_note": "proof run under umask 022 pending https://github.com/anthonykewl20/ranex/issues/241",
+  "findings_advisory": true,
+  "host": "desk-tony",
+  "issue": 105,
+  "kernel_digest_moved": false,
+  "ocr_sha256": "9105c7081b8362a1cb0167f1ddfd1437e147a0e3c9a5af89c03c8859a5b0f0e8",
+  "ocr_tag": "v1.12.9",
+  "proof_commit": "0180f3dd821f9d16ceb3aade46949bcdb445662d",
+  "repeats": 3,
+  "required_claims_include_ocr": false,
+  "statuses": {
+    "arm0-v3-entrypoint-admission": "VERIFIED",
+    "arm1-offline-key-unset": "VERIFIED",
+    "arm2-offline-key-set-strict-local": "VERIFIED",
+    "arm3-ocr-delegate-advisory": "VERIFIED",
+    "arm4-live-probe-pr": "OTHER: out of scope",
+    "arm5-repeats-identical-fail-digests": "VERIFIED"
+  },
+  "verdict_signer": "kernel-verdict-signer"
+}

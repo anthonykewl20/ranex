@@ -1,0 +1,371 @@
+{
+  "arm1": [
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "evidence_path": ".local/ranex-105/history-1/evidence.json",
+      "history_anchor": {
+        "payload": "eyJoZWFkIjoic2hhMjU2Ojk3MjNlMjllZTBmNTJmOTRmZWY5ODlhNzQ5MTM4OGY5MDI1NWE5MDc3ZTZmZjgxYzFlOWU0NWZkZGY4ZTIyYTciLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktMS9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+        "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+        "signatures": [
+          {
+            "sig": "CaulhsOxyYIF6mvibNC0LpMa7Dylo5BcLb34tMDfsreC+Qty7m0Dcb1M5XycPJCnDODsCofdxoDiuq/M/57MDg=="
+          }
+        ]
+      },
+      "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-1-checkpoint.json",
+      "journal_chain_head": "sha256:85afc137e68b7740c843521310725138581dd39867b1c2f0f50b477283c9b63e",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":66792}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:85afc137e68b7740c843521310725138581dd39867b1c2f0f50b477283c9b63e"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "evidence_path": ".local/ranex-105/history-3/evidence.json",
+      "history_anchor": {
+        "payload": "eyJoZWFkIjoic2hhMjU2OjQwMWYyZjQwNGJlN2NmZmVhZWMwOWE0N2QzMDIwOTMzMzJjNzkwYzMzMjIzY2FkMWI2ZTc0ZGY3MzhkMGQ3YzkiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktMy9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+        "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+        "signatures": [
+          {
+            "sig": "N5NOeRkT5bvy7ZTVYXuMt/ZrOoUGD+Bzu7z7Pnll5lM+QOu41nBT6cej3aQw5K5SDpUnr3P3Ngv7BHs5OjstDg=="
+          }
+        ]
+      },
+      "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-3-checkpoint.json",
+      "journal_chain_head": "sha256:5875a745f7c41c2a0bc198349aec34a382515ab2bd671a9b9b554c0b1f44fe10",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":62202}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:5875a745f7c41c2a0bc198349aec34a382515ab2bd671a9b9b554c0b1f44fe10"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "evidence_path": ".local/ranex-105/history-5/evidence.json",
+      "history_anchor": {
+        "payload": "eyJoZWFkIjoic2hhMjU2OjU5NTJkMzY3ZmNiMGZiYzYyOTUyNjc1NjE2OTZhMTEwNTU3NWExZGFhNTFhNTBjMjA3YWZmMTFjMjhiZTZiN2QiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktNS9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+        "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+        "signatures": [
+          {
+            "sig": "p4U3ycUZLiMyLG1ZAd8S6wfLLub3D6h4/j767EYguX4wUlnnKEkJ05HOmgJ5Pi67dpyXG+eDe5p7+kqqUsGLBA=="
+          }
+        ]
+      },
+      "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-5-checkpoint.json",
+      "journal_chain_head": "sha256:f0e992f79cb0f69647dccf718dc59a654ba63df2e0942f1acab5acc14a28528a",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":68663}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:f0e992f79cb0f69647dccf718dc59a654ba63df2e0942f1acab5acc14a28528a"
+    }
+  ],
+  "arm2": [
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "evidence_path": ".local/ranex-105/history-2/evidence.json",
+      "history_anchor": {
+        "payload": "eyJoZWFkIjoic2hhMjU2OmI5N2E0Mjc5ZDUyZWY2NjI0NGM0YjI0Mzk3MjBiNGI1Nzc4M2U0MTRiOTc3MWM0NTI5OWVhZmE2NWMwNjhjNmQiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktMi9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+        "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+        "signatures": [
+          {
+            "sig": "Fku+5w3PFv7W2QjKg+RhDeZRXtWhbSkH1HKodSD0WPsGRhYpufVaNnjAG2Wj0njKD/rS8kAI97jOUcZ5Oi05Dg=="
+          }
+        ]
+      },
+      "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-2-checkpoint.json",
+      "journal_chain_head": "sha256:aefed40b57b9efe773cb5402d458457473a47a76edee0c7dfb71acfc6e05cfa5",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":72574}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:aefed40b57b9efe773cb5402d458457473a47a76edee0c7dfb71acfc6e05cfa5"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "evidence_path": ".local/ranex-105/history-4/evidence.json",
+      "history_anchor": {
+        "payload": "eyJoZWFkIjoic2hhMjU2OjJiZjM5NjMwODBhOTgxOTg5YjMxMGFiZWQ3YjY3NmU0ZjE0MzliODBiZTczOTVmNzU2ZDk0YTM4M2ZkODlkZmQiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktNC9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+        "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+        "signatures": [
+          {
+            "sig": "kl1vkXgN63SAE5iTLePP8kpvpQk6S+tL3ViclEa6bWeOBQKbxSLB2wixlkocKHQ8k5xz/3oZiGoL+Ng8O+E7CA=="
+          }
+        ]
+      },
+      "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-4-checkpoint.json",
+      "journal_chain_head": "sha256:fcb810306040b4b11d41212690f433d2d073d67d638d063eeb724aeb9f4c4c53",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":79117}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:fcb810306040b4b11d41212690f433d2d073d67d638d063eeb724aeb9f4c4c53"
+    },
+    {
+      "artifact_absent": true,
+      "evaluate_exit": 1,
+      "evaluate_stdout": "FAIL  gate=landing  rule=OCR_REVIEW_REQUIRED\n      the bound command was observed failing: ocr-review\n      subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "evidence_path": ".local/ranex-105/history-6/evidence.json",
+      "history_anchor": {
+        "payload": "eyJoZWFkIjoic2hhMjU2OjI1NmQ4MjJjNWJhNmI1Y2ZkNjRjZjU3OGJkOTJhOTFjZjkwNDUxY2UxMjRlMmIyODhiM2QzN2M0MWU5MzMwNmMiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktNi9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+        "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+        "signatures": [
+          {
+            "sig": "aT5LpDcy7iJo5ZXl3Wua6c4oNkSfOLTAhEsNrruOsE4/25tp3hP6RP/rJIHjbkDhxdkdsxjXZXqUIJoAHuRCBw=="
+          }
+        ]
+      },
+      "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-6-checkpoint.json",
+      "journal_chain_head": "sha256:e287ec97656a448a84bbdf6d5c668d5be4f7f06b492f0d35de498a142107b531",
+      "record": {
+        "approver_id": "ocr-subject-approver",
+        "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+        "causes": [
+          {
+            "cause": "failed",
+            "claim_id": "ocr-review"
+          }
+        ],
+        "considered": [
+          "ocr-review@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:1"
+        ],
+        "failing_rule": "OCR_REVIEW_REQUIRED",
+        "gate_id": "landing",
+        "missing_claims": [
+          "ocr-review"
+        ],
+        "reason": "the bound command was observed failing: ocr-review",
+        "self_approval": false,
+        "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+        "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+        "verdict": "FAIL"
+      },
+      "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+      "run_exit": 1,
+      "run_stderr_head": "RANEX-RUNTIME-RESULT {\"cgroup_readbacks\":{\"events\":{\"memory\":{\"high\":0,\"low\":0,\"max\":0,\"oom\":0,\"oom_group_kill\":0,\"oom_kill\":0,\"sock_throttled\":0},\"pids\":{\"max\":0},\"populated\":0},\"limits\":{\"cpu.max\":\"max 100000\",\"memory.max\":\"134217728\",\"pids.max\":\"16\"},\"usage\":{\"cpu_usage_usec\":78934}},\"command\":{\"argv_digest\":\"686b88b461fd5edfe69ab80e5b6419a7d1015c5569a1a3b6620012f99abfb27c\",\"exit_code\":1,\"landl",
+      "run_stdout_head": "RECORDED  claim=ocr-review  producer=ocr-subject-worker  exit=1\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+      "session_outputs": [],
+      "verdict": "FAIL",
+      "verdict_digest": "sha256:e287ec97656a448a84bbdf6d5c668d5be4f7f06b492f0d35de498a142107b531"
+    }
+  ],
+  "control": {
+    "artifact_absent": true,
+    "evaluate_exit": 0,
+    "evaluate_stdout": "PASS  gate=control  subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+    "evidence_path": ".local/ranex-105/history-7/evidence.json",
+    "history_anchor": {
+      "payload": "eyJoZWFkIjoic2hhMjU2OjZiMzM4MmEyNTU5NTE2NmVkZDkxNjlmOGNlMzJkOWRiY2UzOGEzMThlOWY2OThkNDhmOWIzZjIzYjlkYzY2NzYiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktNy9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjoxfQ==",
+      "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+      "signatures": [
+        {
+          "sig": "TG/zfYHxvW4x9oUbksc8nKrFTQT4o446oMZJo4Nm+n/KKHkD6TKBf+KiaI9BKr52ZLVGPDLFa+zlW2ysFs9VDQ=="
+        }
+      ]
+    },
+    "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-7-checkpoint.json",
+    "journal_chain_head": "sha256:c04e1942b7e5f41e8f85f9c1111c5940a3eee43dcc5a77ecb3422a583e16248e",
+    "record": {
+      "approver_id": "ocr-subject-approver",
+      "catalog_digest": "sha256:0436f64c1155962d049734cdb54a631f240056c3b961c68f2dbb1a60fbc8fe0e",
+      "causes": [],
+      "considered": [
+        "ocr-version@sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "control",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    },
+    "record_digest": "sha256:c0dec59cf2b2427a361ca966a415692567bdfaa00ef6f7bd2f00f764e98d99f8",
+    "run_exit": 0,
+    "run_stderr_head": "",
+    "run_stdout_head": "open-code-review v1.12.9 (bccbc15) linux/amd64\nbuilt at: 2026-09-22T11:04:08Z\nhttps://github.com/alibaba/open-code-review\nRECORDED  claim=ocr-version  producer=ocr-subject-worker  exit=0\n          subject=sha256:29c49831961844c3347da85b77b7d4a3c49acc337d984b9539cf1d0688dad892\n",
+    "session_outputs": [],
+    "verdict": "PASS",
+    "verdict_digest": "sha256:c04e1942b7e5f41e8f85f9c1111c5940a3eee43dcc5a77ecb3422a583e16248e"
+  },
+  "credential_strip": {
+    "evidence_path": ".local/ranex-105/history-8/evidence.json",
+    "exit": 1,
+    "history_anchor": {
+      "payload": "eyJoZWFkIjoic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJsb2dfaWQiOiIvaG9tZS9zb3VsdHJhbnNpdC8udHJlZWhvdXNlL3JhbmV4LTM0YmJlNy8zL3JhbmV4Ly5sb2NhbC8wMzYvcmFuZXgtMTA1LWpvdXJuZXktajVvYjZobjIvcmVwb3NpdG9yeS8ubG9jYWwvcmFuZXgtMTA1L2hpc3RvcnktOC9vYnNlcnZhdGlvbnMuc3FsaXRlMyIsInBvc2l0aW9uIjowfQ==",
+      "payloadType": "application/vnd.ranex.observation-checkpoint.v1+json",
+      "signatures": [
+        {
+          "sig": "HqtPquJaJGYClU2pGdZveYNqpMoLqa5/xZMRZHHZiwyFywztHOzY1tWyqOostbrjIj12vUbw/kF50x11iqasAA=="
+        }
+      ]
+    },
+    "history_checkpoint_path": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/history-8-checkpoint.json",
+    "names_allowlist": true,
+    "refused": true,
+    "text": "{\"detail\":\"worker environment exceeds the launcher allowlist\",\"refusal\":\"E-C18-GATE\"}\n"
+  },
+  "probe_key_set": {
+    "argv": [
+      "/home/soultransit/.cache/ranex/ocr/v1.12.9/opencodereview-linux-amd64",
+      "llm",
+      "test"
+    ],
+    "exit": 1,
+    "refused_connect": true,
+    "stderr": "Error: llm request failed: Post \"http://127.0.0.1:9/v1/v1/messages\": dial tcp 127.0.0.1:9: connect: connection refused",
+    "wall_ms": 14437
+  },
+  "probe_key_unset": {
+    "argv": [
+      "/home/soultransit/.cache/ranex/ocr/v1.12.9/opencodereview-linux-amd64",
+      "llm",
+      "test"
+    ],
+    "exit": 1,
+    "refused_connect": false,
+    "stderr": "Error: resolve LLM endpoint: no valid LLM endpoint configured; one of OCR_LLM_URL/OCR_LLM_TOKEN/OCR_LLM_MODEL, ~/.opencodereview/config.json, or ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN/ANTHROPIC_MODEL must be set",
+    "wall_ms": 8
+  },
+  "scrubbed_host_run": {
+    "exit": 1,
+    "text": "warning: running git --version: exec: \"git\": executable file not found in $PATH\nError: --output directory does not exist: /ranex/output"
+  }
+}

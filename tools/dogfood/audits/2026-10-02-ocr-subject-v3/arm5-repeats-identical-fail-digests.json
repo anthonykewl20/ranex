@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "repeat",
+    "arm1+arm2"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/repository",
+  "digests": {
+    "all": "1 distinct of 6",
+    "arm1": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+    "arm2": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef"
+  },
+  "exit_code": 0,
+  "expectation": "arm5-repeats-identical-fail-digests",
+  "notes": "arm1 x3 + arm2 x3 projected record digests: ['sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef']; every run FAILed on the unsatisfied ocr-review claim with the artifact absent.",
+  "status": "VERIFIED"
+}

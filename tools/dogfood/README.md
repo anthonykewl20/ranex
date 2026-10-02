@@ -146,8 +146,12 @@ there):
   entirely from the repository's own history.
 - `tools/dogfood/history_service.py` — explicit service identity and retained
   checkpoints for isolated tool subjects.
-- `tools/dogfood/ocr_subject_proof.py` — the #105 field proof: the fixed
-  behaviour measured on real data.
+- `tools/dogfood/ocr_subject_proof.py` — the #105 field proof; #221 anchored
+  history receipts in `audits/2026-10-02-ocr-subject-v3/`: arms 0/1/2/3/5
+  and positive/credential-strip controls VERIFIED; arm 4 out of scope.
+  CLI journeys bootstrap isolated durable evidence/checkpoint pairs, compare
+  projected records for credential invariance, and report history anchors
+  separately. Run under umask 022 pending issue #241.
 - `tools/dogfood/p0_envelope_proof.py` — the SLICE-092 (C1+C6) real-data
   proof: the repair envelope on pinned six@1.17.0.
 - `tools/dogfood/probe_bundle_journal.py` — frozen black-box journal journey:

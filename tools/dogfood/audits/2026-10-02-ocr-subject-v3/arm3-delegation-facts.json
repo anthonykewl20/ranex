@@ -1,0 +1,140 @@
+{
+  "finding_ids": [
+    "pkg/mod.py::review.finding::bf3b4d98de044cd51eaab1c55dfebd91d950c58bcb008b50194ec9f44e7c1892"
+  ],
+  "negative_controls": {
+    "packet_substitution": "REFUSED:delegated-review SARIF properties.packet_digest does not match the bound packet (sha256:928ffb798d461ec360301dc0a3a6639b6f39ac4f5d5d145a6b0ed74d743ba516 != sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97); substitution refused",
+    "unresolvable_anchor": "REFUSED:delegated-review finding for 'pkg/mod.py' has an unresolvable excerpt anchor; absence blocks (ADR-060 rule 6)"
+  },
+  "packet": {
+    "chapters": [],
+    "handbook_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "range": {
+      "base": "c1926b99e49dbf1bc4cd2beaa3195a2fd6ca62da",
+      "head": "9a18b316888aaa04606128c92275d551bc868cfb"
+    },
+    "subject_digest": "sha256:279b73ca438ee372456baa704b4b35f850f8d61e24d19d587804f43e8e2ab3a4"
+  },
+  "packet_digests": [
+    "sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97",
+    "sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97",
+    "sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97"
+  ],
+  "sarif": {
+    "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+    "runs": [
+      {
+        "artifacts": [
+          {
+            "location": {
+              "uri": "pkg/mod.py"
+            }
+          }
+        ],
+        "properties": {
+          "packet_digest": "sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97"
+        },
+        "results": [
+          {
+            "level": "error",
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "pkg/mod.py"
+                  },
+                  "region": {
+                    "endLine": 9,
+                    "snippet": {
+                      "text": "data = open(path).read()  # noqa: SIM115"
+                    },
+                    "startLine": 9
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "bare open() leaks a file handle"
+            },
+            "ruleId": "review.finding"
+          }
+        ],
+        "tool": {
+          "driver": {
+            "name": "ranex-delegated-review",
+            "rules": [
+              {
+                "id": "review.finding",
+                "shortDescription": {
+                  "text": "review.finding"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "version": "2.1.0"
+  },
+  "spec": {
+    "excluded_count": 0,
+    "excluded_files": [],
+    "from": "c1926b99e49dbf1bc4cd2beaa3195a2fd6ca62da",
+    "merge_base": "c1926b99e49dbf1bc4cd2beaa3195a2fd6ca62da",
+    "mode": "range",
+    "repository": "/tmp/ranex-105-arm3-komkjol1/subject",
+    "reviewable_count": 1,
+    "reviewable_files": [
+      {
+        "deletions": 0,
+        "insertions": 5,
+        "path": "pkg/mod.py",
+        "status": "modified"
+      }
+    ],
+    "schema_version": "1",
+    "to": "9a18b316888aaa04606128c92275d551bc868cfb",
+    "total_deletions": 0,
+    "total_files": 1,
+    "total_insertions": 5
+  },
+  "spec_digests": [
+    "81604daca125d4ace1e3f881cec4e7bf7af4a5660c101237c765d8f3d129ac23",
+    "81604daca125d4ace1e3f881cec4e7bf7af4a5660c101237c765d8f3d129ac23",
+    "81604daca125d4ace1e3f881cec4e7bf7af4a5660c101237c765d8f3d129ac23"
+  ],
+  "summary": {
+    "counts": {
+      "errors": 0,
+      "failed": 2,
+      "passed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0
+    },
+    "extra_count": 1,
+    "manifest_digest": "sha256:531f8e0e5a1e5b6ebc82aeb99a024cb9eb4dac9fd7ce9a15f0900ff7a002c0bc",
+    "missing": [],
+    "non_passed": [
+      [
+        "pkg/mod.py",
+        "failed"
+      ],
+      [
+        "pkg/mod.py::review.finding::bf3b4d98de044cd51eaab1c55dfebd91d950c58bcb008b50194ec9f44e7c1892",
+        "failed"
+      ]
+    ],
+    "outcome_digest": "sha256:fb151d5636ad2ed392a3e66884d5653251ccaf0fe3fa97749aadd5580de62729"
+  },
+  "worker_argv": [
+    "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.venv/bin/python3",
+    "-m",
+    "ranex.foundation.delegated_review",
+    "--output-format=sarif",
+    "--output-file=governance/review.sarif",
+    "--path=pkg/mod.py",
+    "--excerpt=data = open(path).read()  # noqa: SIM115",
+    "--level=error"
+  ]
+}
