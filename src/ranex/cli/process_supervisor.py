@@ -38,6 +38,7 @@ from ranex.cli.subject import (
     _remove_materialisation,
 )
 
+BUBBLEWRAP_PROBE_TIMEOUT_SECONDS = 10
 _MESSAGE_LIMIT = 65_536
 _DRAIN_TIMEOUT = 15.0
 _BWRAP_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -275,7 +276,13 @@ print(json.dumps(facts, sort_keys=True, separators=(',', ':')))
 """.strip()
 
 
-def _probe_bubblewrap(bwrap: int, python: int, cwd: Path) -> None:
+def _probe_bubblewrap(
+    bwrap: int,
+    python: int,
+    cwd: Path,
+    *,
+    timeout: float = BUBBLEWRAP_PROBE_TIMEOUT_SECONDS,
+) -> None:
     argv = [
         "bwrap",
         "--bind",
@@ -306,7 +313,12 @@ def _probe_bubblewrap(bwrap: int, python: int, cwd: Path) -> None:
             text=True,
             check=False,
             env={"HOME": "/", "LANG": "C.UTF-8", "PATH": "/usr/bin:/bin"},
+            timeout=timeout,
         )
+    except subprocess.TimeoutExpired as exc:
+        raise ProcessSupervisorError(
+            f"bubblewrap lifecycle probe exceeded its {timeout} s deadline"
+        ) from exc
     except OSError as exc:
         raise ProcessSupervisorError(f"bubblewrap lifecycle probe failed: {exc}") from exc
     expected = {"cwd": str(cwd), "pid": 2, "proc_pid": 2}
