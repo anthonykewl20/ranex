@@ -10,6 +10,7 @@ from pathlib import Path
 from ranex.foundation.suite_results import read_results_artifact
 
 MAX_SUBJECT_CACHE_BYTES = 16 * 1024 * 1024
+MAX_SUBJECT_VIEW_LINES = 262_144
 MAX_SUBJECT_CACHE_ENTRIES = 32
 
 
@@ -66,11 +67,15 @@ class SubjectReader:
     def __init__(
         self, subject_root: Path, *, max_cache_bytes: int = MAX_SUBJECT_CACHE_BYTES,
         max_entries: int = MAX_SUBJECT_CACHE_ENTRIES,
+        max_view_lines: int = MAX_SUBJECT_VIEW_LINES,
     ) -> None:
         if not isinstance(max_cache_bytes, int) or isinstance(max_cache_bytes, bool) or max_cache_bytes < 0:
             raise ValueError("subject cache byte budget must be a non-negative integer")
         if not isinstance(max_entries, int) or isinstance(max_entries, bool) or max_entries < 0:
             raise ValueError("subject cache entry budget must be a non-negative integer")
+        if not isinstance(max_view_lines, int) or isinstance(max_view_lines, bool) or max_view_lines < 0:
+            raise ValueError("subject view line bound must be a non-negative integer")
+        self.max_view_lines = max_view_lines
         self._subject_root = Path(os.path.abspath(subject_root))
         self.max_cache_bytes = max_cache_bytes
         self.max_entries = max_entries
@@ -115,9 +120,16 @@ class SubjectReader:
     def read(self, path: str) -> bytes:
         return self._view(path).raw
 
+    def _check_view_size(self, path: str, view: _View) -> None:
+        if view.raw.count(b"\n") + 1 > self.max_view_lines:
+            raise ValueError(
+                f"subject file {path!r} has more than {self.max_view_lines} lines; derived view refused"
+            )
+
     def lines(self, path: str) -> tuple[bytes, ...]:
         view = self._view(path)
         if view.lines is None:
+            self._check_view_size(path, view)
             view = replace(view, lines=tuple(view.raw.splitlines(keepends=True)))
             self._remember(path, view)
         assert view.lines is not None
@@ -126,6 +138,7 @@ class SubjectReader:
     def text_lines(self, path: str) -> tuple[str, ...]:
         view = self._view(path)
         if view.text_lines is None:
+            self._check_view_size(path, view)
             view = replace(view, text_lines=tuple(view.raw.decode('utf-8').splitlines(keepends=True)))
             self._remember(path, view)
         assert view.text_lines is not None
@@ -134,6 +147,7 @@ class SubjectReader:
     def compact_lines(self, path: str) -> tuple[tuple[int, str], ...]:
         view = self._view(path)
         if view.compact is None:
+            self._check_view_size(path, view)
             compact = tuple((index, text) for index, line in enumerate(view.raw.decode('utf-8').splitlines())
                             if (text := _normalise_excerpt(line)))
             view = replace(view, compact=compact)

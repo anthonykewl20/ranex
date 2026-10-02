@@ -113,3 +113,41 @@ def test_byte_budget_evicts_entries_even_below_entry_limit(tmp_path):
     assert len(reader._entries) < 20
     (tmp_path/'file_0').write_bytes(b'new content')
     assert reader.read('file_0') == b'new content'
+
+
+def test_newline_dense_subject_refuses_each_derived_view(tmp_path):
+    (tmp_path/'dense').write_bytes(b'\n'*200)
+    reader = SubjectReader(tmp_path, max_view_lines=100)
+    before = reader.retained_bytes
+    raw_reader = SubjectReader(tmp_path, max_view_lines=100)
+    raw_reader.read('dense')
+    raw_cost = raw_reader.retained_bytes
+    for method in (reader.lines, reader.text_lines, reader.compact_lines):
+        with pytest.raises(ValueError, match='more than 100 lines'):
+            method('dense')
+    assert reader.retained_bytes <= before + raw_cost
+    view = reader._entries['dense'][0]
+    assert view.lines is view.text_lines is view.compact is None
+
+
+def test_view_at_the_bound_is_built(tmp_path):
+    (tmp_path/'bound').write_bytes(b'x\n'*99 + b'end')
+    reader = SubjectReader(tmp_path, max_view_lines=100)
+    default = SubjectReader(tmp_path)
+    assert reader.lines('bound') == default.lines('bound')
+    assert reader.text_lines('bound') == default.text_lines('bound')
+    assert reader.compact_lines('bound') == default.compact_lines('bound')
+
+
+def test_view_bound_rejects_bad_values(tmp_path):
+    for value in (-1, True):
+        with pytest.raises(ValueError):
+            SubjectReader(tmp_path, max_view_lines=value)
+
+
+def test_sparse_multiline_subject_unchanged(tmp_path):
+    (tmp_path/'sparse').write_bytes(b'first\r\n\r\n+ second\r\n  \r\n-last')
+    reader = SubjectReader(tmp_path)
+    assert reader.lines('sparse') == (b'first\r\n', b'\r\n', b'+ second\r\n', b'  \r\n', b'-last')
+    assert reader.text_lines('sparse') == ('first\r\n', '\r\n', '+ second\r\n', '  \r\n', '-last')
+    assert reader.compact_lines('sparse') == ((0, 'first'), (2, 'second'), (4, 'last'))

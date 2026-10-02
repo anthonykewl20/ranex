@@ -1,5 +1,7 @@
 # State
 
+SubjectReader refuses derived line views above 262,144 lines before allocation (#220).
+
 **Updated:** 2026-10-02
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
