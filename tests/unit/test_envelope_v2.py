@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 from ranex.foundation import signing as sg
-from ranex.foundation.settings import load_settings, settings_digest
 from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.settings import load_settings, settings_digest
 
 CONTENT = {
     "claim_id": "tests-executed",
