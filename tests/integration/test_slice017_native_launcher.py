@@ -1583,7 +1583,7 @@ def test_gate10_production_entrypoint_adr_and_risk_remain_frozen() -> None:
 
 
 def test_gate9_slice017_files_have_no_test_bypass_and_keep_the_frozen_count() -> None:
-    # 21 -> 22 (F-035, 2026-09-10): `test_an_absent_object_is_missing_not_drifted`
+    # 21 -> 22 (F-042, 2026-09-10): `test_an_absent_object_is_missing_not_drifted`
     # pins that an object which was never installed refuses as HOST-FACT-MISSING
     # rather than EXEC-OBJECT-DRIFT, with a control proving a changed object
     # still drifts. The count is frozen so a bypass cannot arrive as a quiet

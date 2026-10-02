@@ -92,7 +92,7 @@ database, which neither variable can move, and the arms run there: verified
 
 Cause 1, the `/etc/ld.so.cache` build-input drift in the strict-local session
 arm, does not reproduce here: that arm now **skips** rather than failing, because
-F-035 made an absent launcher refuse as `HOST-FACT-MISSING` instead of
+F-042 made an absent launcher refuse as `HOST-FACT-MISSING` instead of
 `EXEC-OBJECT-DRIFT`, and an unqualified host is a declared skip rather than a
 red. The underlying re-trace question is real and unchanged — a traced input
 that moves does require a deliberate re-trace — but it is not currently blocking
@@ -938,7 +938,7 @@ Historical observation retained:
   and the gate's exact diagnosis; it does not weaken the prerequisite checks.
 
 
-### F-036 — a byte-identical repair leaves the head with no check at all
+### F-043 — a byte-identical repair leaves the head with no check at all
 
 Measured live 2026-09-10 on `ranex-app-live-probe` PR #11 (issue #97 arm 8).
 The injected F401 was removed, restoring `six.py` byte-for-byte. The tree, and
@@ -954,7 +954,7 @@ that also touched README, giving the head its own subject. What a fix would
 have to decide is whether a stamped subject still owes a publication to a head
 that has never carried one.
 
-### F-037 — a stale tunnel is indistinguishable from a quiet receiver
+### F-044 — a stale tunnel is indistinguishable from a quiet receiver
 
 Same run. Four pushes produced no evaluation, and the receiver looked idle. The
 App's own delivery history said every webhook was `OK 200`: GitHub had
@@ -969,7 +969,7 @@ distinguished from one that was never asked; without that file the evidence
 would have pointed at the receiver, which was innocent. Restarting the tunnel
 restored delivery immediately.
 
-### F-035 — the nested host probe drifts, and the entrypoint's three failures are one failure
+### F-042 — the nested host probe drifts, and the entrypoint's three failures are one failure
 
 Measured 2026-09-10, twice on `58968da33` and once on the control commit
 `282bf6577`. The full-suite entrypoint exits 1 with three failures:
