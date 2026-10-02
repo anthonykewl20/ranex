@@ -26,6 +26,10 @@ are refused. Merges are per key. PR-0a declares only `catalogs`, all policy;
 no consumer is migrated yet. The policy digest includes schema version 1;
 mechanics-only changes do not change it.
 
+After a migration PR removes literals, regenerate the ratchet baseline:
+`uv run --frozen python tests/contract/test_settings_literal_ratchet.py --write-baseline`
+Commit the regenerated baseline in the same migration PR.
+
 ## Running it
 
 After committing the policy, public keyring and frozen test manifest,

@@ -11,6 +11,7 @@ OPERATIONS, STATE, MAP, dogfood docs, ADR/slice status lines.
 Removed stray tool output (.playwright-mcp, .video_agent); ignored going forward.
 
 Central settings (ADR-071, accepted; issue #226):
+- C4 literal ratchet guards src configuration literals; migrations must lower its baseline.
 - PR-0a merged (#235): `ranex.foundation.settings` (catalogs section, scoped
   precedence, policy refusal, settings_digest, secret references) and
   `ranex settings show|get`. No consumer migrated yet.
