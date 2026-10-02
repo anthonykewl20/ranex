@@ -15,11 +15,14 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
+from ranex.foundation.settings import Github
 from ranex.github_app.acceptance import ABSENT_CODE, REJECTED_PREFIX, Acceptance
 from ranex.github_app.binding import PrHeadBinding
 from ranex.github_app.client import GitHubClient
 
-CHECK_NAME = "ranex/acceptance"
+_GITHUB = Github()
+
+CHECK_NAME = _GITHUB.check_name
 
 CONCLUSION_SUCCESS = "success"
 CONCLUSION_FAILURE = "failure"

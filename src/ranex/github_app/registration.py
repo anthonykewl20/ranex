@@ -20,6 +20,7 @@ from typing import Any
 
 from ranex.cli.repository import committable_into
 from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.settings import Github
 from ranex.github_app.client import (
     API_ROOT,
     ClientRefusal,
@@ -31,16 +32,18 @@ from ranex.github_app.client import (
 )
 from ranex.github_app.publisher import CHECK_NAME
 
+_GITHUB = Github()
+
 MANIFEST_PERMISSIONS = {
     "checks": "write",
     "contents": "read",
     "pull_requests": "read",
 }
 MANIFEST_EVENTS = ("pull_request",)
-IDENTITY_NAME = "identity.json"
-KEY_NAME = "app.pem"
-SECRET_NAME = "webhook-secret"
-RULESET_NAME = "ranex-acceptance"
+IDENTITY_NAME = _GITHUB.identity_file
+KEY_NAME = _GITHUB.key_file
+SECRET_NAME = _GITHUB.webhook_secret_file
+RULESET_NAME = _GITHUB.ruleset_name
 WEB_ROOT = "https://github.com"
 WEB_ROOT_VARIABLE = "RANEX_GITHUB_WEB_ROOT"
 _CODE_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
