@@ -10,18 +10,27 @@
 
 <p align="center">Deterministic governance for AI agents that build software.</p>
 
-**No model decides PASS.**
+<p align="center"><b>No model decides PASS.</b></p>
 
-[![CI](https://github.com/anthonykewl20/ranex/actions/workflows/ci.yml/badge.svg)](https://github.com/anthonykewl20/ranex/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python 3.11-3.14](https://img.shields.io/badge/python-3.11--3.14-blue)](pyproject.toml) [![version v0.1.006](https://img.shields.io/badge/version-v0.1.006-blue)](https://github.com/anthonykewl20/ranex/releases/tag/v0.1.006)
+<p align="center">
+  <a href="https://github.com/anthonykewl20/ranex/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/anthonykewl20/ranex/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
+  <a href="pyproject.toml"><img alt="Python 3.11-3.14" src="https://img.shields.io/badge/python-3.11--3.14-blue"></a>
+  <a href="https://github.com/anthonykewl20/ranex/releases/tag/v0.1.006"><img alt="version v0.1.006" src="https://img.shields.io/badge/version-v0.1.006-blue"></a>
+</p>
 
-[Quickstart](#quickstart) · [How it works](#how-it-works) · [CLI](#the-cli-at-a-glance) · [Research](#research--decisions) · [What's brewing](#whats-brewing) · [Proofs](https://ranex.dev/dogfood) · [Docs](docs/OPERATIONS.md)
+<p align="center">
+  <a href="#quickstart">Quickstart</a> · <a href="#how-it-works">How it works</a> · <a href="#the-cli-at-a-glance">CLI</a> · <a href="#research--decisions">Research</a> · <a href="#whats-brewing">What's brewing</a> · <a href="https://ranex.dev/dogfood">Proofs</a> · <a href="docs/OPERATIONS.md">Docs</a>
+</p>
+
+Try the [real-repository proof](#prove-it-on-a-real-repository): PASS, rejection after a source change, then recovery after fresh evidence.
 
 ## What is Ranex?
 
 Ranex is a Python command-line tool with a native worker launcher that governs the work AI agents do on software. It decides whether a change may be accepted by evaluating signed evidence against a policy committed to the repository, with a pure function — `evaluate()` — so no model is ever asked for a verdict.
 
 - **No model decides.** The verdict is a deterministic function of the gate, the evidence, the subject and the approver.
-- **Absence blocks.** A required check that never ran blocks the gate; a skip counts as absence.
+- **Absence blocks.** A required check with no evidence blocks the gate; undeclared skips block suite claims, while explicitly declared expected skips are permitted.
 - **Evidence is bound to the exact tree.** Results carry the digest of the source and the command that produced them.
 
 Built for maintainers and harness builders who let agents write code and still need merges to be provable. Status: early; its limits are stated below and never hidden.
@@ -59,17 +68,17 @@ flowchart LR
 
 ## Guarantees
 
-Each invariant is enforced by code or a contract test — links, not claims.
+Each invariant is enforced by code or a contract test — repository paths are linked below.
 
 | Invariant | What it means | Enforced at |
 |---|---|---|
-| `evaluate()` is pure; no model decides | The verdict is a function of gate, evidence, subject and approver only | `tests/contract/test_kernel_unchanged.py` |
-| Absence blocks | A required claim with no evidence fails; absence never defaults to pass | `tests/unit/test_gate_verdict.py` |
-| Evidence is digest-bound to its subject | Evidence for a different subject or command is not evidence | `tests/security/test_slice003_command_binding.py` |
-| No self-approval | A producer may not approve their own work | `tests/e2e/test_approver_authentication_real.py` |
-| A gate that cannot block is refused at construction | A check that cannot fail is not a gate | `tests/security/test_slice009_strict_xfail_binding.py` |
-| The journal is append-only and hash-chained | Every decision is kept; the signed verdict anchors the journal head | `tests/security/test_slice005_journal_anchor.py` |
-| Removing every model credential must not change a verdict | Credential removal is a non-event for the verdict | `tests/unit/test_gate_verdict.py` |
+| `evaluate()` is pure; no model decides | The verdict is a function of gate, evidence, subject and approver only | [tests/contract/test_kernel_unchanged.py](tests/contract/test_kernel_unchanged.py) |
+| Absence blocks | A required claim with no evidence fails; absence never defaults to pass | [tests/unit/test_gate_verdict.py](tests/unit/test_gate_verdict.py) |
+| Evidence is digest-bound to its subject | Evidence for a different subject or command is not evidence | [tests/security/test_slice003_command_binding.py](tests/security/test_slice003_command_binding.py) |
+| No self-approval | A producer may not approve their own work | [tests/e2e/test_approver_authentication_real.py](tests/e2e/test_approver_authentication_real.py) |
+| A gate that cannot block is refused at construction | A check that cannot fail is not a gate | [tests/security/test_slice009_strict_xfail_binding.py](tests/security/test_slice009_strict_xfail_binding.py) |
+| The journal is append-only and hash-chained | Every decision is kept; the signed verdict anchors the journal head | [tests/security/test_slice005_journal_anchor.py](tests/security/test_slice005_journal_anchor.py) |
+| Removing every model credential must not change a verdict | Credential removal is a non-event for the verdict | [tests/unit/test_gate_verdict.py](tests/unit/test_gate_verdict.py) |
 
 ## Quickstart
 
@@ -93,10 +102,10 @@ uv run --frozen python tools/dogfood/external_proof.py \
 
 ### Govern your own commands
 
-After committing the policy, keyring and a frozen suite manifest and configuring the signing key ([operator guide](docs/OPERATIONS.md#running-it)):
+First follow the [operator guide](docs/OPERATIONS.md#running-it) to configure producer, approver and verdict-signing keys and initialize retained history. The example below requires a catalog binding its exact command, including suite reporting:
 
 ```sh
-uv run --frozen ranex run --claim tests-executed --producer worker -- uv run pytest -q
+uv run --frozen ranex run --claim tests-executed --producer worker -- uv run pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --junitxml=governance/suite_results.xml
 uv run --frozen ranex gate evaluate HEAD --approver release-approver
 uv run --frozen ranex journal verify
 ```
@@ -108,7 +117,7 @@ Your catalog binds the exact command you run; a fresh clone has no accepted evid
 | Capability | Command | Details |
 |---|---|---|
 | Gates and signed verdicts | `ranex gate evaluate` | policy committed with the code ([operator guide](docs/OPERATIONS.md#running-it)) |
-| Frozen test-ID manifests (pytest, Vitest) | `ranex suite freeze` | missing or skipped IDs are absence ([ADR-056](docs/adr/ADR-056-a-suite-claim-must-ask-for-the-outcome-it-judges.md)) |
+| Frozen test-ID manifests (pytest, Vitest) | `ranex suite freeze` | missing IDs and undeclared skips block; declared expected skips are permitted ([ADR-056](docs/adr/ADR-056-a-suite-claim-must-ask-for-the-outcome-it-judges.md)) |
 | Deliberate-shortcut markers | `ranex markers` | `ranex:` comments become SARIF evidence ([SLICE-088](docs/slices/done/SLICE-088-marker-evidence.md)) |
 | Anti-slop test census | `ranex antislop` | assertion census as SARIF ([ADR-063](docs/adr/ADR-063-antislop-claim-family.md)) |
 | Strict-local confinement | `ranex host` | native launcher and Landlock ([ADR-006](docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md)) |
@@ -153,7 +162,7 @@ A PASS establishes that admitted evidence satisfies the configured policy for th
 
 ## Research & decisions
 
-Every row is an accepted decision record whose decision is built; the record itself carries the evidence.
+These accepted decision records explain implemented mechanisms and their remaining limits; acceptance of a record does not mean its entire program is complete.
 
 | Decision | Why | Record |
 |---|---|---|
@@ -177,7 +186,7 @@ The research behind these decisions lives in [docs/adr/prior-art/](docs/adr/prio
 In progress right now — nothing here is shipped:
 
 - **Central settings layer** (in progress) — [ADR-071](docs/adr/ADR-071-central-settings-layer.md) accepted; foundation work in progress ([#226](https://github.com/anthonykewl20/ranex/issues/226)).
-- **Audit remediation, [milestone #9](https://github.com/anthonykewl20/ranex/milestone/9)** (in progress) — umbrella [#186](https://github.com/anthonykewl20/ranex/issues/186); open follow-ups [#194](https://github.com/anthonykewl20/ranex/issues/194), [#208](https://github.com/anthonykewl20/ranex/issues/208), [#210](https://github.com/anthonykewl20/ranex/issues/210), [#214](https://github.com/anthonykewl20/ranex/issues/214)–[#221](https://github.com/anthonykewl20/ranex/issues/221), [#223](https://github.com/anthonykewl20/ranex/issues/223), [#224](https://github.com/anthonykewl20/ranex/issues/224), [#226](https://github.com/anthonykewl20/ranex/issues/226), [#233](https://github.com/anthonykewl20/ranex/issues/233).
+- **Audit remediation** (in progress) — tracked in [milestone #9](https://github.com/anthonykewl20/ranex/milestone/9) under umbrella [#186](https://github.com/anthonykewl20/ranex/issues/186).
 - **SLICE-103 — audit findings and remediation** (in progress) — [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
