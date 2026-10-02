@@ -70,6 +70,7 @@ class SliceGateDefinition:
     rule_id: str
     required_claims: tuple[SliceClaimDefinition, ...]
     blocking: bool
+    requires_settings_binding: bool = False
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -488,7 +489,7 @@ def load_gate_text(text: str, gate_id: str) -> SliceGateDefinition:
         raise ValueError(f"expected exactly one gate {gate_id!r}, found {len(matches)}")
 
     entry = matches[0]
-    allowed = {"gate_id", "rule_id", "required_claims", "blocking"}
+    allowed = {"gate_id", "rule_id", "required_claims", "blocking", "requires_settings_binding"}
     unknown = set(entry) - allowed
     if unknown:
         raise ValueError(f"unknown keys in gate {gate_id!r}: {sorted(unknown)}")
@@ -500,6 +501,9 @@ def load_gate_text(text: str, gate_id: str) -> SliceGateDefinition:
     if blocking is not True:
         raise ValueError(f"gate {gate_id!r} must be blocking")
 
+    requires_settings_binding = entry.get("requires_settings_binding", False)
+    if type(requires_settings_binding) is not bool:
+        raise ValueError(f"gate {gate_id!r} requires_settings_binding must be a boolean")
     required_claims = tuple(_claim_definition(gate_id, claim) for claim in claims)
 
     # `Gate` refuses duplicates too, but the ambiguity is written here: two
@@ -518,4 +522,5 @@ def load_gate_text(text: str, gate_id: str) -> SliceGateDefinition:
         rule_id=str(entry["rule_id"]),
         required_claims=required_claims,
         blocking=True,
+        requires_settings_binding=requires_settings_binding,
     )
