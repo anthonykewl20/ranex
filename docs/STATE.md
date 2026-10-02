@@ -4,7 +4,8 @@
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
 
 Audit remediation: SLICE-104 merged via PR #227; open follow-ups are tracked
-in GitHub milestone #9 (umbrella #186).
+in GitHub milestone #9 (umbrella #186). Static-worker closure tests skip on
+foreign hosts (#194 part 1).
 
 ADR-071 PR-0b settings binding enforcement on captain/binding-enforcement.
 - Catalog gates opt into settings-bound evidence with a boolean flag.
