@@ -5167,6 +5167,20 @@ class RanexArgumentParser(argparse.ArgumentParser):
         return cast(_N | argparse.Namespace, parsed)
 
 
+def cmd_settings(args: argparse.Namespace) -> int:
+    from ranex.foundation.canonical import canonical_json
+    from ranex.foundation.settings import SettingsError, load_settings
+
+    try:
+        settings = load_settings(args.repository, evaluated_ref=args.ref)
+        value = settings.show() if args.action == "show" else settings.get(args.key)
+    except SettingsError as exc:
+        print(str(exc), file=sys.stderr)
+        return EXIT_USAGE
+    print(value if isinstance(value, str) else canonical_json(value))
+    return EXIT_PASS
+
+
 def build_parser() -> argparse.ArgumentParser:
     from ranex.foundation.release_version import release_tag
     from ranex.observability.schema import ranex_version
@@ -5182,6 +5196,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"ranex {display_version}")
     sub = parser.add_subparsers(dest="group", required=True)
+
+    settings = sub.add_parser("settings", help="show scoped settings").add_subparsers(
+        dest="action", required=True
+    )
+    for action in ("show", "get"):
+        command = settings.add_parser(action)
+        command.add_argument("--repository", default=".")
+        command.add_argument("--ref", default=None)
+        if action == "get":
+            command.add_argument("key", help="section.key")
+        command.set_defaults(func=cmd_settings)
 
     history = sub.add_parser("history", help="establish or recover externally retained signed history").add_subparsers(
         dest="action", required=True

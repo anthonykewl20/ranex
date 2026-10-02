@@ -5,6 +5,27 @@
 These are the detailed source-checkout, trust-root and host instructions.
 Start with the public quickstart for a small real-repository demonstration.
 
+## Settings (ADR-071)
+
+```sh
+uv run --frozen ranex settings show
+uv run --frozen ranex settings get catalogs.gates
+```
+
+`show` prints canonical JSON with each key's value, scope and source; `get`
+prints only the value. Both accept `--repository PATH` (default `.`) and
+`--ref REF` to resolve policy from the committed settings blob at that ref.
+Missing files use defaults; unknown keys and wrong types are refused.
+
+Mechanics precedence is defaults < repository `governance/settings.toml` <
+`$XDG_CONFIG_HOME/ranex/settings.toml` (default `~/.config/ranex/settings.toml`)
+< `RANEX_<SECTION>_<KEY>` < explicit CLI overrides in the loader API.
+Policy precedence is defaults < repository settings at the evaluated ref
+(working-tree file when no ref is supplied); host/env/CLI policy overrides
+are refused. Merges are per key. PR-0a declares only `catalogs`, all policy;
+no consumer is migrated yet. The policy digest includes schema version 1;
+mechanics-only changes do not change it.
+
 ## Running it
 
 After committing the policy, public keyring and frozen test manifest,
