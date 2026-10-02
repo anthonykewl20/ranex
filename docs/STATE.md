@@ -1,6 +1,8 @@
 # State
 
-Active slice: ADR-071 PR-0b settings binding enforcement on captain/binding-enforcement.
+**Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
+
+ADR-071 PR-0b settings binding enforcement on captain/binding-enforcement.
 
 - Catalog gates opt into settings-bound evidence with a boolean flag.
 - CLI admission compares signed envelope-v2 bindings with evaluated-commit settings.
