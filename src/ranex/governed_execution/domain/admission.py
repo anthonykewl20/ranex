@@ -504,8 +504,8 @@ def admit(
         elif envelope_type == ENVELOPE_TYPE_V2:
             fields = SIGNED_FIELDS_V2
         else:
-            reject(RejectionReason.MALFORMED_RECORD, f"unknown envelope_type: {envelope_type!r}")
-            continue
+            # Preserve the existing malformed-record field diagnostics.
+            fields = SIGNED_FIELDS
         if set(content) != set(fields):
             unexpected = sorted(set(content) - set(fields))
             missing = sorted(set(fields) - set(content))
@@ -518,6 +518,10 @@ def admit(
             # bytes by construction, so verifying first would pass a record
             # carrying content nobody attested to.
             reject(RejectionReason.MALFORMED_RECORD, "; ".join(parts))
+            continue
+
+        if envelope_type not in (ENVELOPE_TYPE, ENVELOPE_TYPE_V2):
+            reject(RejectionReason.MALFORMED_RECORD, f"unknown envelope_type: {envelope_type!r}")
             continue
 
         qualification_report: Mapping[str, Any] | None = None
