@@ -15,6 +15,9 @@ from pathlib import Path
 
 from ranex.cli.repository import git
 from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.settings import Github
+
+_GITHUB = Github()
 
 _SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
@@ -63,7 +66,7 @@ def fetch_pr_head(repository_root: Path, remote: str, head_sha: str) -> None:
 
     _require_head_sha(head_sha, "head must be a 40-hex commit id")
     try:
-        fetched = git(repository_root, "fetch", "--no-tags", remote, head_sha, timeout=30)
+        fetched = git(repository_root, "fetch", "--no-tags", remote, head_sha, timeout=_GITHUB.fetch_timeout_seconds)
     except subprocess.TimeoutExpired as exc:
         raise BindingRefusal("E-GITHUB-UNFETCHABLE-HEAD", "git fetch exceeded 30 seconds") from exc
     if fetched.returncode != 0:

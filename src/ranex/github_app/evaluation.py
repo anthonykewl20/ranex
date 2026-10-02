@@ -15,7 +15,10 @@ from pathlib import Path
 
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
+from ranex.foundation.settings import Github
 from ranex.github_app.binding import PrHeadBinding
+
+_GITHUB = Github()
 
 
 @dataclass(frozen=True)
@@ -143,7 +146,7 @@ class EvidenceEvaluator:
         try:
             result = subprocess.run(argv, cwd=Path(__file__).resolve().parents[3],
                                     env=environment, stdout=subprocess.DEVNULL,
-                                    stderr=subprocess.DEVNULL, timeout=60, check=False)
+                                    stderr=subprocess.DEVNULL, timeout=_GITHUB.evaluation_timeout_seconds, check=False)
         except subprocess.TimeoutExpired as exc:
             raise ValueError("E-GITHUB-EVALUATION-TIMEOUT") from exc
         if result.returncode not in (0, 1) or not verdict.exists():

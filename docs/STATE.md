@@ -19,6 +19,7 @@ OPERATIONS, STATE, MAP, dogfood docs, ADR/slice status lines.
 Removed stray tool output (.playwright-mcp, .video_agent); ignored going forward.
 
 Central settings (ADR-071, accepted; issue #226):
+- GitHub App defaults now come from the eight-key `github` section (#258 part A; no runtime loading).
 - Platform table centralizes Linux x86-64 ABI facts and refuses unsupported platforms (C5).
 - PR-0a merged (#235): `ranex.foundation.settings` (catalogs section, scoped
   precedence, policy refusal, settings_digest, secret references) and

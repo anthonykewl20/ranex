@@ -88,7 +88,7 @@ from ranex.foundation.scan_results import (
     parse_scan_artifact,
     validate_scan_manifest,
 )
-from ranex.foundation.settings import load_settings, settings_digest, settings_schema_version
+from ranex.foundation.settings import Github, load_settings, settings_digest, settings_schema_version
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
@@ -4897,7 +4897,7 @@ def cmd_github_register(args: argparse.Namespace) -> int:
                 repository_root=root,
                 api_root=api_root_from_environment(),
             )
-            identity_path = stored / "identity.json"
+            identity_path = stored / Github().identity_file
             identity = json.loads(identity_path.read_bytes())
             print(f"REGISTERED  app_id={identity['app_id']}  slug={identity.get('slug', '')}")
             print(f"            credentials={stored}  (PEM and webhook secret never printed)")
@@ -4933,7 +4933,7 @@ def cmd_github_register(args: argparse.Namespace) -> int:
             repository_root=root,
             api_root=api_root_from_environment(),
         )
-        identity = json.loads((stored / "identity.json").read_bytes())
+        identity = json.loads((stored / Github().identity_file).read_bytes())
         print(f"REGISTERED  app_id={identity['app_id']}  slug={identity.get('slug', '')}")
         print(f"            credentials={stored}  (PEM and webhook secret never printed)")
         return EXIT_PASS
