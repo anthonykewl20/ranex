@@ -22,9 +22,20 @@ Mechanics precedence is defaults < repository `governance/settings.toml` <
 < `RANEX_<SECTION>_<KEY>` < explicit CLI overrides in the loader API.
 Policy precedence is defaults < repository settings at the evaluated ref
 (working-tree file when no ref is supplied); host/env/CLI policy overrides
-are refused. Merges are per key. PR-0a declares only `catalogs`, all policy;
-no consumer is migrated yet. The policy digest includes schema version 1;
-mechanics-only changes do not change it.
+are refused. Merges are per key; `catalogs` keys are policy-scoped.
+The policy digest includes the settings schema version; mechanics-only
+changes do not change it.
+
+Catalog gates opt in with the YAML boolean `requires_settings_binding: true`
+(default false). For these gates, `run` emits envelope v2 with signed
+`settings_digest` and `settings_schema_version` from the observed commit.
+CLI evaluation computes the expected binding from its own evaluated commit,
+rejecting v1 or mismatched evidence as `settings-binding-mismatch`.
+Missing required claims produce a journaled FAIL, including empty admission.
+Direct evaluator calls without CLI binding verification refuse before the
+kernel: "settings binding requires the CLI admission path". Non-binding
+gates retain v1 production and existing evaluation semantics.
+Live acceptance remains non-binding pending issue #236.
 
 Platform facts: `ranex.foundation.platform` selects an immutable ABI table
 from the running OS and normalized machine; only Linux x86-64 is supported.
