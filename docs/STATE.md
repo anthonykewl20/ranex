@@ -2,8 +2,12 @@
 
 Collection journey (#270): supplies signing/history inputs and ignores generated verdict artifacts in its temporary repository.
 
-**Updated:** 2026-10-02
+**Updated:** 2026-10-03
 **Active slice:** [SLICE-103-audit-findings-and-remediation](docs/slices/SLICE-103-audit-findings-and-remediation.md).
+
+Antislop artifact inventory (R67, #219): a SARIF absent `runs[].artifacts`
+now blocks every scope path as missing coverage; partial inventories list
+exactly the uncovered paths.
 
 Audit remediation: SLICE-104 merged via PR #227; open follow-ups are tracked
 in GitHub milestone #9 (umbrella #186). Static-worker closure tests skip on
