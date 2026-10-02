@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "/ranex/runtime/bin/opencodereview",
+    "review",
+    "--format",
+    "sarif",
+    "-o",
+    "/ranex/output/ocr.sarif",
+    "--audience",
+    "agent"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.local/036/ranex-105-journey-j5ob6hn2/repository",
+  "digests": {
+    "record_digest": "sha256:3aa9fddc54f72049b2d55d7a01f13d84da13ae192106b78a8bfa318148bffbef",
+    "repeats": "1 distinct of 3"
+  },
+  "exit_code": 1,
+  "expectation": "arm1-offline-key-unset",
+  "notes": "real ranex run + gate evaluate under strict-local v3 with the OCR closure; key unset (fresh HOME, no OCR_LLM_*/ANTHROPIC_* vars). run_exit=[1, 1, 1] verdict=['FAIL', 'FAIL', 'FAIL'] missing=[['ocr-review'], ['ocr-review'], ['ocr-review']] reason='the bound command was observed failing: ocr-review' artifact_absent=[True, True, True]. positive control (gate passes when the bound command succeeds): control=PASS. host key-unset probe: exit=1 'Error: resolve LLM endpoint: no valid LLM endpoint configured; one of OCR_LLM_URL/OCR_LLM_TOKEN/OCR_LLM_MODEL, ~/.opencodereview/config.json, or ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN/ANTHROPIC_MODEL must be set'. same argv under the exact worker environment, host-side: exit=1 'warning: running git --version: exec: \"git\": executable file not found in $PATH\\nError: --output directory does not exist: /ranex/output' (the in-session failure text is sealed \u2014 static workers run with inert fds 0-2 \u2014 only its exit code is observable). Deviation: issue #105 says FAIL-by-absence; the honest exit-code-only binding reports cause 'failed' with the artifact measured absent, because the loader's canonical SARIF argv spelling cannot bind this CLI (measured: 'unknown flag: --output-format').",
+  "status": "VERIFIED",
+  "wall_ms": 91083
+}
