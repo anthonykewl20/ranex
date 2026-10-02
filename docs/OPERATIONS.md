@@ -42,6 +42,10 @@ from the running OS and normalized machine; only Linux x86-64 is supported.
 Syscall numbers, target triple and loader identity come from that table.
 Unsupported platforms raise `PlatformUnsupported`; settings cannot override it.
 
+After a migration PR removes literals, regenerate the ratchet baseline:
+`uv run --frozen python tests/contract/test_settings_literal_ratchet.py --write-baseline`
+Commit the regenerated baseline in the same migration PR.
+
 ## Running it
 
 After committing the policy, public keyring and frozen test manifest,
