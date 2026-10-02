@@ -1,0 +1,97 @@
+{
+  "src/ranex/cli/acceptance_task.py": {
+    "host-path": 4,
+    "url": 1
+  },
+  "src/ranex/cli/delegation.py": {
+    "governance-path": 2,
+    "host-path": 1
+  },
+  "src/ranex/cli/fanout.py": {
+    "governance-path": 2
+  },
+  "src/ranex/cli/host_confinement.py": {
+    "host-path": 52
+  },
+  "src/ranex/cli/host_workflow.py": {
+    "env-name": 3,
+    "governance-path": 2,
+    "host-path": 12
+  },
+  "src/ranex/cli/http_observer.py": {
+    "host-path": 4,
+    "url": 1
+  },
+  "src/ranex/cli/main.py": {
+    "governance-path": 25,
+    "host-path": 3,
+    "url": 2
+  },
+  "src/ranex/cli/process_supervisor.py": {
+    "host-path": 23
+  },
+  "src/ranex/cli/repair_loop.py": {
+    "governance-path": 6
+  },
+  "src/ranex/cli/subject.py": {
+    "host-path": 5
+  },
+  "src/ranex/cli/toolchain.py": {
+    "host-path": 4
+  },
+  "src/ranex/foundation/antislop.py": {
+    "url": 2
+  },
+  "src/ranex/foundation/arch_scan.py": {
+    "url": 2
+  },
+  "src/ranex/foundation/delegated_review.py": {
+    "governance-path": 2,
+    "url": 1
+  },
+  "src/ranex/foundation/markers.py": {
+    "url": 2
+  },
+  "src/ranex/foundation/pytest_xpass.py": {
+    "env-name": 2
+  },
+  "src/ranex/foundation/scan_results.py": {
+    "governance-path": 2
+  },
+  "src/ranex/foundation/specification_abc.py": {
+    "governance-path": 1
+  },
+  "src/ranex/github_app/client.py": {
+    "url": 1
+  },
+  "src/ranex/github_app/evaluation.py": {
+    "env-name": 1,
+    "host-path": 1
+  },
+  "src/ranex/github_app/registration.py": {
+    "host-path": 1,
+    "url": 1
+  },
+  "src/ranex/governed_execution/application/specification_batch.py": {
+    "governance-path": 7
+  },
+  "src/ranex/governed_execution/domain/admission.py": {
+    "host-path": 14
+  },
+  "src/ranex/governed_execution/witness.py": {
+    "governance-path": 1,
+    "url": 1
+  },
+  "src/ranex/observability/emitter.py": {
+    "host-path": 3
+  },
+  "src/ranex/provisioning/derivation.py": {
+    "host-path": 1
+  },
+  "src/ranex/provisioning/fetching.py": {
+    "url": 2
+  },
+  "src/ranex/provisioning/root.py": {
+    "host-path": 1
+  }
+}

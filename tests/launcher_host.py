@@ -21,22 +21,29 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def build_closure_limitation() -> str | None:
-    """Return why this host cannot reproduce the pinned launcher build closure.
+def build_closure_limitation(manifest_path: Path = MANIFEST) -> str | None:
+    """Return why this host cannot reproduce the pinned build closure.
 
     Host qualification is absence, not success. A foreign host must exercise the
     controller's fail-closed build refusal rather than pretend its toolchain can
-    prove the qualified host's launcher bytes.
+    prove the qualified host's bytes.
     """
 
     try:
-        manifest = json.loads(MANIFEST.read_bytes())
+        manifest = json.loads(manifest_path.read_bytes())
         inputs = manifest["build"]["inputs"]
         if not isinstance(inputs, list):
             raise TypeError("build.inputs is not a list")
         traced = [
             item
             for item in inputs
+            if isinstance(item, dict)
+            and isinstance(item.get("path"), str)
+            and Path(item["path"]).is_absolute()
+        ]
+        traced += [
+            item
+            for item in (manifest["build"].get("compiler"), manifest["build"].get("observer"))
             if isinstance(item, dict)
             and isinstance(item.get("path"), str)
             and Path(item["path"]).is_absolute()

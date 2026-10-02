@@ -33,6 +33,7 @@ from ranex.foundation.confinement_result import (
 from ranex.foundation.confinement_result import (
     confinement_result_bytes as _confinement_result_bytes,
 )
+from ranex.foundation.platform import current
 from ranex.foundation.static_executable import inspect_self_contained_static_executable
 from ranex.observability import stage_begin, stage_end
 from ranex.observability.emitter import set_governed_root
@@ -125,10 +126,10 @@ BROKER_PREFIX = (
     "--property=TasksAccounting=yes",
 )
 
-SYS_EXECVEAT = 322
-SYS_KEYCTL = 250
-SYS_OPENAT2 = 437
-SYS_LANDLOCK_CREATE_RULESET = 444
+SYS_EXECVEAT = current().execveat
+SYS_KEYCTL = current().keyctl
+SYS_OPENAT2 = current().openat2
+SYS_LANDLOCK_CREATE_RULESET = current().landlock_create_ruleset
 AT_EMPTY_PATH = 0x1000
 AT_FDCWD = -100
 KEYCTL_JOIN_SESSION_KEYRING = 1
@@ -1103,7 +1104,7 @@ def launcher_build(root: Path, manifest_arg: str, source_arg: str, output_arg: s
         _refuse(E_BUILD_INPUT, "build manifest has missing or extra top-level fields")
     if manifest.get("schema") != "ranex-native-launcher-build-v1":
         _refuse(E_BUILD_INPUT, "build manifest uses the wrong schema")
-    if manifest.get("target") != "x86_64-linux-gnu":
+    if manifest.get("target") != current().target_triple:
         _refuse(E_BUILD_INPUT, "build manifest uses the wrong target")
     build, source, artifact = _manifest_sections(manifest, E_BUILD_INPUT)
     _validate_build_pins(build)

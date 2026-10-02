@@ -28,6 +28,7 @@ import pytest
 
 from ranex.bootstrap.composition import catalog_digest_for
 from ranex.foundation.canonical import command_digest
+from ranex.foundation.settings import settings_schema_version
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
@@ -333,7 +334,7 @@ def test_the_envelope_type_is_signed_and_cannot_be_relabelled(
         private,
         envelope_type=ENVELOPE_TYPE_V2,
         settings_digest="sha256:" + "e" * 64,
-        settings_schema_version=1,
+        settings_schema_version=settings_schema_version,
     )
     record["envelope_type"] = ENVELOPE_TYPE
     del record["settings_digest"]
