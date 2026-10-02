@@ -49,9 +49,6 @@
     "governance-path": 2,
     "url": 1
   },
-  "src/ranex/foundation/dynamic_runtime.py": {
-    "host-path": 1
-  },
   "src/ranex/foundation/markers.py": {
     "url": 2
   },
