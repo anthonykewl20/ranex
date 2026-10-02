@@ -30,13 +30,16 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed25519
 from ranex.foundation import atomic_writer
 from ranex.foundation.dsse import sign_envelope
 from ranex.foundation.merkle import leaf_hash, verify_inclusion
+from ranex.foundation.settings import Witness
 from ranex.foundation.signing import _decode
 from ranex.foundation.verdict_signing import PAYLOAD_TYPE
 
-DEFAULT_WITNESS_URL = "https://rekor.sigstore.dev"
+_WITNESS = Witness()
+
+DEFAULT_WITNESS_URL = _WITNESS.url
 WITNESS_URL_VARIABLE = "RANEX_WITNESS_URL"
 WITNESS_SCHEMA = "ranex-witness-v1"
-DEFAULT_LOG_PUBLIC_KEY = "governance/rekor_public_key.pem"
+DEFAULT_LOG_PUBLIC_KEY = _WITNESS.log_public_key_path
 
 # Operational refusal when --witness is set and the log cannot take the entry.
 WITNESS_REFUSAL = "E-WITNESS"
@@ -97,7 +100,7 @@ def _post_dsse(log_url: str, envelope: dict[str, Any], verifier_pem: bytes) -> d
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=_WITNESS.request_timeout_seconds) as response:
             raw = response.read()
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
@@ -149,7 +152,7 @@ def _get_entry(log_url: str, entry_uuid: str) -> dict[str, Any]:
         method="GET",
     )
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=_WITNESS.request_timeout_seconds) as response:
             raw = response.read()
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError) as exc:
         raise ValueError(

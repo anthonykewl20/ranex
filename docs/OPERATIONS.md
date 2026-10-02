@@ -26,6 +26,11 @@ are refused. Merges are per key; `catalogs` keys are policy-scoped.
 The policy digest includes the settings schema version; mechanics-only
 changes do not change it.
 
+A `witness` section (settings migration 3, part A) holds the transparency
+log defaults: `witness.url`, `witness.log_public_key_path` and
+`witness.request_timeout_seconds` replace the hard-coded constants in
+`governed_execution/witness.py`.
+
 Catalog gates opt in with the YAML boolean `requires_settings_binding: true`
 (default false). For these gates, `run` emits envelope v2 with signed
 `settings_digest` and `settings_schema_version` from the observed commit.

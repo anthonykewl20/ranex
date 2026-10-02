@@ -40,7 +40,14 @@ class Catalogs:
     verdict_dir: str = setting("verdict_dir", "governance/verdicts", "policy", "Signed verdicts")
 
 
-SCHEMA: Mapping[str, type] = MappingProxyType({"catalogs": Catalogs})
+@dataclass(frozen=True)
+class Witness:
+    url: str = setting("url", "https://rekor.sigstore.dev", "mechanics", "Transparency log base URL")
+    log_public_key_path: str = setting("log_public_key_path", "governance/rekor_public_key.pem", "policy", "Transparency log public key")
+    request_timeout_seconds: int = setting("request_timeout_seconds", 60, "mechanics", "Transparency log request timeout")
+
+
+SCHEMA: Mapping[str, type] = MappingProxyType({"catalogs": Catalogs, "witness": Witness})
 
 
 @dataclass(frozen=True)
@@ -92,6 +99,10 @@ class Settings:
     @property
     def catalogs(self) -> Catalogs:
         return self.sections["catalogs"]
+
+    @property
+    def witness(self) -> Witness:
+        return self.sections["witness"]
 
     def show(self) -> dict[str, Any]:
         return {section: {f.name: {"value": _value(getattr(instance, f.name)),
