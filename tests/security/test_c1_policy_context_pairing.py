@@ -67,7 +67,7 @@ def test_mixed_records_bind_their_own_policy(tmp_path, monkeypatch, qualificatio
 
 
 @pytest.mark.parametrize("filter_name", ["policy", "containment"])
-@pytest.mark.parametrize("damage", ["short", "long", "duplicate", "unmatched", "missing", "malformed", "swapped"])
+@pytest.mark.parametrize("damage", ["short", "long", "duplicate", "unmatched", "missing", "malformed", "swapped", "non-mapping", "out-of-range"])
 def test_invalid_pairing_refuses_without_admission(tmp_path, monkeypatch, damage, filter_name):
     honest, _, public = records_and_key(monkeypatch)
     records = [honest]
@@ -88,6 +88,25 @@ def test_invalid_pairing_refuses_without_admission(tmp_path, monkeypatch, damage
         records = [{k: v for k, v in honest.items() if k != "claim_id"}]
     elif damage == "malformed":
         records = [{**honest, "claim_id": []}]
+    elif damage == "non-mapping":
+        # Pin (issue #223): a non-Mapping record paired with admitted evidence
+        # is refused by the pair check, fail-closed, without an exception.
+        records = [42]
+    elif damage == "out-of-range":
+        # Pin (issue #223): a rejection whose index does not locate any record
+        # invalidates the pairing contract instead of being trusted as a
+        # position. The reason field is incidental to this damage; only the
+        # index is wrong.
+        admitted = replace(
+            admitted,
+            rejections=(admission.Rejection(
+                index=99,
+                reason=admission.RejectionReason.MALFORMED_RECORD,
+                detail="rejection index does not locate a record",
+                producer_id=None,
+                claim_id=None,
+            ),),
+        )
     else:
         # Inject a broken adapter's output: reverse only its evidence, not
         # the source records. Neither filter may trust that positional claim.
@@ -104,6 +123,45 @@ def test_invalid_pairing_refuses_without_admission(tmp_path, monkeypatch, damage
     assert result.evidence == ()
     assert result.rejections
     assert all(r.reason is admission.RejectionReason.MALFORMED_RECORD for r in result.rejections)
+
+
+@pytest.mark.parametrize("damage", ["stand-in", "non-int-index"])
+def test_broken_pairing_adapter_refuses_without_raising(tmp_path, monkeypatch, damage):
+    # The "broken contract is data to refuse, not an exception" contract of
+    # `_checked_record_pairs` has edges unreachable through admit_records
+    # (issue #223): a non-Evidence item raises AttributeError at field access
+    # and a non-int Rejection.index raises TypeError in the range check or
+    # the final sort. Both must refuse without raising.
+    honest, _, public = records_and_key(monkeypatch)
+    records = [honest]
+    admitted = admission.admit(records, {"qualifier": public})
+    assert len(admitted.evidence) == 1
+    if damage == "stand-in":
+        # An object standing in for Evidence that is not one: it has no signed
+        # fields to compare, so field access raises AttributeError.
+        admitted = SimpleNamespace(evidence=(SimpleNamespace(),), rejections=(),
+                                   evidence_indices=(0,))
+    else:
+        # A rejection index that is not an int cannot locate a record; the
+        # reason field is incidental to this damage, only the index is wrong.
+        admitted = SimpleNamespace(
+            evidence=admitted.evidence,
+            rejections=(admission.Rejection(
+                index="0",
+                reason=admission.RejectionReason.MALFORMED_RECORD,
+                detail="rejection index is not an integer",
+                producer_id=None,
+                claim_id=None,
+            ),),
+            evidence_indices=(0,),
+        )
+    for result in (
+        refuse_foreign_policy_context(admitted, records, "landing", CATALOG),
+        refuse_executables_inside(admitted, records, tmp_path),
+    ):
+        assert result.evidence == ()
+        assert result.rejections
+        assert all(r.reason is admission.RejectionReason.MALFORMED_RECORD for r in result.rejections)
 
 
 @pytest.mark.parametrize("damage", ["duplicate", "missing", "malformed"])

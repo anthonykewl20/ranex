@@ -25,3 +25,4 @@ Live-acceptance binding is tracked separately in #236.
 
 Dogfood finding ids F-035..F-037 de-duplicated (#233).
 OCR #221: v3 anchored-history receipts verify arms 0/1/2/3/5 and controls; arm 4 out of scope.
+C1 pairing check hardened (#223): `_checked_record_pairs` refuses malformed pairing inputs without raising; two refusal cases pinned.
