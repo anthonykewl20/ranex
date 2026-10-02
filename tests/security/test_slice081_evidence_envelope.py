@@ -281,7 +281,8 @@ def test_a_v4_record_cannot_be_spelled_as_v5(keypair: tuple[str, str]) -> None:
         if key not in {"envelope_type", "gate_id", "catalog_digest"}
     }
 
-    with pytest.raises(ValueError, match="must be exactly"):
+    # envelope v2 dispatch: field-set/type mismatch is refused before field-set signing
+    with pytest.raises(ValueError, match="unknown envelope_type"):
         signed_payload(v4)
 
 
