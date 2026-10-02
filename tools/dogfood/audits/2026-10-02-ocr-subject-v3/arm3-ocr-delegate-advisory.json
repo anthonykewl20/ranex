@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/home/soultransit/.cache/ranex/ocr/v1.12.9/opencodereview-linux-amd64",
+    "delegate",
+    "preview",
+    "--format",
+    "json",
+    "--from",
+    "c1926b99e49dbf1bc4cd2beaa3195a2fd6ca62da",
+    "--to",
+    "9a18b316888aaa04606128c92275d551bc868cfb",
+    "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.venv/bin/python3",
+    "-m",
+    "ranex.foundation.delegated_review",
+    "--output-format=sarif",
+    "--output-file=governance/review.sarif",
+    "--path=pkg/mod.py",
+    "--excerpt=data = open(path).read()  # noqa: SIM115",
+    "--level=error"
+  ],
+  "cwd": "/tmp/ranex-105-arm3-komkjol1/subject",
+  "digests": {
+    "outcome": "sha256:fb151d5636ad2ed392a3e66884d5653251ccaf0fe3fa97749aadd5580de62729",
+    "packet": "sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97",
+    "sarif": "sha256:01a7e8e18ddfdbcbe5b985916279cceb547dbc1f76948963c7e451f1232198c6",
+    "spec": "sha256:81604daca125d4ace1e3f881cec4e7bf7af4a5660c101237c765d8f3d129ac23"
+  },
+  "exit_code": 0,
+  "expectation": "arm3-ocr-delegate-advisory",
+  "notes": "ocr delegate preview --format json x3: exits=[0, 0, 0] unique=1 (real delegation spec: mode='range' reviewable=1). #102 packet digest x3: unique=1 bound to subject=sha256:279b73ca438ee372456baa704b4b35f850f8d61e24d19d587804f43e8e2ab3a4 range=c1926b99e49d..9a18b316888a. SARIF admitted under the packet binding; finding ids=['pkg/mod.py::review.finding::bf3b4d98de044cd51eaab1c55dfebd91d950c58bcb008b50194ec9f44e7c1892'] (advisory posture: the findings claim is recorded and never part of any default required_claims; an operator catalog that requires it gates on it \u2014 #102's stated relaxation). negatives: packet substitution REFUSED:delegated-review SARIF properties.packet_digest does not match the bound packet (sha256:928ffb798d461ec360301dc0a3a6639b6f39ac4f5d5d145a6b0ed74d743ba516 != sha256:9f97a320b8632bb2ad7573f30190002674b02bd0022c7f7f8554441e83224e97); substitution refused; unresolvable anchor REFUSED:delegated-review finding for 'pkg/mod.py' has an unresolvable excerpt anchor; absence blocks (ADR-060 rule 6).",
+  "status": "VERIFIED",
+  "wall_ms": 131
+}

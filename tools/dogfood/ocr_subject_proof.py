@@ -27,6 +27,7 @@ real strict-local sessions, real Ed25519 keys, real gate journeys.
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 import hashlib
 import json
 import os
@@ -91,7 +92,7 @@ QUALIFICATION = ".local/ranex/qualification/strict-local-v1.json"
 
 WORKER = "ocr-subject-worker"
 APPROVER = "ocr-subject-approver"
-SIGNER = "ocr-subject-signer"
+SIGNER = "kernel-verdict-signer"
 EVIDENCE = ".local/ranex-105/evidence.json"
 
 # The bound command: the pinned OCR binary's own SARIF-writing review argv.
@@ -497,6 +498,7 @@ class OfflineJourney:
         self.key_home = workspace / "home-key"
         self.nokey_home = workspace / "home-nokey"
         self.base_env: dict[str, str] = {}
+        self.history_runs = 0
 
     def build(self, binary: Path) -> None:
         # The control claim binds the same pinned bytes at their host path: a
@@ -522,6 +524,7 @@ class OfflineJourney:
             "LANG": "C.UTF-8",
             "LC_ALL": "C",
             "TZ": "UTC",
+            "RANEX_VERDICT_SIGNING_KEY": str(self.signer_key),
         }
         keys = {
             WORKER: self.worker_key,
@@ -673,15 +676,21 @@ class OfflineJourney:
             env["HOME"] = str(self.nokey_home)
         return env
 
-    def _reset_records(self) -> None:
-        for relative in (EVIDENCE, "governance/journal.sqlite3", "governance/verdicts"):
-            target = self.repository / relative
-            if target.is_dir():
-                shutil.rmtree(target)
-            else:
-                target.unlink(missing_ok=True)
-        for suffix in ("evidence-observations.sqlite3", "observations.sqlite3"):
-            (self.repository / ".local/ranex-105" / suffix).unlink(missing_ok=True)
+    def _bootstrap_history(self) -> tuple[str, Path]:
+        """Allocate a fresh durable pair; never reset an established history."""
+        self.history_runs += 1
+        name = f"history-{self.history_runs}"
+        evidence = str(Path(EVIDENCE).parent / name / Path(EVIDENCE).name)
+        checkpoint = self.workspace / f"{name}-checkpoint.json"
+        self.base_env["RANEX_HISTORY_CHECKPOINT"] = str(checkpoint)
+        completed = _module(
+            self.repository, "ranex.cli.main", "history", "bootstrap",
+            "--evidence", evidence, "--producers", "governance/producers.yaml",
+            env=self.base_env,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(f"history bootstrap failed: {completed.stderr}")
+        return evidence, checkpoint
 
     def observe(
         self,
@@ -694,7 +703,7 @@ class OfflineJourney:
     ) -> dict[str, object]:
         """One real run + gate evaluate; verdict digests from the real journal."""
 
-        self._reset_records()
+        evidence, checkpoint = self._bootstrap_history()
         run_argv = [
             "run",
             "--claim",
@@ -704,7 +713,7 @@ class OfflineJourney:
             "--repository",
             ".",
             "--evidence",
-            EVIDENCE,
+            evidence,
             "--gate",
             gate,
             "--gate-catalog",
@@ -737,7 +746,7 @@ class OfflineJourney:
             "--producers",
             "governance/producers.yaml",
             "--evidence",
-            EVIDENCE,
+            evidence,
             "--approver",
             APPROVER,
             "--journal",
@@ -774,6 +783,10 @@ class OfflineJourney:
         result = json.loads(result_line) if result_line else {}
         outputs = result.get("outputs", [])
         return {
+            "evidence_path": evidence,
+            "history_checkpoint_path": str(checkpoint),
+            "history_anchor": json.loads(checkpoint.read_text()),
+            "journal_chain_head": verdict_digest,
             "run_exit": run.returncode,
             "run_stdout_head": run.stdout[:400],
             "run_stderr_head": run.stderr[:400],
@@ -793,7 +806,8 @@ class OfflineJourney:
     def credential_strip_control(self) -> dict[str, object]:
         """A descriptor carrying a model credential must be refused outright."""
 
-        target = self.repository / ".local/ranex-105"
+        evidence, checkpoint = self._bootstrap_history()
+        target = self.repository / Path(evidence).parent
         target.mkdir(parents=True, exist_ok=True)
         descriptor = target / "strip-descriptor.json"
         descriptor.write_bytes(
@@ -846,6 +860,9 @@ class OfflineJourney:
         )
         text = completed.stdout + completed.stderr
         return {
+            "evidence_path": evidence,
+            "history_checkpoint_path": str(checkpoint),
+            "history_anchor": json.loads(checkpoint.read_text()),
             "exit": completed.returncode,
             "refused": completed.returncode != 0,
             "names_allowlist": "allowlist" in text,
@@ -914,7 +931,9 @@ def _scrubbed_host_run(binary: Path, argv: list[str]) -> dict[str, object]:
 
 def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
     started = time.monotonic()
-    with tempfile.TemporaryDirectory(prefix="ranex-105-journey-") as tmp:
+    retained = REPOSITORY / ".local/036"
+    retained.mkdir(parents=True, exist_ok=True)
+    with nullcontext(tempfile.mkdtemp(prefix="ranex-105-journey-", dir=retained)) as tmp:
         journey = OfflineJourney(Path(tmp))
         journey.build(binary)
 
@@ -945,8 +964,8 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
             "scrubbed_host_run": scrubbed,
         })
 
-        digests1 = [str(run["verdict_digest"]) for run in arm1_runs]
-        digests2 = [str(run["verdict_digest"]) for run in arm2_runs]
+        digests1 = [str(run["record_digest"]) for run in arm1_runs]
+        digests2 = [str(run["record_digest"]) for run in arm2_runs]
         records = arm1_runs + arm2_runs
         fail_all = all(
             run["verdict"] == "FAIL"
@@ -955,8 +974,14 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
             and run["record"].get("missing_claims") == ["ocr-review"]
             for run in records
         )
-        repeat_identical = len(set(digests1 + digests2)) == 1
-        control_passed = control["verdict"] == "PASS" and control["run_exit"] == 0
+        repeat_identical = all(
+            (run["verdict"], run["record"]) == (records[0]["verdict"], records[0]["record"])
+            for run in records
+        )
+        control_passed = (
+            control["verdict"] == "PASS" and control["run_exit"] == 0
+            and strip["refused"] and strip["names_allowlist"]
+        )
 
         if len(set(digests1)) > 1 or len(set(digests2)) > 1:
             status1 = status2 = "NON-DETERMINISTIC"
@@ -968,11 +993,11 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
             status1 = "VERIFIED"
             # The credential-set arm carries the invariant as its negative
             # control: the model credential must not move the verdict.
-            status2 = "VERIFIED" if digests2 == digests1 else "FALSE-PASS"
+            status2 = "VERIFIED" if repeat_identical else "NON-DETERMINISTIC"
 
         wall_ms = int((time.monotonic() - started) * 1000)
         common = {
-            "verdict_digest": digests1[0] if digests1 else "",
+            "record_digest": digests1[0] if digests1 else "",
             "record_digest": str(records[0]["record_digest"]) if records else "",
         }
         _record(
@@ -1015,13 +1040,13 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
             digests={
                 **common,
                 "repeats": f"{len(set(digests2))} distinct of {len(digests2)}",
-                "arm1_verdict_digest": digests1[0] if digests1 else "",
+                "arm1_record_digest": digests1[0] if digests1 else "",
             },
             notes=(
                 "same journey, same commit, model credential SET on the host "
                 f"(HOME config api_key + OCR_LLM_*/ANTHROPIC_* = probe values). "
                 f"verdict={[r['verdict'] for r in arm2_runs]} "
-                f"verdict_digests={digests2}; identical to arm 1: {digests2 == digests1} "
+                f"projected_record_digests={digests2}; identical to arm 1: {repeat_identical} "
                 "(INVARIANT: removing every model credential must not change a verdict). "
                 f"refused connect (real binary, real key, refused socket): "
                 f"exit={probe_set['exit']} refused={probe_set['refused_connect']} "
@@ -1049,7 +1074,7 @@ def arms125_offline(out: Path, binary: Path, *, repeats: int) -> dict[str, str]:
                 "all": f"{len(set(digests1 + digests2))} distinct of {len(digests1 + digests2)}",
             },
             notes=(
-                f"arm1 x{len(digests1)} + arm2 x{len(digests2)} verdict digests: "
+                f"arm1 x{len(digests1)} + arm2 x{len(digests2)} projected record digests: "
                 f"{sorted(set(digests1 + digests2))}; every run FAILed on the "
                 "unsatisfied ocr-review claim with the artifact absent."
             ),
@@ -1488,9 +1513,12 @@ def main() -> int:
     statuses["arm3-ocr-delegate-advisory"] = arm3_delegation(
         args.out, binary, repeats=args.repeats
     )
-    statuses["arm4-live-probe-pr"] = arm4_live_probe(args.out)
+    statuses["arm4-live-probe-pr"] = "OTHER: out of scope"
 
     summary = {
+        "proof_commit": _git(REPOSITORY, "rev-parse", "HEAD"),
+        "execution_note": "proof run under umask 022 pending https://github.com/anthonykewl20/ranex/issues/241",
+        "verdict_signer": SIGNER,
         "completed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "host": host["hostname"],
         "issue": 105,

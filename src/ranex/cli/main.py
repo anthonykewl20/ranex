@@ -482,8 +482,16 @@ def _checked_record_pairs(
     Equal lengths alone cannot establish identity. Compare every kernel field
     with its signed source, and refuse ambiguous duplicate envelopes. A broken
     contract is data to refuse, not an exception or permission to truncate.
+    An item that is not kernel Evidence and a rejection index that is not an
+    in-range integer are broken contract data like any other: refused, never
+    raised (AttributeError at field access, TypeError at the range check or
+    the sort would otherwise escape this function).
     """
-    refused = {rejection.index for rejection in admission.rejections}
+    refused = {
+        index
+        for index in (getattr(rejection, "index", None) for rejection in admission.rejections)
+        if type(index) is int
+    }
     positions = [index for index in range(len(records)) if index not in refused]
     indices = admission.evidence_indices
     pairs = tuple(zip(indices, admission.evidence, strict=False))
@@ -495,6 +503,15 @@ def _checked_record_pairs(
         and len(refused) == len(admission.rejections)
         and all(0 <= index < len(records) for index in refused)
     )
+    def rejection_order(rejection: Rejection) -> tuple[int, int]:
+        # A total order that tolerates a damaged index: a rejection whose
+        # index is not an integer cannot be compared with the record positions
+        # the fail-closed path adds, and sorting mixed types would raise where
+        # the contract says refuse. Well-formed indices order exactly as
+        # before; a damaged one sorts last instead of raising.
+        index = getattr(rejection, "index", None)
+        return (0, index) if type(index) is int else (1, 0)
+
     identities: set[str] = set()
     try:
         for index, item in pairs:
@@ -515,7 +532,7 @@ def _checked_record_pairs(
                     source = None  # The closed qualification report is checked by admit.
                 if source != getattr(item, field):
                     valid = False
-    except (IndexError, KeyError, TypeError, ValueError, UnicodeError):
+    except (AttributeError, IndexError, KeyError, TypeError, ValueError, UnicodeError):
         valid = False
     if valid:
         return pairs
@@ -535,7 +552,7 @@ def _checked_record_pairs(
     )
     return Admission(
         evidence=(),
-        rejections=tuple(sorted(admission.rejections + added, key=lambda r: r.index)),
+        rejections=tuple(sorted(admission.rejections + added, key=rejection_order)),
     )
 
 

@@ -142,7 +142,7 @@ RESPONSE_LIMIT = 65_536
 # Audit remediation: authenticated history, serialized task merge, explicit
 # review reporters, confined scanner artifact reads and paired runtime output
 # exemptions; native routing retained.
-MAIN_PY_SHA256 = "97964fe2f0209645a21a54e98d662a8e72750e570367060ed29c1bf035378295"
+MAIN_PY_SHA256 = "22f3a710a0e76de0db582ef716596f1a62b4ec92549cc5404427a18f593f886f"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
@@ -1583,7 +1583,7 @@ def test_gate10_production_entrypoint_adr_and_risk_remain_frozen() -> None:
 
 
 def test_gate9_slice017_files_have_no_test_bypass_and_keep_the_frozen_count() -> None:
-    # 21 -> 22 (F-035, 2026-09-10): `test_an_absent_object_is_missing_not_drifted`
+    # 21 -> 22 (F-042, 2026-09-10): `test_an_absent_object_is_missing_not_drifted`
     # pins that an object which was never installed refuses as HOST-FACT-MISSING
     # rather than EXEC-OBJECT-DRIFT, with a control proving a changed object
     # still drifts. The count is frozen so a bypass cannot arrive as a quiet
