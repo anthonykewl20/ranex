@@ -21,7 +21,7 @@ from pathlib import Path
 import pytest
 
 from ranex.foundation.canonical import canonical_json_bytes
-from ranex.foundation.signing import generate_keypair, sign_evidence
+from ranex.foundation.signing import ENVELOPE_TYPE, generate_keypair, sign_evidence
 from ranex.foundation.suite_results import validate_suite_results
 from ranex.governed_execution.adapters.persistence.history import bootstrap_history
 from ranex.governed_execution.repair_envelope import validate_repair_envelope
@@ -242,7 +242,7 @@ def test_envelope_bytes_offered_as_evidence_are_refused(application) -> None:
         "suite_results": envelope,
         "confinement_result_digest": None,
         "confinement_profile_digest": None,
-        "envelope_type": "ranex-evidence-v3",
+        "envelope_type": ENVELOPE_TYPE,
         "gate_id": "landing",
         "catalog_digest": "sha256:" + "1" * 64,
     }

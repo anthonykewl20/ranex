@@ -31,6 +31,7 @@ from ranex.foundation.canonical import command_digest
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
+    ENVELOPE_TYPE_V2,
     generate_keypair,
     sign_evidence,
 )
@@ -281,7 +282,8 @@ def test_a_v4_record_cannot_be_spelled_as_v5(keypair: tuple[str, str]) -> None:
         if key not in {"envelope_type", "gate_id", "catalog_digest"}
     }
 
-    with pytest.raises(ValueError, match="must be exactly"):
+    # envelope v2 dispatch: field-set/type mismatch is refused before field-set signing
+    with pytest.raises(ValueError, match="unknown envelope_type"):
         signed_payload(v4)
 
 
@@ -322,6 +324,21 @@ def test_the_envelope_type_is_signed_and_cannot_be_relabelled(
 
     admitted = admit_with_policy(tmp_path, [record], public)
 
+    assert admitted.evidence == ()
+    (rejection,) = admitted.rejections
+    # v2 now exists: v1 fields relabelled v2 are refused by exact-field dispatch
+    assert rejection.reason is RejectionReason.MALFORMED_RECORD
+
+    record = signed(
+        private,
+        envelope_type=ENVELOPE_TYPE_V2,
+        settings_digest="sha256:" + "e" * 64,
+        settings_schema_version=1,
+    )
+    record["envelope_type"] = ENVELOPE_TYPE
+    del record["settings_digest"]
+    del record["settings_schema_version"]
+    admitted = admit_with_policy(tmp_path, [record], public)
     assert admitted.evidence == ()
     (rejection,) = admitted.rejections
     assert rejection.reason is RejectionReason.BAD_SIGNATURE
