@@ -29,13 +29,16 @@ import hashlib
 import os
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from ranex.foundation.signing import (
+    ENVELOPE_TYPE,
+    ENVELOPE_TYPE_V2,
     SIGNED_FIELDS,
+    SIGNED_FIELDS_V2,
     is_signature,
     signed_payload,
     verify_evidence,
@@ -78,6 +81,7 @@ class RejectionReason(StrEnum):
     # and "this is not a record" are different events, and an operator
     # investigating the first should not be told the second.
     UNSUPPORTED_ENVELOPE = "unsupported-envelope"
+    SETTINGS_BINDING_MISMATCH = "settings-binding-mismatch"
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,6 +121,39 @@ class Admission:
             raise ValueError("admitted record indices must be unique")
         if set(self.evidence_indices).intersection(item.index for item in self.rejections):
             raise ValueError("a record cannot be both admitted and rejected")
+
+
+def apply_settings_binding(
+    admission: Admission,
+    records: Sequence[Any],
+    *,
+    expected_digest: str,
+    expected_schema_version: int,
+) -> Admission:
+    """Reduce mismatched signed settings bindings to structured absence."""
+    kept: list[Evidence] = []
+    indices: list[int] = []
+    rejected = list(admission.rejections)
+    for index, item in zip(admission.evidence_indices, admission.evidence, strict=True):
+        record = records[index] if index < len(records) else None
+        matches = (
+            isinstance(record, Mapping)
+            and record.get("envelope_type") == ENVELOPE_TYPE_V2
+            and record.get("settings_digest") == expected_digest
+            and type(record.get("settings_schema_version")) is int
+            and record.get("settings_schema_version") == expected_schema_version
+        )
+        if matches:
+            kept.append(item)
+            indices.append(index)
+        else:
+            rejected.append(Rejection(
+                index, RejectionReason.SETTINGS_BINDING_MISMATCH,
+                f"record {index}: settings binding does not match the evaluated ref",
+                item.producer_id, item.claim_id,
+            ))
+    return replace(admission, evidence=tuple(kept), evidence_indices=tuple(indices),
+                   rejections=tuple(rejected))
 
 
 _SIGNATURE = "signature"
@@ -461,9 +498,17 @@ def admit(
             )
 
         content = {k: v for k, v in record.items() if k != _SIGNATURE}
-        if set(content) != set(SIGNED_FIELDS):
-            unexpected = sorted(set(content) - set(SIGNED_FIELDS))
-            missing = sorted(set(SIGNED_FIELDS) - set(content))
+        envelope_type = content.get("envelope_type")
+        if envelope_type == ENVELOPE_TYPE:
+            fields = SIGNED_FIELDS
+        elif envelope_type == ENVELOPE_TYPE_V2:
+            fields = SIGNED_FIELDS_V2
+        else:
+            reject(RejectionReason.MALFORMED_RECORD, f"unknown envelope_type: {envelope_type!r}")
+            continue
+        if set(content) != set(fields):
+            unexpected = sorted(set(content) - set(fields))
+            missing = sorted(set(fields) - set(content))
             parts = []
             if unexpected:
                 parts.append(f"unexpected field(s): {', '.join(unexpected)}")
