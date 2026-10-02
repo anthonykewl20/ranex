@@ -185,12 +185,20 @@ def load_settings(repository_root: str | Path, *, evaluated_ref: str | None = No
         merge(_read(repo_path), str(repo_path))
     else:
         merge(_read(repo_path), str(repo_path), scope="mechanics")
+        if evaluated_ref.startswith("-"):
+            raise SettingsError(f"invalid evaluated_ref {evaluated_ref!r}")
         # Probe the tree first: a missing blob is defaults, an invalid ref is not.
-        tree = subprocess.run(["git", "-C", str(root), "ls-tree", evaluated_ref, "--", "governance/settings.toml"], capture_output=True, text=True, check=False)
+        try:
+            tree = subprocess.run(["git", "-C", str(root), "ls-tree", evaluated_ref, "--", "governance/settings.toml"], capture_output=True, text=True, check=False)
+        except UnicodeError:
+            raise SettingsError(f"{evaluated_ref}:governance/settings.toml: not UTF-8") from None
         if tree.returncode:
             raise SettingsError(f"{evaluated_ref}: {tree.stderr.strip()}")
         if tree.stdout:
-            blob = subprocess.run(["git", "-C", str(root), "show", f"{evaluated_ref}:governance/settings.toml"], capture_output=True, text=True, check=False)
+            try:
+                blob = subprocess.run(["git", "-C", str(root), "show", f"{evaluated_ref}:governance/settings.toml"], capture_output=True, text=True, check=False)
+            except UnicodeError:
+                raise SettingsError(f"{evaluated_ref}:governance/settings.toml: not UTF-8") from None
             if blob.returncode:
                 raise SettingsError(f"{evaluated_ref}: {blob.stderr.strip()}")
             try:

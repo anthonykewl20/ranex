@@ -1,10 +1,13 @@
+import os
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 import pytest
 
 from ranex.foundation import settings as mod
 from ranex.foundation.canonical import canonical_json
+
+PINNED_DIGEST = "021c440a6684eda2343bddc8767a0be8d2e122dcbf055866d06e2d75be194727"
 
 
 @pytest.fixture
@@ -125,6 +128,26 @@ def test_evaluated_ref(tmp_path, schema):
         load(tmp_path, evaluated_ref="nonexistent")
 
 
+def test_evaluated_ref_option_injection(tmp_path, schema):
+    with pytest.raises(mod.SettingsError, match="invalid evaluated_ref"):
+        load(tmp_path, evaluated_ref="--upload-pack")
+
+
+def test_evaluated_ref_not_utf8(tmp_path, schema):
+    def git(*args):
+        subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True,
+                       env={**os.environ, "GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "test@example.org",
+                            "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "test@example.org"})
+    git("init")
+    path = write(tmp_path, '[test]\ncount = 1\n')
+    path.write_bytes(b'\xff\xfe[catalogs]\ngates = "\x80"\n')
+    git("add", ".")
+    git("commit", "-m", "binary settings")
+    write(tmp_path, '[test]\ncount = 2\n')
+    with pytest.raises(mod.SettingsError, match="not UTF-8"):
+        load(tmp_path, evaluated_ref="HEAD")
+
+
 def test_digest(tmp_path, schema):
     first = mod.settings_digest(load(tmp_path))
     write(tmp_path, '[test]\ncount = 99\n')
@@ -134,6 +157,43 @@ def test_digest(tmp_path, schema):
     assert changed != first
     write(tmp_path, '# comment\n[catalogs]\ngates = \'changed\'\n')
     assert mod.settings_digest(load(tmp_path)) == changed
+
+
+def test_digest_schema_version_ingredient(tmp_path, schema, monkeypatch):
+    first = mod.settings_digest(load(tmp_path))
+    monkeypatch.setattr(mod, "settings_schema_version", 2)
+    assert mod.settings_digest(load(tmp_path)) != first
+
+
+def test_digest_pinned(tmp_path, schema):
+    write(tmp_path, '[catalogs]\ngates = "pinned"\n')
+    assert mod.settings_digest(load(tmp_path)) == PINNED_DIGEST
+
+
+@pytest.mark.parametrize("overrides,key", [({"bogus.x": 1}, "bogus.x"), ({"test.count": "x"}, "test.count")])
+def test_cli_override_errors(tmp_path, schema, overrides, key):
+    with pytest.raises(mod.SettingsError, match=key):
+        load(tmp_path, cli_overrides=overrides)
+
+
+def test_env_names_unique():
+    names = ["RANEX_" + f"{section}.{f.name}".replace(".", "_").upper()
+             for section, cls in mod.SCHEMA.items() for f in fields(cls)]
+    assert len(names) == len(set(names))
+
+
+def test_env_name_collision(tmp_path, monkeypatch):
+    @dataclass(frozen=True)
+    class A:
+        a_b: int = mod.setting("a_b", 1, "mechanics", "x")
+
+    @dataclass(frozen=True)
+    class B:
+        b: int = mod.setting("b", 1, "mechanics", "x")
+
+    monkeypatch.setattr(mod, "SCHEMA", {"test": A, "test.a": B})
+    with pytest.raises(mod.SettingsError, match="collision"):
+        load(tmp_path)
 
 
 @pytest.mark.parametrize("value", ['"literal"', '123', '{env="BAD-name"}', '{env="NAME",file="/tmp/key"}', '{other="NAME"}', '{file="relative"}', '{file="/tmp/line\\nkey"}'])
@@ -156,6 +216,7 @@ def test_secret_resolution(tmp_path, schema):
         mod.resolve_secret(ref, environ={})
     assert mod.resolve_secret(ref, environ={"TEST_SECRET": "actual"}) == "actual"
     assert result.get("test.access_token") == {"env": "TEST_SECRET"}
+    assert result.show()["test"]["access_token"]["value"] == {"env": "TEST_SECRET"}
     secret = tmp_path.parent / (tmp_path.name + "-secret")
     write(tmp_path, '[test]\naccess_token = {file="' + str(secret) + '"}')
     ref = load(tmp_path).sections["test"].access_token
